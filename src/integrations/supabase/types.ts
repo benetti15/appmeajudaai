@@ -294,6 +294,7 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          is_active: boolean | null
           name: string
         }
         Insert: {
@@ -301,6 +302,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          is_active?: boolean | null
           name: string
         }
         Update: {
@@ -308,6 +310,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          is_active?: boolean | null
           name?: string
         }
         Relationships: []

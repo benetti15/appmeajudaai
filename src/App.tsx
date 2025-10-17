@@ -39,6 +39,7 @@ const ProfessionalPublicProfile = lazy(() => import("./pages/ProfessionalPublicP
 const Admin = lazy(() => import("./pages/Admin"));
 const FluxoDemo = lazy(() => import("./pages/FluxoDemo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AdvancedSearch = lazy(() => import("./pages/AdvancedSearch"));
 
 // New optimized pages
 const TemplateSystem = lazy(() => import("@/components/TemplateSystem").then(module => ({ default: module.TemplateSystem })));
@@ -103,6 +104,7 @@ function AppInitializer() {
             <Route path="/verification" element={<VerificationPage />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/professional-profile/:professionalId" element={<ProfessionalPublicProfile />} />
+            <Route path="/search" element={<AdvancedSearch />} />
             
             {/* New optimized features */}
             <Route path="/templates" element={<TemplateSystem />} />
