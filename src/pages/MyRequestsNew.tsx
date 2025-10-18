@@ -45,13 +45,13 @@ const MyRequestsNew = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name)
+          service_categories!service_requests_category_id_fkey (name)
         `)
         .eq("client_id", user?.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      setRequests((data || []) as any); // Type assertion to handle Supabase schema mismatch
     } catch (error) {
       console.error("Erro ao carregar pedidos:", error);
     } finally {

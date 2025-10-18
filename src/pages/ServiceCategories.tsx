@@ -48,7 +48,7 @@ export default function ServiceCategories() {
         .order("name");
 
       if (error) throw error;
-      setCategories(data || []);
+      setCategories((data || []) as any); // Type assertion
     } catch (error) {
       console.error("Error fetching categories:", error);
     } finally {

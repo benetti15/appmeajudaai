@@ -56,7 +56,10 @@ export function TemporarySupportSystem({ requestId, requestTitle, currentStatus 
 
       const { error } = await supabase
         .from('chat_messages')
-        .insert(supportMessage);
+        .insert({
+          ...supportMessage,
+          receiver_id: '', // Will be filled by trigger
+        });
 
       if (error) throw error;
 

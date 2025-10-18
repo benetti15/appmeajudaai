@@ -83,8 +83,8 @@ const MyServicesNew = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name),
-          client_profile:profiles!client_id (
+          service_categories!service_requests_category_id_fkey (name),
+          client_profile:profiles!service_requests_client_id_fkey (
             full_name,
             phone
           )
@@ -116,8 +116,8 @@ const MyServicesNew = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name),
-          client_profile:profiles!client_id (
+          service_categories!service_requests_category_id_fkey (name),
+          client_profile:profiles!service_requests_client_id_fkey (
             full_name,
             phone
           ),
@@ -146,8 +146,8 @@ const MyServicesNew = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name),
-          client_profile:profiles!client_id (
+          service_categories!service_requests_category_id_fkey (name),
+          client_profile:profiles!service_requests_client_id_fkey (
             full_name,
             phone
           ),
@@ -170,9 +170,9 @@ const MyServicesNew = () => {
       
       console.log("MyServicesNew - Serviços concluídos encontrados:", completedData?.length);
 
-      setAvailableServices(filteredAvailable);
-      setActiveServices(activeData || []);
-      setCompletedServices(completedData || []);
+      setAvailableServices(filteredAvailable as any); // Type assertion
+      setActiveServices((activeData || []) as any); // Type assertion
+      setCompletedServices((completedData || []) as any); // Type assertion
       
       console.log("MyServicesNew - fetchServices concluído com sucesso");
     } catch (error) {

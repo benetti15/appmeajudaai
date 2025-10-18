@@ -93,7 +93,7 @@ const TrackRequestDetail = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name)
+          service_categories!service_requests_category_id_fkey (name)
         `)
         .eq("id", requestId)
         .single();

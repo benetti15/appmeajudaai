@@ -67,7 +67,7 @@ export default function NewRequest() {
         .single();
 
       if (requestData && !requestError) {
-        setExistingRequest(requestData);
+        setExistingRequest(requestData as any); // Type assertion
         fetchQuotes(requestData.id);
         return;
       }

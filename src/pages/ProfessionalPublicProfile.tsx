@@ -63,7 +63,7 @@ export default function ProfessionalPublicProfile() {
         .single();
 
       if (profileError) throw profileError;
-      setProfile(profileData);
+      setProfile(profileData as any); // Type assertion
 
       // Buscar categorias de serviço do profissional (simplificado)
       // Por enquanto, vamos usar dados mock até que a tabela seja criada

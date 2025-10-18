@@ -55,7 +55,7 @@ export function ReviewSystem({ requestId, professionalId, canReview = false, sho
           images_urls,
           reviewer:profiles!reviews_reviewer_id_fkey(full_name)
         `)
-        .eq("reviewed_id", professionalId)
+        .eq("professional_id", professionalId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -74,7 +74,7 @@ export function ReviewSystem({ requestId, professionalId, canReview = false, sho
         .from("reviews")
         .insert({
           reviewer_id: user.id,
-          reviewed_id: professionalId,
+          professional_id: professionalId,
           request_id: requestId,
           rating,
           comment: comment.trim() || null,

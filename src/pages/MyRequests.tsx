@@ -44,7 +44,7 @@ const MyRequests = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name)
+          service_categories!service_requests_category_id_fkey (name)
         `)
         .eq("client_id", user?.id)
         .order("created_at", { ascending: false });

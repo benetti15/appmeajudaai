@@ -140,31 +140,32 @@ export default function ProfessionalProfile() {
       .select(`
         id,
         category_id,
-        hourly_rate,
-        experience_years,
-        description,
-        service_categories(name)
+        service_categories!professional_specialties_category_id_fkey(name)
       `)
       .eq("professional_id", user?.id)
       .order("created_at");
 
     if (error) throw error;
     
-    const specialtiesWithNames = data?.map(item => ({
+    const specialtiesWithNames = data?.map((item: any) => ({
       id: item.id,
       category_id: item.category_id,
       category_name: item.service_categories?.name || "",
-      hourly_rate: item.hourly_rate,
-      experience_years: item.experience_years,
-      description: item.description,
-      previous_work: "", // Campo temporário até criar no banco
-      certifications: "", // Campo temporário até criar no banco
+      hourly_rate: 0, // Campo removido temporariamente
+      experience_years: 0, // Campo removido temporariamente
+      description: "", // Campo removido temporariamente
+      previous_work: "",
+      certifications: "",
     })) || [];
 
     setSpecialties(specialtiesWithNames);
   };
 
   const fetchServiceAreas = async () => {
+    // Tabela service_areas não existe ainda, comentando funcionalidade
+    console.log("Service areas feature not yet implemented");
+    setServiceAreas([]);
+    /*
     const { data, error } = await supabase
       .from("service_areas")
       .select("*")
@@ -173,6 +174,7 @@ export default function ProfessionalProfile() {
 
     if (error) throw error;
     setServiceAreas(data || []);
+    */
   };
 
   const addSpecialty = async () => {
@@ -261,6 +263,7 @@ export default function ProfessionalProfile() {
 
     setSaving(true);
     try {
+      /* Tabela service_areas não existe ainda
       const { error } = await supabase
         .from("service_areas")
         .insert({
@@ -271,6 +274,12 @@ export default function ProfessionalProfile() {
         });
 
       if (error) throw error;
+      */
+      
+      toast({
+        title: "Feature em desenvolvimento",
+        description: "A funcionalidade de áreas de serviço estará disponível em breve",
+      });
 
       toast({
         title: "Sucesso",
@@ -295,6 +304,13 @@ export default function ProfessionalProfile() {
   };
 
   const removeServiceArea = async (areaId: string) => {
+    // Feature not yet implemented
+    console.log("Remove service area:", areaId);
+    toast({
+      title: "Feature em desenvolvimento",
+      description: "A funcionalidade de áreas de serviço estará disponível em breve",
+    });
+    /*
     try {
       const { error } = await supabase
         .from("service_areas")
@@ -317,6 +333,7 @@ export default function ProfessionalProfile() {
         variant: "destructive",
       });
     }
+    */
   };
 
   const handleSaveProfile = async () => {

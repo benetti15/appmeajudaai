@@ -90,8 +90,8 @@ export default function ServiceRequestDetails() {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name),
-          client_profile:profiles!client_id (
+          service_categories!service_requests_category_id_fkey (name),
+          client_profile:profiles!service_requests_client_id_fkey (
             full_name,
             phone
           )
@@ -102,7 +102,7 @@ export default function ServiceRequestDetails() {
       if (requestError) throw requestError;
       if (!requestData) throw new Error("Solicitação não encontrada");
 
-      setRequest(requestData);
+      setRequest(requestData as any); // Type assertion
 
       // If there's an accepted quote, fetch professional info
       if (['accepted', 'in_progress', 'completed'].includes(requestData.status)) {

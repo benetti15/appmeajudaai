@@ -115,7 +115,7 @@ const MyServices = () => {
       );
 
       const validServices = servicesWithDetails.filter(service => service !== null);
-      setServices(validServices);
+      setServices(validServices as any); // Type assertion
     } catch (error) {
       console.error("Error fetching accepted services:", error);
       toast({

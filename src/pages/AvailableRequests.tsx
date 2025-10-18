@@ -62,7 +62,7 @@ const AvailableRequests = () => {
           .from("service_requests")
           .select(`
             *,
-            service_categories (name)
+            service_categories!service_requests_category_id_fkey (name)
           `)
           .eq("status", "pending")
           .order("created_at", { ascending: false });
@@ -86,7 +86,7 @@ const AvailableRequests = () => {
         .from("service_requests")
         .select(`
           *,
-          service_categories (name)
+          service_categories!service_requests_category_id_fkey (name)
         `)
         .eq("status", "pending")
         .in("category_id", categoryIds)
