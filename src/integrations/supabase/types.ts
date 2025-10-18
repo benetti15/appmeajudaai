@@ -66,6 +66,27 @@ export type Database = {
           },
         ]
       }
+      favorites: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          professional_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          professional_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          professional_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -149,6 +170,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          avatar_url: string | null
           city: string | null
           cpf: string | null
           created_at: string | null
@@ -162,6 +184,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          avatar_url?: string | null
           city?: string | null
           cpf?: string | null
           created_at?: string | null
@@ -175,6 +198,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          avatar_url?: string | null
           city?: string | null
           cpf?: string | null
           created_at?: string | null
@@ -196,6 +220,7 @@ export type Database = {
           estimated_time: string | null
           id: string
           is_accepted: boolean | null
+          materials_included: boolean | null
           professional_id: string
           request_id: string
         }
@@ -206,6 +231,7 @@ export type Database = {
           estimated_time?: string | null
           id?: string
           is_accepted?: boolean | null
+          materials_included?: boolean | null
           professional_id: string
           request_id: string
         }
@@ -216,6 +242,7 @@ export type Database = {
           estimated_time?: string | null
           id?: string
           is_accepted?: boolean | null
+          materials_included?: boolean | null
           professional_id?: string
           request_id?: string
         }
@@ -241,6 +268,7 @@ export type Database = {
           comment: string | null
           created_at: string | null
           id: string
+          images_urls: string[] | null
           professional_id: string
           rating: number
           request_id: string | null
@@ -250,6 +278,7 @@ export type Database = {
           comment?: string | null
           created_at?: string | null
           id?: string
+          images_urls?: string[] | null
           professional_id: string
           rating: number
           request_id?: string | null
@@ -259,6 +288,7 @@ export type Database = {
           comment?: string | null
           created_at?: string | null
           id?: string
+          images_urls?: string[] | null
           professional_id?: string
           rating?: number
           request_id?: string | null
@@ -321,6 +351,7 @@ export type Database = {
           attachments: Json | null
           budget_estimate: number | null
           category_id: string | null
+          category_id_backup: string | null
           city: string
           client_id: string
           created_at: string | null
@@ -339,6 +370,7 @@ export type Database = {
           attachments?: Json | null
           budget_estimate?: number | null
           category_id?: string | null
+          category_id_backup?: string | null
           city?: string
           client_id: string
           created_at?: string | null
@@ -357,6 +389,7 @@ export type Database = {
           attachments?: Json | null
           budget_estimate?: number | null
           category_id?: string | null
+          category_id_backup?: string | null
           city?: string
           client_id?: string
           created_at?: string | null
@@ -371,6 +404,13 @@ export type Database = {
           urgency_level?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "service_requests_category_id_backup_fkey"
+            columns: ["category_id_backup"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "service_requests_category_id_fkey"
             columns: ["category_id"]

@@ -136,7 +136,7 @@ export default function Chat() {
         .from("chat_messages")
         .select(`
           *,
-          sender_profile:sender_id(full_name, avatar_url)
+          sender_profile:profiles!chat_messages_sender_id_fkey(full_name, avatar_url)
         `)
         .eq("request_id", requestId)
         .order("created_at", { ascending: true });
@@ -179,7 +179,7 @@ export default function Chat() {
             .from("chat_messages")
             .select(`
               *,
-              sender_profile:sender_id(full_name, avatar_url)
+              sender_profile:profiles!chat_messages_sender_id_fkey(full_name, avatar_url)
             `)
             .eq("id", payload.new.id)
             .single();
@@ -250,7 +250,7 @@ export default function Chat() {
         message: messageText || "",
         sender_id: user.id,
         request_id: requestId,
-        image_url: imageUrl,
+        receiver_id: '', // Will be filled by trigger
       };
 
       const { data, error } = await supabase
@@ -258,7 +258,7 @@ export default function Chat() {
         .insert(messageData)
         .select(`
           *,
-          sender_profile:sender_id(full_name, avatar_url)
+          sender_profile:profiles!chat_messages_sender_id_fkey(full_name, avatar_url)
         `)
         .single();
 

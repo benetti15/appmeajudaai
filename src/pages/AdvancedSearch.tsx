@@ -73,10 +73,10 @@ export default function AdvancedSearch() {
       );
     }
 
-    // Filtro de categoria
-    if (filters.categoryId) {
-      filtered = filtered.filter(r => r.category_id === filters.categoryId);
-    }
+    // Filtro de categoria (desabilitado temporariamente até schema estar completo)
+    // if (filters.categoryId) {
+    //   filtered = filtered.filter(r => r.category_id === filters.categoryId);
+    // }
 
     // Filtro de cidade
     if (filters.city) {
