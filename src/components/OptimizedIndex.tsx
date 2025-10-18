@@ -11,6 +11,7 @@ import { useQuoteNotifications } from "@/hooks/useQuoteNotifications";
 import { MobileBottomNav, MobileCard, ResponsiveGrid } from "@/components/MobileOptimizations";
 import { LazyImage } from "@/components/PerformanceOptimizations";
 import { DebugInfo } from "@/components/DebugInfo";
+import { OnboardingTour } from "@/components/OnboardingTour";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Wrench, 
@@ -419,6 +420,7 @@ export const OptimizedIndex = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/10 pb-20 md:pb-0">
+      <OnboardingTour />
       <MemoizedHeader profile={profile} unreadCount={unreadCount} unreadQuotes={unreadQuotes} signOut={signOut} />
       
       <HeroSection profile={profile} />
