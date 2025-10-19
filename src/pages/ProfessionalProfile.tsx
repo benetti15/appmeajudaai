@@ -6,36 +6,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, MapPin, Award, Plus, X, User } from "lucide-react";
+import { ArrowLeft, MapPin, Award, User } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { EnhancedVerificationSystem } from "@/components/EnhancedVerificationSystem";
+import { ProfessionalSpecialties } from "@/components/ProfessionalSpecialties";
 
 interface ServiceCategory {
   id: string;
   name: string;
-}
-
-interface Specialty {
-  id: string;
-  category_id: string;
-  category_name: string;
-  hourly_rate?: number;
-  experience_years?: number;
-  description?: string;
-  previous_work?: string;
-  certifications?: string;
-}
-
-interface ServiceArea {
-  id: string;
-  city: string;
-  state: string;
-  radius_km: number;
 }
 
 
@@ -46,10 +27,6 @@ export default function ProfessionalProfile() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
-  
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   
   // Form states para perfil pessoal
@@ -60,20 +37,6 @@ export default function ProfessionalProfile() {
     city: profile?.city || "",
     state: profile?.state || "",
     postal_code: profile?.postal_code || "",
-    
-  });
-
-  // Form states para especialidades
-  const [newSpecialty, setNewSpecialty] = useState({
-    category_id: "",
-    experience_years: "",
-    description: "",
-    previous_work: "",
-    certifications: "",
-  });
-  
-  const [newServiceArea, setNewServiceArea] = useState({
-    city: "Uberlândia, MG",
   });
 
   useEffect(() => {
@@ -109,231 +72,7 @@ export default function ProfessionalProfile() {
   }, [user, profile]);
 
   const fetchData = async () => {
-    try {
-      await Promise.all([
-        fetchCategories(),
-        fetchSpecialties(),
-        fetchServiceAreas(),
-        
-      ]);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    const { data, error } = await supabase
-      .from("service_categories")
-      .select("id, name")
-      .eq("is_active", true)
-      .order("name");
-
-    if (error) throw error;
-    setCategories(data || []);
-  };
-
-  const fetchSpecialties = async () => {
-    const { data, error } = await supabase
-      .from("professional_specialties")
-      .select(`
-        id,
-        category_id,
-        service_categories!professional_specialties_category_id_fkey(name)
-      `)
-      .eq("professional_id", user?.id)
-      .order("created_at");
-
-    if (error) throw error;
-    
-    const specialtiesWithNames = data?.map((item: any) => ({
-      id: item.id,
-      category_id: item.category_id,
-      category_name: item.service_categories?.name || "",
-      hourly_rate: 0, // Campo removido temporariamente
-      experience_years: 0, // Campo removido temporariamente
-      description: "", // Campo removido temporariamente
-      previous_work: "",
-      certifications: "",
-    })) || [];
-
-    setSpecialties(specialtiesWithNames);
-  };
-
-  const fetchServiceAreas = async () => {
-    // Tabela service_areas não existe ainda, comentando funcionalidade
-    console.log("Service areas feature not yet implemented");
-    setServiceAreas([]);
-    /*
-    const { data, error } = await supabase
-      .from("service_areas")
-      .select("*")
-      .eq("professional_id", user?.id)
-      .order("created_at");
-
-    if (error) throw error;
-    setServiceAreas(data || []);
-    */
-  };
-
-  const addSpecialty = async () => {
-    if (!newSpecialty.category_id) {
-      toast({
-        title: "Erro",
-        description: "Selecione uma categoria.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from("professional_specialties")
-        .insert({
-          professional_id: user?.id,
-          category_id: newSpecialty.category_id,
-          experience_years: newSpecialty.experience_years ? parseInt(newSpecialty.experience_years) : null,
-          description: `${newSpecialty.description}${newSpecialty.previous_work ? '\n\nTrabalhos Anteriores: ' + newSpecialty.previous_work : ''}${newSpecialty.certifications ? '\n\nCertificações: ' + newSpecialty.certifications : ''}` || null,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Especialidade adicionada com sucesso!",
-      });
-
-      setNewSpecialty({
-        category_id: "",
-        experience_years: "",
-        description: "",
-        previous_work: "",
-        certifications: "",
-      });
-
-      await fetchSpecialties();
-    } catch (error) {
-      console.error("Error adding specialty:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar a especialidade.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const removeSpecialty = async (specialtyId: string) => {
-    try {
-      const { error } = await supabase
-        .from("professional_specialties")
-        .delete()
-        .eq("id", specialtyId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Especialidade removida com sucesso!",
-      });
-
-      await fetchSpecialties();
-    } catch (error) {
-      console.error("Error removing specialty:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível remover a especialidade.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const addServiceArea = async () => {
-    if (!newServiceArea.city) {
-      toast({
-        title: "Erro",
-        description: "Selecione uma cidade.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      /* Tabela service_areas não existe ainda
-      const { error } = await supabase
-        .from("service_areas")
-        .insert({
-          professional_id: user?.id,
-          city: "Uberlândia",
-          state: "MG",
-          radius_km: 50, // Padrão para toda a cidade
-        });
-
-      if (error) throw error;
-      */
-      
-      toast({
-        title: "Feature em desenvolvimento",
-        description: "A funcionalidade de áreas de serviço estará disponível em breve",
-      });
-
-      toast({
-        title: "Sucesso",
-        description: "Área de atendimento adicionada com sucesso!",
-      });
-
-      setNewServiceArea({
-        city: "Uberlândia, MG",
-      });
-
-      await fetchServiceAreas();
-    } catch (error) {
-      console.error("Error adding service area:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar a área de atendimento.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const removeServiceArea = async (areaId: string) => {
-    // Feature not yet implemented
-    console.log("Remove service area:", areaId);
-    toast({
-      title: "Feature em desenvolvimento",
-      description: "A funcionalidade de áreas de serviço estará disponível em breve",
-    });
-    /*
-    try {
-      const { error } = await supabase
-        .from("service_areas")
-        .delete()
-        .eq("id", areaId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Área de atendimento removida com sucesso!",
-      });
-
-      await fetchServiceAreas();
-    } catch (error) {
-      console.error("Error removing service area:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível remover a área de atendimento.",
-        variant: "destructive",
-      });
-    }
-    */
+    setLoading(false);
   };
 
   const handleSaveProfile = async () => {
@@ -450,7 +189,7 @@ export default function ProfessionalProfile() {
             </Card>
 
             {/* Informações Pessoais */}
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5 text-primary" />
@@ -459,31 +198,41 @@ export default function ProfessionalProfile() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="full_name">Nome Completo</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name" className="text-sm font-medium">
+                      Nome Completo *
+                    </Label>
                     <Input
                       id="full_name"
                       value={profileData.full_name}
                       onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
                       placeholder="Seu nome completo"
+                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="phone">Telefone</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium">
+                      Telefone *
+                    </Label>
                     <Input
                       id="phone"
                       value={profileData.phone}
                       onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                       placeholder="(34) 99999-9999"
+                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
-
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    💡 Mantenha suas informações atualizadas para que os clientes possam entrar em contato facilmente.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
             {/* Endereço */}
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
+            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
@@ -491,43 +240,47 @@ export default function ProfessionalProfile() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="address">Endereço</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-sm font-medium">Endereço Completo</Label>
                   <Input
                     id="address"
                     value={profileData.address}
                     onChange={(e) => setProfileData({...profileData, address: e.target.value})}
                     placeholder="Rua, número, complemento"
+                    className="transition-all focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">Cidade</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-sm font-medium">Cidade *</Label>
                     <Input
                       id="city"
                       value={profileData.city}
                       onChange={(e) => setProfileData({...profileData, city: e.target.value})}
                       placeholder="Sua cidade"
+                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="state">Estado</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="state" className="text-sm font-medium">Estado *</Label>
                     <Input
                       id="state"
                       value={profileData.state}
                       onChange={(e) => setProfileData({...profileData, state: e.target.value})}
                       placeholder="UF"
                       maxLength={2}
+                      className="transition-all focus:ring-2 focus:ring-primary uppercase"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="postal_code">CEP</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code" className="text-sm font-medium">CEP</Label>
                     <Input
                       id="postal_code"
                       value={profileData.postal_code}
                       onChange={(e) => setProfileData({...profileData, postal_code: e.target.value})}
                       placeholder="00000-000"
+                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
@@ -546,145 +299,7 @@ export default function ProfessionalProfile() {
           </TabsContent>
 
           <TabsContent value="specialties" className="space-y-6">
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-primary" />
-                  Adicionar Especialidade
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="category">Categoria de Serviço</Label>
-                    <Select
-                      value={newSpecialty.category_id}
-                      onValueChange={(value) =>
-                        setNewSpecialty({ ...newSpecialty, category_id: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="experience">Anos de Experiência</Label>
-                    <Input
-                      id="experience"
-                      type="number"
-                      placeholder="5"
-                      value={newSpecialty.experience_years}
-                      onChange={(e) =>
-                        setNewSpecialty({ ...newSpecialty, experience_years: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Descrição da Experiência</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Descreva sua experiência nesta área..."
-                    value={newSpecialty.description}
-                    onChange={(e) =>
-                      setNewSpecialty({ ...newSpecialty, description: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="previous_work">Trabalhos Anteriores</Label>
-                  <Textarea
-                    id="previous_work"
-                    placeholder="Ex: Trabalhei 3 anos na empresa XYZ fazendo instalações elétricas residenciais..."
-                    value={newSpecialty.previous_work}
-                    onChange={(e) =>
-                      setNewSpecialty({ ...newSpecialty, previous_work: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="certifications">Certificações e Qualificações</Label>
-                  <Textarea
-                    id="certifications"
-                    placeholder="Ex: NR-10, Curso de Soldador certificado pelo SENAI, etc..."
-                    value={newSpecialty.certifications}
-                    onChange={(e) =>
-                      setNewSpecialty({ ...newSpecialty, certifications: e.target.value })
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Todas as informações serão combinadas na descrição da especialidade.
-                  </p>
-                </div>
-
-                <Button
-                  onClick={addSpecialty}
-                  disabled={saving || !newSpecialty.category_id}
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Especialidade
-                </Button>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Suas Especialidades</h3>
-              {specialties.length === 0 ? (
-                <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
-                  <CardContent className="flex flex-col items-center justify-center py-8">
-                    <Award className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground text-center">
-                      Nenhuma especialidade cadastrada ainda.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                specialties.map((specialty) => (
-                  <Card key={specialty.id} className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="secondary">{specialty.category_name}</Badge>
-                            {specialty.experience_years && (
-                              <Badge variant="outline">
-                                {specialty.experience_years} anos
-                              </Badge>
-                            )}
-                          </div>
-                           {specialty.description && (
-                             <div className="text-sm text-muted-foreground space-y-1">
-                               <div className="whitespace-pre-line">{specialty.description}</div>
-                             </div>
-                           )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeSpecialty(specialty.id)}
-                          className="text-destructive hover:text-destructive/90"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
+            <ProfessionalSpecialties />
           </TabsContent>
 
           <TabsContent value="areas" className="space-y-6">
@@ -692,76 +307,34 @@ export default function ProfessionalProfile() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
-                  Adicionar Área de Atendimento
+                  Área de Atendimento
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="city">Cidade de Atendimento</Label>
-                    <select
-                      id="city"
-                      value={newServiceArea.city}
-                      onChange={(e) =>
-                        setNewServiceArea({ city: e.target.value })
-                      }
-                      className="w-full p-2 border border-input rounded-md bg-background text-foreground"
-                    >
-                      <option value="Uberlândia, MG">Uberlândia, MG</option>
-                    </select>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Atendimento em toda a cidade selecionada
+                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg p-6 text-center">
+                  <MapPin className="h-12 w-12 text-primary mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold mb-2">Uberlândia, MG</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Atualmente você atende toda a cidade de Uberlândia
                   </p>
+                  <Badge variant="secondary" className="text-xs">
+                    Cobertura: Toda a cidade
+                  </Badge>
                 </div>
 
-                <Button
-                  onClick={addServiceArea}
-                  disabled={saving || !newServiceArea.city}
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Área
-                </Button>
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Sobre sua área de atendimento
+                  </h4>
+                  <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1.5">
+                    <li>• Você atende todas as regiões de Uberlândia</li>
+                    <li>• Os clientes podem encontrar você em buscas da cidade</li>
+                    <li>• Mantenha seu perfil atualizado para mais visibilidade</li>
+                  </ul>
+                </div>
               </CardContent>
             </Card>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Suas Áreas de Atendimento</h3>
-              {serviceAreas.length === 0 ? (
-                <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
-                  <CardContent className="flex flex-col items-center justify-center py-8">
-                    <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground text-center">
-                      Nenhuma área de atendimento cadastrada ainda.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                serviceAreas.map((area) => (
-                  <Card key={area.id} className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-primary" />
-                          <span className="font-medium">
-                            {area.city}, {area.state}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeServiceArea(area.id)}
-                          className="text-destructive hover:text-destructive/90"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
           </TabsContent>
 
         </Tabs>
