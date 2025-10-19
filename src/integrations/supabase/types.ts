@@ -134,19 +134,31 @@ export type Database = {
       professional_specialties: {
         Row: {
           category_id: string
+          certifications: string | null
           created_at: string | null
+          description: string | null
+          experience_years: number | null
+          hourly_rate: number | null
           id: string
           professional_id: string
         }
         Insert: {
           category_id: string
+          certifications?: string | null
           created_at?: string | null
+          description?: string | null
+          experience_years?: number | null
+          hourly_rate?: number | null
           id?: string
           professional_id: string
         }
         Update: {
           category_id?: string
+          certifications?: string | null
           created_at?: string | null
+          description?: string | null
+          experience_years?: number | null
+          hourly_rate?: number | null
           id?: string
           professional_id?: string
         }
