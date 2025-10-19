@@ -432,7 +432,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_quote_for_request: {
+        Args: { _request_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_request_client: {
+        Args: { _request_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
