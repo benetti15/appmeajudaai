@@ -53,7 +53,6 @@ export function ProfessionalSpecialties() {
     experience_years: "",
     description: "",
     certifications: "",
-    hourly_rate: "",
   });
 
   useEffect(() => {
@@ -113,7 +112,6 @@ export function ProfessionalSpecialties() {
       experience_years: "",
       description: "",
       certifications: "",
-      hourly_rate: "",
     });
     setEditingSpecialty(null);
   };
@@ -130,7 +128,6 @@ export function ProfessionalSpecialties() {
       experience_years: specialty.experience_years?.toString() || "",
       description: specialty.description || "",
       certifications: specialty.certifications || "",
-      hourly_rate: specialty.hourly_rate?.toString() || "",
     });
     setIsDialogOpen(true);
   };
@@ -159,7 +156,6 @@ export function ProfessionalSpecialties() {
         experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
         description: formData.description || null,
         certifications: formData.certifications || null,
-        hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
       };
 
       if (editingSpecialty) {
@@ -274,32 +270,17 @@ export function ProfessionalSpecialties() {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">Anos de Experiência *</Label>
-                    <Input
-                      id="experience"
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 5"
-                      value={formData.experience_years}
-                      onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="hourly_rate">Valor por Hora (R$)</Label>
-                    <Input
-                      id="hourly_rate"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="Ex: 80.00"
-                      value={formData.hourly_rate}
-                      onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="experience">Anos de Experiência *</Label>
+                  <Input
+                    id="experience"
+                    type="number"
+                    min="1"
+                    placeholder="Ex: 5"
+                    value={formData.experience_years}
+                    onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -387,11 +368,6 @@ export function ProfessionalSpecialties() {
                             {specialty.experience_years && (
                               <Badge variant="secondary">
                                 {specialty.experience_years} {specialty.experience_years === 1 ? "ano" : "anos"}
-                              </Badge>
-                            )}
-                            {specialty.hourly_rate && (
-                              <Badge variant="outline">
-                                R$ {specialty.hourly_rate.toFixed(2)}/hora
                               </Badge>
                             )}
                           </div>
