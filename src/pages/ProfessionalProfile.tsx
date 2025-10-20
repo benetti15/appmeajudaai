@@ -36,7 +36,6 @@ export default function ProfessionalProfile() {
     address: profile?.address || "",
     city: profile?.city || "",
     state: profile?.state || "",
-    postal_code: profile?.postal_code || "",
   });
 
   useEffect(() => {
@@ -62,8 +61,6 @@ export default function ProfessionalProfile() {
         address: profile.address || "",
         city: profile.city || "",
         state: profile.state || "",
-        postal_code: profile.postal_code || "",
-        
       });
       setProfilePhoto(profile.avatar_url || null);
     }
@@ -86,7 +83,6 @@ export default function ProfessionalProfile() {
           address: profileData.address,
           city: profileData.city,
           state: profileData.state,
-          postal_code: profileData.postal_code,
           avatar_url: profilePhoto,
         })
         .eq("id", user?.id);
@@ -251,7 +247,7 @@ export default function ProfessionalProfile() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city" className="text-sm font-medium">Cidade *</Label>
                     <Input
@@ -271,16 +267,6 @@ export default function ProfessionalProfile() {
                       placeholder="UF"
                       maxLength={2}
                       className="transition-all focus:ring-2 focus:ring-primary uppercase"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="postal_code" className="text-sm font-medium">CEP</Label>
-                    <Input
-                      id="postal_code"
-                      value={profileData.postal_code}
-                      onChange={(e) => setProfileData({...profileData, postal_code: e.target.value})}
-                      placeholder="00000-000"
-                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
