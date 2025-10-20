@@ -141,6 +141,16 @@ export function ProfessionalSpecialties() {
       return;
     }
 
+    if (!formData.experience_years || parseInt(formData.experience_years) <= 0) {
+      toast.error("Informe os anos de experiência");
+      return;
+    }
+
+    if (!formData.description || formData.description.trim() === "") {
+      toast.error("Informe uma descrição da sua experiência");
+      return;
+    }
+
     setSaving(true);
     try {
       const specialtyData = {
@@ -266,14 +276,15 @@ export function ProfessionalSpecialties() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="experience">Anos de Experiência</Label>
+                    <Label htmlFor="experience">Anos de Experiência *</Label>
                     <Input
                       id="experience"
                       type="number"
-                      min="0"
+                      min="1"
                       placeholder="Ex: 5"
                       value={formData.experience_years}
                       onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })}
+                      required
                     />
                   </div>
 
@@ -292,13 +303,14 @@ export function ProfessionalSpecialties() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descrição da Experiência</Label>
+                  <Label htmlFor="description">Descrição da Experiência *</Label>
                   <Textarea
                     id="description"
                     placeholder="Descreva sua experiência, tipos de serviços que realiza, projetos anteriores..."
                     rows={4}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    required
                   />
                 </div>
 
@@ -326,7 +338,7 @@ export function ProfessionalSpecialties() {
                 </Button>
                 <Button
                   onClick={handleSaveSpecialty}
-                  disabled={saving || !formData.category_id}
+                  disabled={saving || !formData.category_id || !formData.experience_years || !formData.description}
                   className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
                 >
                   {saving ? (
