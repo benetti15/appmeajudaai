@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell, X, Check, Clock, MessageSquare, DollarSign, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ interface NotificationSettings {
 
 export function EnhancedNotificationSystem({ unreadQuotes = 0 }: { unreadQuotes?: number }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -250,7 +252,7 @@ export function EnhancedNotificationSystem({ unreadQuotes = 0 }: { unreadQuotes?
     }
     
     if (notification.action_url) {
-      window.location.href = notification.action_url;
+      navigate(notification.action_url);
     }
     
     setShowNotifications(false);
