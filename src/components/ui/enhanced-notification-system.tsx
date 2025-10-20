@@ -246,16 +246,68 @@ export function EnhancedNotificationSystem({ unreadQuotes = 0 }: { unreadQuotes?
     }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification) => {
     if (!notification.is_read) {
       markAsRead(notification.id);
     }
     
-    if (notification.action_url) {
-      navigate(notification.action_url);
+    // Redirecionar baseado no tipo de notificação
+    let redirectPath = notification.action_url;
+    
+    if (!redirectPath && notification.related_id) {
+      switch (notification.type) {
+        case 'quote_received':
+          // Para orçamentos recebidos, buscar o request_id do orçamento
+          try {
+            const { data: quote } = await supabase
+              .from('quotes')
+              .select('request_id')
+              .eq('id', notification.related_id)
+              .single();
+            
+            if (quote?.request_id) {
+              redirectPath = `/service-request/${quote.request_id}`;
+            }
+          } catch (error) {
+            console.error('Error fetching quote:', error);
+          }
+          break;
+          
+        case 'quote_accepted':
+          // Para orçamentos aceitos, o related_id já é o request_id
+          redirectPath = `/service-request/${notification.related_id}`;
+          break;
+          
+        case 'chat_message':
+          // Para mensagens, ir para o chat
+          redirectPath = `/chat/${notification.related_id}`;
+          break;
+          
+        case 'new_request':
+          // Para novas solicitações
+          redirectPath = `/service-request/${notification.related_id}`;
+          break;
+          
+        case 'status_update':
+          // Para atualizações de status
+          redirectPath = `/service-request/${notification.related_id}`;
+          break;
+          
+        default:
+          // Se não houver URL específica, ir para a dashboard apropriada
+          if (user?.user_metadata?.user_type === 'professional') {
+            redirectPath = '/professional-dashboard';
+          } else {
+            redirectPath = '/client-dashboard';
+          }
+      }
     }
     
     setShowNotifications(false);
+    
+    if (redirectPath) {
+      navigate(redirectPath);
+    }
   };
 
   if (!user) return null;
