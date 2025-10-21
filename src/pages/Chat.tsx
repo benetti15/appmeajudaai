@@ -322,7 +322,10 @@ export default function Chat() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              const isClient = request?.client_id === user?.id;
+              navigate(isClient ? "/my-requests" : "/my-services-new");
+            }}
             className="p-2"
           >
             <ArrowLeft className="h-4 w-4" />
