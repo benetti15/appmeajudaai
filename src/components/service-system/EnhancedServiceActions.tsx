@@ -58,7 +58,17 @@ export function EnhancedServiceActions({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [arrivalEstimate, setArrivalEstimate] = useState<number | null>(null);
-  const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(null);
+  
+  // Initialize with stored status if available
+  const getInitialStatus = (): ExtendedServiceStatus | null => {
+    const stored = localStorage.getItem(`service_status_${requestId}`);
+    if (stored && stored !== currentStatus) {
+      return stored as ExtendedServiceStatus;
+    }
+    return null;
+  };
+  
+  const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(getInitialStatus());
 
   const updateServiceStatus = async (newStatus: ExtendedServiceStatus, additionalData?: any) => {
     console.log("🔄 Iniciando atualização de status:", { newStatus, requestId, userRole, userId: user?.id });
@@ -86,6 +96,9 @@ export function EnhancedServiceActions({
 
         console.log("✅ Verificação de permissão aprovada:", quoteCheck);
       }
+
+      // Store extended status in localStorage for persistence
+      localStorage.setItem(`service_status_${requestId}`, newStatus);
 
       // Map extended status to database status
       const mapStatusForDatabase = (status: ExtendedServiceStatus): ServiceStatus => {
@@ -154,6 +167,9 @@ export function EnhancedServiceActions({
       // Revert optimistic update
       setOptimisticStatus(null);
       onOptimisticStatusChange?.(null);
+      
+      // Clear localStorage on error
+      localStorage.removeItem(`service_status_${requestId}`);
     } finally {
       setLoading(false);
     }
@@ -214,7 +230,20 @@ export function EnhancedServiceActions({
     }
   };
 
-  const displayStatus: ExtendedServiceStatus = optimisticStatus || currentStatus;
+  // Get effective status (prioritizing stored > optimistic > current)
+  const getEffectiveStatus = (): ExtendedServiceStatus => {
+    const stored = localStorage.getItem(`service_status_${requestId}`) as ExtendedServiceStatus | null;
+    
+    // Clear storage if status has progressed beyond stored value
+    if (stored && currentStatus === 'completed' && ['awaiting_client_confirmation', 'payment_confirmed'].includes(stored)) {
+      localStorage.removeItem(`service_status_${requestId}`);
+      return currentStatus;
+    }
+    
+    return stored || optimisticStatus || currentStatus;
+  };
+
+  const displayStatus = getEffectiveStatus();
 
   // Professional Actions
   if (userRole === 'professional') {
