@@ -246,12 +246,15 @@ export default function Chat() {
     setSending(true);
 
     try {
-      const messageData = {
+      const messageData: any = {
         message: messageText || "",
         sender_id: user.id,
         request_id: requestId,
-        receiver_id: '', // Will be filled by trigger
       };
+      
+      if (imageUrl) {
+        messageData.image_url = imageUrl;
+      }
 
       const { data, error } = await supabase
         .from("chat_messages")
