@@ -467,14 +467,6 @@ export function EnhancedServiceActions({
         </div>
       )}
 
-      {/* Review Professional */}
-      {currentStatus === 'completed' && (
-        <Button size="lg" className="w-full gap-2 bg-yellow-600 hover:bg-yellow-700">
-          <Star className="w-5 h-5" />
-          Avaliar Profissional
-        </Button>
-      )}
-
       {/* Professional Contact Info */}
       {professionalInfo && ['accepted', 'on_way', 'arrived', 'in_progress', 'awaiting_client_confirmation', 'completed'].includes(currentStatus) && (
         <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">

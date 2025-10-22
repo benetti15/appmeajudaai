@@ -28,6 +28,7 @@ import { UrgencyBadge } from "@/components/service-system/UrgencyBadge";
 import { ServiceAttachments } from "@/components/service-system/ServiceAttachments";
 import { EnhancedServiceActions } from "@/components/service-system/EnhancedServiceActions";
 import { ProfessionalStatusCard } from "@/components/service-system/ProfessionalStatusCard";
+import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 
 interface ServiceRequest {
   id: string;
@@ -383,6 +384,17 @@ export default function ServiceRequestDetails() {
                 clientName={request.client_profile?.full_name}
                 serviceAmount={request.budget_estimate || undefined}
                 loading={!!optimisticStatus}
+              />
+            )}
+
+            {/* Review System - Show when service is completed */}
+            {request.status === 'completed' && userRole === 'client' && professional && (
+              <IntegratedReviewSystem
+                professionalId={professional.id}
+                requestId={request.id}
+                canReview={true}
+                showFilters={false}
+                mandatoryReview={false}
               />
             )}
           </div>

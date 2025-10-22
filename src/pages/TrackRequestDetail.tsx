@@ -13,6 +13,7 @@ import { ptBR } from "date-fns/locale";
 import { ServiceWorkflow } from "@/components/ServiceWorkflow";
 import { SupportChat } from "@/components/SupportChat";
 import { ClientProgressTracker } from "@/components/ClientProgressTracker";
+import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 
 interface ServiceRequest {
   id: string;
@@ -579,6 +580,17 @@ const TrackRequestDetail = () => {
               )}
             </CardContent>
             </Card>
+          )}
+
+          {/* Review System - Show when service is completed */}
+          {request.status === 'completed' && userRole === 'client' && acceptedQuote && (
+            <IntegratedReviewSystem
+              professionalId={acceptedQuote.professional_id}
+              requestId={request.id}
+              canReview={true}
+              showFilters={false}
+              mandatoryReview={false}
+            />
           )}
         </div>
       </main>
