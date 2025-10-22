@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,17 +58,42 @@ export function EnhancedServiceActions({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [arrivalEstimate, setArrivalEstimate] = useState<number | null>(null);
-  
-  // Initialize with stored status if available
-  const getInitialStatus = (): ExtendedServiceStatus | null => {
-    const stored = localStorage.getItem(`service_status_${requestId}`);
-    if (stored && stored !== currentStatus) {
-      return stored as ExtendedServiceStatus;
+  const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(null);
+
+  // Sync localStorage with optimisticStatus on mount and when currentStatus changes
+  useEffect(() => {
+    const stored = localStorage.getItem(`service_status_${requestId}`) as ExtendedServiceStatus | null;
+    
+    // If we have a stored intermediate status and currentStatus is still at the mapped DB value
+    if (stored) {
+      // Map to check if stored status is still valid
+      const statusProgression: Record<ExtendedServiceStatus, ExtendedServiceStatus[]> = {
+        'on_way': ['on_way', 'arrived', 'in_progress', 'awaiting_client_confirmation', 'payment_confirmed', 'completed'],
+        'arrived': ['arrived', 'in_progress', 'awaiting_client_confirmation', 'payment_confirmed', 'completed'],
+        'in_progress': ['in_progress', 'awaiting_client_confirmation', 'payment_confirmed', 'completed'],
+        'awaiting_client_confirmation': ['awaiting_client_confirmation', 'payment_confirmed', 'completed'],
+        'payment_confirmed': ['payment_confirmed', 'completed'],
+        'completed': ['completed'],
+        'pending': [],
+        'quoted': [],
+        'accepted': [],
+        'cancelled': [],
+        'disputed': []
+      };
+      
+      // Check if current status has progressed beyond stored
+      const validNextStatuses = statusProgression[stored] || [];
+      const shouldKeepStored = validNextStatuses.includes(currentStatus) && stored !== currentStatus;
+      
+      if (shouldKeepStored) {
+        setOptimisticStatus(stored);
+      } else if (stored !== currentStatus && !['pending', 'quoted', 'accepted', 'cancelled', 'disputed'].includes(stored)) {
+        // Clear invalid stored status
+        localStorage.removeItem(`service_status_${requestId}`);
+        setOptimisticStatus(null);
+      }
     }
-    return null;
-  };
-  
-  const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(getInitialStatus());
+  }, [requestId, currentStatus]);
 
   const updateServiceStatus = async (newStatus: ExtendedServiceStatus, additionalData?: any) => {
     console.log("🔄 Iniciando atualização de status:", { newStatus, requestId, userRole, userId: user?.id });
@@ -230,20 +255,7 @@ export function EnhancedServiceActions({
     }
   };
 
-  // Get effective status (prioritizing stored > optimistic > current)
-  const getEffectiveStatus = (): ExtendedServiceStatus => {
-    const stored = localStorage.getItem(`service_status_${requestId}`) as ExtendedServiceStatus | null;
-    
-    // Clear storage if status has progressed beyond stored value
-    if (stored && currentStatus === 'completed' && ['awaiting_client_confirmation', 'payment_confirmed'].includes(stored)) {
-      localStorage.removeItem(`service_status_${requestId}`);
-      return currentStatus;
-    }
-    
-    return stored || optimisticStatus || currentStatus;
-  };
-
-  const displayStatus = getEffectiveStatus();
+  const displayStatus: ExtendedServiceStatus = optimisticStatus || currentStatus;
 
   // Professional Actions
   if (userRole === 'professional') {
