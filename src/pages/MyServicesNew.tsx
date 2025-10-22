@@ -18,7 +18,8 @@ import {
   CheckCircle,
   Briefcase,
   Search,
-  DollarSign
+  DollarSign,
+  Eye
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -445,6 +446,15 @@ const MyServicesNew = () => {
             )}
             
             <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 sm:ml-auto">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/service-request/${service.id}`)}
+                className="gap-2 w-full sm:w-auto"
+              >
+                <Eye className="w-4 h-4" />
+                Acompanhar
+              </Button>
               {getActionButton(service)}
             </div>
           </div>
