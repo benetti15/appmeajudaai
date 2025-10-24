@@ -252,14 +252,6 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
       color: 'from-primary to-accent',
       isGradient: true,
       onClick: () => navigate(userType === 'client' ? '/categories' : '/available-requests')
-    },
-    {
-      title: '🚀 Novo Fluxo Demo',
-      description: 'Demonstração interativa',
-      icon: Sparkles,
-      color: 'from-violet-500 to-purple-600',
-      onClick: () => navigate('/fluxo-demo'),
-      isNew: true
     }
   ], [userType, unreadCount, unreadQuotes, navigate]);
 
@@ -277,11 +269,6 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
           {action.hasNotification && action.notificationCount > 0 && (
             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-semibold shadow-lg">
               {action.notificationCount}
-            </div>
-          )}
-          {action.isNew && (
-            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs rounded-full px-2 py-1 font-semibold shadow-lg animate-pulse">
-              NOVO
             </div>
           )}
           <div className="text-center space-y-4">
