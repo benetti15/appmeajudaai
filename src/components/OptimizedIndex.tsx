@@ -239,13 +239,6 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
       notificationCount: userType === 'client' ? unreadQuotes : 0
     },
     {
-      title: 'Acompanhar Progresso',
-      description: userType === 'client' ? 'Ver andamento dos pedidos' : 'Gerenciar serviços',
-      icon: Clock,
-      color: 'from-orange-500 to-orange-600',
-      onClick: () => navigate(userType === 'client' ? '/track-requests' : '/my-services-new')
-    },
-    {
       title: userType === 'client' ? 'Nova Solicitação' : 'Oportunidades',
       description: userType === 'client' ? 'Solicitar serviço' : 'Ver disponíveis',
       icon: Plus,
