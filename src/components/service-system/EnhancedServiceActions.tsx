@@ -60,40 +60,28 @@ export function EnhancedServiceActions({
   const [arrivalEstimate, setArrivalEstimate] = useState<number | null>(null);
   const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(null);
 
-  // Sync localStorage with optimisticStatus on mount and when currentStatus changes
+  // Fetch extended_status from database on mount
   useEffect(() => {
-    const stored = localStorage.getItem(`service_status_${requestId}`) as ExtendedServiceStatus | null;
-    
-    // If we have a stored intermediate status and currentStatus is still at the mapped DB value
-    if (stored) {
-      // Map to check if stored status is still valid
-      const statusProgression: Record<ExtendedServiceStatus, ExtendedServiceStatus[]> = {
-        'on_way': ['on_way', 'arrived', 'in_progress', 'awaiting_client_confirmation', 'payment_confirmed', 'completed'],
-        'arrived': ['arrived', 'in_progress', 'awaiting_client_confirmation', 'payment_confirmed', 'completed'],
-        'in_progress': ['in_progress', 'awaiting_client_confirmation', 'payment_confirmed', 'completed'],
-        'awaiting_client_confirmation': ['awaiting_client_confirmation', 'payment_confirmed', 'completed'],
-        'payment_confirmed': ['payment_confirmed', 'completed'],
-        'completed': ['completed'],
-        'pending': [],
-        'quoted': [],
-        'accepted': [],
-        'cancelled': [],
-        'disputed': []
-      };
+    fetchExtendedStatus();
+  }, [requestId]);
+
+  const fetchExtendedStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("service_requests")
+        .select("extended_status")
+        .eq("id", requestId)
+        .single();
+
+      if (error) throw error;
       
-      // Check if current status has progressed beyond stored
-      const validNextStatuses = statusProgression[stored] || [];
-      const shouldKeepStored = validNextStatuses.includes(currentStatus) && stored !== currentStatus;
-      
-      if (shouldKeepStored) {
-        setOptimisticStatus(stored);
-      } else if (stored !== currentStatus && !['pending', 'quoted', 'accepted', 'cancelled', 'disputed'].includes(stored)) {
-        // Clear invalid stored status
-        localStorage.removeItem(`service_status_${requestId}`);
-        setOptimisticStatus(null);
+      if (data?.extended_status) {
+        setOptimisticStatus(data.extended_status as ExtendedServiceStatus);
       }
+    } catch (error) {
+      console.error("Erro ao buscar status estendido:", error);
     }
-  }, [requestId, currentStatus]);
+  };
 
   const updateServiceStatus = async (newStatus: ExtendedServiceStatus, additionalData?: any) => {
     console.log("🔄 Iniciando atualização de status:", { newStatus, requestId, userRole, userId: user?.id });
@@ -122,9 +110,6 @@ export function EnhancedServiceActions({
         console.log("✅ Verificação de permissão aprovada:", quoteCheck);
       }
 
-      // Store extended status in localStorage for persistence
-      localStorage.setItem(`service_status_${requestId}`, newStatus);
-
       // Map extended status to database status
       const mapStatusForDatabase = (status: ExtendedServiceStatus): ServiceStatus => {
         switch (status) {
@@ -142,6 +127,7 @@ export function EnhancedServiceActions({
       const dbStatus = mapStatusForDatabase(newStatus);
       const updateData = { 
         status: dbStatus,
+        extended_status: newStatus, // Store extended status in database
         updated_at: new Date().toISOString(),
         ...additionalData 
       };
@@ -169,6 +155,15 @@ export function EnhancedServiceActions({
 
       console.log("✅ Status atualizado com sucesso:", data[0]);
 
+      // Insert status history
+      await supabase
+        .from("service_status_history")
+        .insert({
+          request_id: requestId,
+          status: newStatus,
+          changed_by: user?.id
+        });
+
       // Send notifications
       await sendStatusNotification(newStatus);
 
@@ -192,9 +187,6 @@ export function EnhancedServiceActions({
       // Revert optimistic update
       setOptimisticStatus(null);
       onOptimisticStatusChange?.(null);
-      
-      // Clear localStorage on error
-      localStorage.removeItem(`service_status_${requestId}`);
     } finally {
       setLoading(false);
     }

@@ -278,33 +278,48 @@ export type Database = {
       reviews: {
         Row: {
           comment: string | null
+          communication: number | null
           created_at: string | null
           id: string
           images_urls: string[] | null
+          price_value: number | null
           professional_id: string
+          punctuality: number | null
           rating: number
           request_id: string | null
           reviewer_id: string
+          service_quality: number | null
+          would_recommend: boolean | null
         }
         Insert: {
           comment?: string | null
+          communication?: number | null
           created_at?: string | null
           id?: string
           images_urls?: string[] | null
+          price_value?: number | null
           professional_id: string
+          punctuality?: number | null
           rating: number
           request_id?: string | null
           reviewer_id: string
+          service_quality?: number | null
+          would_recommend?: boolean | null
         }
         Update: {
           comment?: string | null
+          communication?: number | null
           created_at?: string | null
           id?: string
           images_urls?: string[] | null
+          price_value?: number | null
           professional_id?: string
+          punctuality?: number | null
           rating?: number
           request_id?: string | null
           reviewer_id?: string
+          service_quality?: number | null
+          would_recommend?: boolean | null
         }
         Relationships: [
           {
@@ -368,6 +383,7 @@ export type Database = {
           client_id: string
           created_at: string | null
           description: string
+          extended_status: string | null
           id: string
           images_urls: string[] | null
           preferred_date: string | null
@@ -387,6 +403,7 @@ export type Database = {
           client_id: string
           created_at?: string | null
           description: string
+          extended_status?: string | null
           id?: string
           images_urls?: string[] | null
           preferred_date?: string | null
@@ -406,6 +423,7 @@ export type Database = {
           client_id?: string
           created_at?: string | null
           description?: string
+          extended_status?: string | null
           id?: string
           images_urls?: string[] | null
           preferred_date?: string | null
@@ -435,6 +453,41 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_status_history: {
+        Row: {
+          changed_by: string
+          created_at: string
+          id: string
+          notes: string | null
+          request_id: string
+          status: string
+        }
+        Insert: {
+          changed_by: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          request_id: string
+          status: string
+        }
+        Update: {
+          changed_by?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          request_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_status_history_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
             referencedColumns: ["id"]
           },
         ]

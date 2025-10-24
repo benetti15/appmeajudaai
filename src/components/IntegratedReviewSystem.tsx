@@ -20,6 +20,7 @@ import {
 import { PhotoUpload } from "@/components/ui/photo-upload";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ExtendedReview {
   id: string;
@@ -89,69 +90,100 @@ export function IntegratedReviewSystem({
   });
   const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
 
-  // Mock data para demonstração
+  // Fetch real reviews from database
   useEffect(() => {
-    // Simular dados de avaliações
-    const mockReviews: ExtendedReview[] = [
-      {
-        id: '1',
-        rating: 5,
-        comment: 'Excelente profissional! Muito pontual, educado e fez um trabalho impecável. Recomendo para todos!',
-        created_at: '2024-01-20T10:00:00Z',
-        images_urls: ['/placeholder.svg'],
-        service_quality: 5,
-        punctuality: 5,
-        communication: 5,
-        price_value: 4,
-        would_recommend: true,
-        reviewer: {
-          full_name: 'Maria Silva',
-          avatar_url: '/placeholder.svg',
-          verification_status: 'verified'
-        },
-        service_info: {
-          category: 'Elétrica Residencial',
-          completion_date: '2024-01-18T18:00:00Z'
-        }
-      },
-      {
-        id: '2',
-        rating: 4,
-        comment: 'Bom atendimento, chegou no horário e resolveu o problema rapidamente.',
-        created_at: '2024-01-15T14:30:00Z',
-        images_urls: null,
-        service_quality: 4,
-        punctuality: 5,
-        communication: 4,
-        price_value: 4,
-        would_recommend: true,
-        reviewer: {
-          full_name: 'João Santos',
-          verification_status: 'pending'
-        },
-        service_info: {
-          category: 'Encanamento',
-          completion_date: '2024-01-14T16:00:00Z'
-        }
-      }
-    ];
-
-    const mockStats: ReviewStats = {
-      total_reviews: 47,
-      average_rating: 4.8,
-      rating_distribution: { 5: 32, 4: 10, 3: 3, 2: 1, 1: 1 },
-      recommendation_rate: 96,
-      response_rate: 89,
-      categories_breakdown: {
-        'Elétrica Residencial': 25,
-        'Encanamento': 15,
-        'Automação': 7
-      }
-    };
-
-    setReviews(mockReviews);
-    setStats(mockStats);
+    fetchReviews();
+    fetchStats();
   }, [professionalId]);
+
+  const fetchReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select(`
+          id,
+          rating,
+          comment,
+          created_at,
+          images_urls,
+          service_quality,
+          punctuality,
+          communication,
+          price_value,
+          would_recommend,
+          reviewer:profiles!reviews_reviewer_id_fkey(full_name, avatar_url),
+          service_request:service_requests!reviews_request_id_fkey(
+            category:service_categories!service_requests_category_id_fkey(name)
+          )
+        `)
+        .eq("professional_id", professionalId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedReviews: ExtendedReview[] = (data || []).map(review => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        created_at: review.created_at,
+        images_urls: review.images_urls,
+        service_quality: review.service_quality || review.rating,
+        punctuality: review.punctuality || review.rating,
+        communication: review.communication || review.rating,
+        price_value: review.price_value || review.rating,
+        would_recommend: review.would_recommend ?? true,
+        reviewer: {
+          full_name: review.reviewer?.full_name || 'Usuário',
+          avatar_url: review.reviewer?.avatar_url,
+          verification_status: 'none'
+        },
+        service_info: {
+          category: review.service_request?.category?.name || 'Serviço',
+          completion_date: review.created_at
+        }
+      }));
+
+      setReviews(formattedReviews);
+    } catch (error) {
+      console.error("Erro ao buscar avaliações:", error);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("rating, would_recommend")
+        .eq("professional_id", professionalId);
+
+      if (error) throw error;
+
+      const reviews = data || [];
+      const totalReviews = reviews.length;
+      const avgRating = totalReviews > 0 
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews 
+        : 0;
+
+      const distribution: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      reviews.forEach(r => distribution[r.rating]++);
+
+      const recommendCount = reviews.filter(r => r.would_recommend).length;
+      const recommendationRate = totalReviews > 0 ? (recommendCount / totalReviews) * 100 : 0;
+
+      const mockStats: ReviewStats = {
+        total_reviews: totalReviews,
+        average_rating: avgRating,
+        rating_distribution: distribution,
+        recommendation_rate: Math.round(recommendationRate),
+        response_rate: 89,
+        categories_breakdown: {}
+      };
+
+      setStats(mockStats);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas:", error);
+    }
+  };
 
   const StarRating = ({ 
     value, 
@@ -186,12 +218,27 @@ export function IntegratedReviewSystem({
   };
 
   const submitReview = async () => {
-    if (!user || rating === 0) return;
+    if (!user || rating === 0 || wouldRecommend === null) return;
 
     setLoading(true);
     try {
-      // Simular envio
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase
+        .from("reviews")
+        .insert({
+          reviewer_id: user.id,
+          professional_id: professionalId,
+          request_id: requestId,
+          rating,
+          comment: comment.trim() || null,
+          images_urls: images.length > 0 ? images : null,
+          service_quality: detailedRatings.service_quality,
+          punctuality: detailedRatings.punctuality,
+          communication: detailedRatings.communication,
+          price_value: detailedRatings.price_value,
+          would_recommend: wouldRecommend
+        });
+
+      if (error) throw error;
 
       toast({
         title: "Avaliação enviada!",
@@ -200,7 +247,10 @@ export function IntegratedReviewSystem({
 
       setDialogOpen(false);
       resetForm();
+      fetchReviews();
+      fetchStats();
     } catch (error) {
+      console.error("Erro ao enviar avaliação:", error);
       toast({
         title: "Erro ao enviar avaliação",
         description: "Tente novamente mais tarde.",

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { NotificationSystem } from "@/components/NotificationSystem";
+import { NotificationBadge } from "@/components/NotificationBadge";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useQuoteNotifications } from "@/hooks/useQuoteNotifications";
 import { MobileBottomNav, MobileCard, ResponsiveGrid } from "@/components/MobileOptimizations";
@@ -57,7 +57,7 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
           <span className="text-sm font-medium text-gray-600 hidden sm:block">
             Olá, {profile.full_name}
           </span>
-          <NotificationSystem unreadQuotes={unreadQuotes} />
+          <NotificationBadge />
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
