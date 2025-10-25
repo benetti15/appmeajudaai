@@ -47,6 +47,13 @@ export type Database = {
             foreignKeyName: "chat_messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
+            referencedRelation: "professionals_with_location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -55,6 +62,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
           {
@@ -126,6 +140,13 @@ export type Database = {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "professionals_with_location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -174,6 +195,13 @@ export type Database = {
             foreignKeyName: "professional_specialties_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "professionals_with_location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_specialties_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -189,7 +217,10 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           phone: string | null
+          service_radius_km: number | null
           state: string | null
           updated_at: string | null
           user_type: string | null
@@ -203,7 +234,10 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          latitude?: number | null
+          longitude?: number | null
           phone?: string | null
+          service_radius_km?: number | null
           state?: string | null
           updated_at?: string | null
           user_type?: string | null
@@ -217,7 +251,10 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           phone?: string | null
+          service_radius_km?: number | null
           state?: string | null
           updated_at?: string | null
           user_type?: string | null
@@ -259,6 +296,13 @@ export type Database = {
           request_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "quotes_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_with_location"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quotes_professional_id_fkey"
             columns: ["professional_id"]
@@ -326,6 +370,13 @@ export type Database = {
             foreignKeyName: "reviews_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "professionals_with_location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -334,6 +385,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
           {
@@ -386,6 +444,8 @@ export type Database = {
           extended_status: string | null
           id: string
           images_urls: string[] | null
+          latitude: number | null
+          longitude: number | null
           preferred_date: string | null
           state: string
           status: string
@@ -406,6 +466,8 @@ export type Database = {
           extended_status?: string | null
           id?: string
           images_urls?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
           preferred_date?: string | null
           state?: string
           status?: string
@@ -426,6 +488,8 @@ export type Database = {
           extended_status?: string | null
           id?: string
           images_urls?: string[] | null
+          latitude?: number | null
+          longitude?: number | null
           preferred_date?: string | null
           state?: string
           status?: string
@@ -446,6 +510,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
           {
@@ -494,9 +565,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      professionals_with_location: {
+        Row: {
+          avatar_url: string | null
+          average_rating: number | null
+          city: string | null
+          full_name: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          service_radius_km: number | null
+          state: string | null
+          total_reviews: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          average_rating?: never
+          city?: string | null
+          full_name?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          service_radius_km?: number | null
+          state?: string | null
+          total_reviews?: never
+        }
+        Update: {
+          avatar_url?: string | null
+          average_rating?: never
+          city?: string | null
+          full_name?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          service_radius_km?: number | null
+          state?: string | null
+          total_reviews?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
+      find_nearby_professionals: {
+        Args: {
+          category_filter?: string
+          max_distance_km?: number
+          user_lat: number
+          user_lon: number
+        }
+        Returns: {
+          avatar_url: string
+          average_rating: number
+          city: string
+          distance_km: number
+          full_name: string
+          id: string
+          latitude: number
+          longitude: number
+          state: string
+          total_reviews: number
+        }[]
+      }
       has_quote_for_request: {
         Args: { _request_id: string; _user_id: string }
         Returns: boolean
