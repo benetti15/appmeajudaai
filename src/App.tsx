@@ -32,6 +32,7 @@ const ServiceRequestDetails = lazy(() => import("./pages/ServiceRequestDetails")
 const ClientDashboard = lazy(() => import("./pages/ClientDashboard"));
 const ProfessionalDashboard = lazy(() => import("./pages/ProfessionalDashboard"));
 const Favorites = lazy(() => import("./pages/Favorites"));
+const NearbyProfessionals = lazy(() => import("./pages/NearbyProfessionals"));
 const MapView = lazy(() => import("./pages/MapView"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -101,6 +102,7 @@ function AppInitializer() {
             <Route path="/professional-dashboard" element={<ProfessionalDashboard />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/map" element={<MapView />} />
+            <Route path="/nearby-professionals" element={<NearbyProfessionals />} />
             <Route path="/verification" element={<VerificationPage />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/professional-profile/:professionalId" element={<ProfessionalPublicProfile />} />

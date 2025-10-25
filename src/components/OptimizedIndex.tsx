@@ -30,7 +30,8 @@ import {
   Award,
   Clock,
   BarChart3,
-  Sparkles
+  Sparkles,
+  MapPin
 } from "lucide-react";
 
 // Memoized components for better performance
@@ -238,6 +239,13 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
       hasNotification: userType === 'client' && unreadQuotes > 0,
       notificationCount: userType === 'client' ? unreadQuotes : 0
     },
+    ...(userType === 'client' ? [{
+      title: 'Profissionais Próximos',
+      description: 'Ver no mapa',
+      icon: MapPin,
+      color: 'from-orange-500 to-red-500',
+      onClick: () => navigate('/nearby-professionals')
+    }] : []),
     {
       title: userType === 'client' ? 'Nova Solicitação' : 'Oportunidades',
       description: userType === 'client' ? 'Solicitar serviço' : 'Ver disponíveis',
