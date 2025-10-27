@@ -193,7 +193,7 @@ const MyRequestsNew = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                   Minhas Solicitações
                 </h1>
                 <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
