@@ -152,6 +152,50 @@ export type Database = {
           },
         ]
       }
+      professional_live_location: {
+        Row: {
+          created_at: string
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          professional_id: string
+          request_id: string
+          speed: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          professional_id: string
+          request_id: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          professional_id?: string
+          request_id?: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_live_location_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_specialties: {
         Row: {
           category_id: string

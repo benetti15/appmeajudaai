@@ -21,6 +21,7 @@ import { ArrivalEstimator } from "./ArrivalEstimator";
 import { MutualConfirmation } from "./MutualConfirmation";
 
 import { TemporarySupportSystem } from "../TemporarySupportSystem";
+import { ProfessionalTracking } from "./ProfessionalTracking";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -254,6 +255,15 @@ export function EnhancedServiceActions({
     return (
       <div className="space-y-6">
         
+        {/* GPS Tracking - Show when professional is on the way or at service location */}
+        {professionalInfo && (displayStatus === 'on_way' || displayStatus === 'arrived' || displayStatus === 'in_progress') && (
+          <ProfessionalTracking
+            requestId={requestId}
+            professionalId={professionalInfo.id}
+            isActive={true}
+          />
+        )}
+
         {/* 1. INICIAR ATENDIMENTO - Status: A Caminho */}
         {currentStatus === 'accepted' && !optimisticStatus && (
           <Button 

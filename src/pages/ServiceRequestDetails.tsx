@@ -29,6 +29,7 @@ import { ServiceAttachments } from "@/components/service-system/ServiceAttachmen
 import { EnhancedServiceActions } from "@/components/service-system/EnhancedServiceActions";
 import { ProfessionalStatusCard } from "@/components/service-system/ProfessionalStatusCard";
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
+import { LiveTrackingMap } from "@/components/service-system/LiveTrackingMap";
 
 interface ServiceRequest {
   id: string;
@@ -37,10 +38,13 @@ interface ServiceRequest {
   address: string;
   city: string;
   state: string;
+  latitude?: number;
+  longitude?: number;
   budget_estimate?: number;
   urgency_level: number;
   preferred_date?: string;
   status: ServiceStatus;
+  extended_status?: ExtendedServiceStatus;
   created_at: string;
   client_id: string;
   category_id?: string;
@@ -362,6 +366,20 @@ export default function ServiceRequestDetails() {
                 }
               ]}
             />
+
+            {/* GPS Tracking Map - Show for client when professional is on the way */}
+            {userRole === 'client' && 
+             request.latitude && 
+             request.longitude && 
+             (optimisticStatus === 'on_way' || optimisticStatus === 'arrived' || 
+              request.extended_status === 'on_way' || request.extended_status === 'arrived') && (
+              <LiveTrackingMap
+                requestId={request.id}
+                clientLatitude={Number(request.latitude)}
+                clientLongitude={Number(request.longitude)}
+                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
+              />
+            )}
 
             {/* Enhanced Unified Timeline - Replaces both timelines */}
             <EnhancedServiceTimeline
