@@ -285,11 +285,22 @@ const MyRequestsNew = () => {
                             )}
                           </div>
                         </div>
-                        <div className="text-right text-xs text-muted-foreground">
-                          <p>Criado em</p>
-                          <p className="text-lg font-bold text-foreground">
-                            {format(new Date(request.created_at), "dd/MM", { locale: ptBR })}
-                          </p>
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="text-right text-xs text-muted-foreground">
+                            <p>Criado em</p>
+                            <p className="text-lg font-bold text-foreground">
+                              {format(new Date(request.created_at), "dd/MM", { locale: ptBR })}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/service-request/${request.id}`)}
+                            className="gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Detalhes
+                          </Button>
                         </div>
                       </div>
                     </CardHeader>
