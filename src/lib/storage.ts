@@ -2,35 +2,19 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Initialize storage buckets if they don't exist
+ * Note: Buckets 'service-images' and 'uploads' are pre-configured
  */
 export async function initializeStorageBuckets() {
-  try {
-    // Check if public-uploads bucket exists
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const publicUploadsBucket = buckets?.find(bucket => bucket.name === 'public-uploads');
-    
-    if (!publicUploadsBucket) {
-      // Create the bucket if it doesn't exist
-      const { error } = await supabase.storage.createBucket('public-uploads', {
-        public: true,
-        allowedMimeTypes: ['image/*', 'application/pdf']
-      });
-      
-      if (error) {
-        console.error('Error creating bucket:', error);
-      } else {
-        console.log('Public uploads bucket created successfully');
-      }
-    }
-  } catch (error) {
-    console.error('Error initializing storage buckets:', error);
-  }
+  // Buckets já existem e estão configurados no Supabase
+  // Não é necessário criar buckets em runtime
+  console.log('Storage buckets initialized: service-images, uploads');
 }
 
 /**
  * Upload file with automatic fallback
+ * Default bucket changed to 'uploads' (pre-configured)
  */
-export async function uploadFile(file: File, path: string, bucket: string = 'public-uploads'): Promise<{
+export async function uploadFile(file: File, path: string, bucket: string = 'uploads'): Promise<{
   success: boolean;
   url?: string;
   error?: string;

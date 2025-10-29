@@ -339,10 +339,6 @@ export const OptimizedIndex = () => {
   const unreadCount = useUnreadMessages();
   const unreadQuotes = useQuoteNotifications();
 
-  // Debug log para verificar o tipo de usuário
-  console.log('Profile data:', profile);
-  console.log('User type:', profile?.user_type);
-
   const bottomNavItems = useMemo(() => {
     const userType = profile?.user_type || 'client';
     
@@ -371,25 +367,8 @@ export const OptimizedIndex = () => {
     }
   }, [user, loading, navigate]);
 
-  // Se o profile não tem user_type definido, assumir como cliente por padrão
-  React.useEffect(() => {
-    if (profile && !profile.user_type) {
-      console.warn('User type not defined, defaulting to client');
-      // Podemos atualizar o perfil no banco para definir como cliente
-      const updateUserType = async () => {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ user_type: 'client' })
-          .eq('id', user?.id);
-        
-        if (!error) {
-          // Refresh profile to get updated data
-          window.location.reload();
-        }
-      };
-      updateUserType();
-    }
-  }, [profile, user]);
+  // Verificar se profile foi carregado corretamente
+  // Não é mais necessário atualizar manualmente, o trigger handle_new_user garante o valor
 
   if (loading) {
     return (

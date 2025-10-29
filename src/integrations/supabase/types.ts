@@ -267,7 +267,7 @@ export type Database = {
           service_radius_km: number | null
           state: string | null
           updated_at: string | null
-          user_type: string | null
+          user_type: string
         }
         Insert: {
           address?: string | null
@@ -284,7 +284,7 @@ export type Database = {
           service_radius_km?: number | null
           state?: string | null
           updated_at?: string | null
-          user_type?: string | null
+          user_type?: string
         }
         Update: {
           address?: string | null
@@ -301,7 +301,7 @@ export type Database = {
           service_radius_km?: number | null
           state?: string | null
           updated_at?: string | null
-          user_type?: string | null
+          user_type?: string
         }
         Relationships: []
       }
