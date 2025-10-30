@@ -93,6 +93,36 @@ export function LiveTrackingMap({
     };
   }, [clientLatitude, clientLongitude, clientAddress, toast]);
 
+  // Load initial location data
+  useEffect(() => {
+    const loadInitialLocation = async () => {
+      const { data, error } = await supabase
+        .from('professional_live_location')
+        .select('*')
+        .eq('request_id', requestId)
+        .single();
+
+      if (data && !error) {
+        setProfessionalLocation(data as ProfessionalLocation);
+        
+        // Calculate initial distance and ETA
+        const dist = calculateDistance(
+          data.latitude,
+          data.longitude,
+          clientLatitude,
+          clientLongitude
+        );
+        setDistance(dist);
+        
+        const avgSpeed = data.speed ? data.speed * 3.6 : 30;
+        const estimatedTime = (dist / avgSpeed) * 60;
+        setETA(Math.round(estimatedTime));
+      }
+    };
+
+    loadInitialLocation();
+  }, [requestId, clientLatitude, clientLongitude]);
+
   // Subscribe to real-time location updates
   useEffect(() => {
     const channel = supabase
@@ -137,7 +167,7 @@ export function LiveTrackingMap({
     };
   }, [requestId, clientLatitude, clientLongitude]);
 
-  // Update professional marker on map
+  // Update professional marker and route line on map
   useEffect(() => {
     if (!map.current || !professionalLocation) return;
 
@@ -145,6 +175,12 @@ export function LiveTrackingMap({
 
     if (professionalMarker.current) {
       professionalMarker.current.setLngLat([longitude, latitude]);
+      
+      // Update rotation if heading is available
+      if (heading) {
+        const markerEl = professionalMarker.current.getElement();
+        markerEl.style.transform = `rotate(${heading}deg)`;
+      }
     } else {
       const profEl = document.createElement('div');
       profEl.className = 'professional-marker';
@@ -152,6 +188,7 @@ export function LiveTrackingMap({
       profEl.style.height = '40px';
       profEl.style.backgroundImage = 'url(https://api.iconify.design/mdi:account-arrow-right.svg?color=%2310b981)';
       profEl.style.backgroundSize = 'cover';
+      profEl.style.transition = 'transform 0.3s ease';
       
       if (heading) {
         profEl.style.transform = `rotate(${heading}deg)`;
@@ -161,6 +198,43 @@ export function LiveTrackingMap({
         .setLngLat([longitude, latitude])
         .setPopup(new mapboxgl.Popup().setHTML('<strong>Profissional</strong><br/>A caminho'))
         .addTo(map.current);
+    }
+
+    // Add or update route line
+    const routeGeoJSON = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: [
+          [longitude, latitude],
+          [clientLongitude, clientLatitude]
+        ]
+      }
+    };
+
+    if (map.current.getSource('route')) {
+      (map.current.getSource('route') as mapboxgl.GeoJSONSource).setData(routeGeoJSON as any);
+    } else {
+      map.current.addSource('route', {
+        type: 'geojson',
+        data: routeGeoJSON as any
+      });
+
+      map.current.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#10b981',
+          'line-width': 4,
+          'line-opacity': 0.8
+        }
+      });
     }
 
     // Fit map to show both markers

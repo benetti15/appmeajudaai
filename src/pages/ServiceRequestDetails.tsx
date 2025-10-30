@@ -31,6 +31,70 @@ import { ProfessionalStatusCard } from "@/components/service-system/Professional
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 import { LiveTrackingMap } from "@/components/service-system/LiveTrackingMap";
 
+// Wrapper component to check if tracking is active
+function LiveTrackingMapWrapper({ 
+  requestId, 
+  clientLatitude, 
+  clientLongitude, 
+  clientAddress 
+}: {
+  requestId: string;
+  clientLatitude: number;
+  clientLongitude: number;
+  clientAddress: string;
+}) {
+  const [hasActiveTracking, setHasActiveTracking] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkTracking = async () => {
+      const { data } = await supabase
+        .from('professional_live_location')
+        .select('id')
+        .eq('request_id', requestId)
+        .single();
+      
+      setHasActiveTracking(!!data);
+      setIsLoading(false);
+    };
+
+    checkTracking();
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel(`tracking-check-${requestId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'professional_live_location',
+          filter: `request_id=eq.${requestId}`,
+        },
+        (payload) => {
+          setHasActiveTracking(payload.eventType !== 'DELETE');
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [requestId]);
+
+  if (isLoading) return null;
+  if (!hasActiveTracking) return null;
+
+  return (
+    <LiveTrackingMap
+      requestId={requestId}
+      clientLatitude={clientLatitude}
+      clientLongitude={clientLongitude}
+      clientAddress={clientAddress}
+    />
+  );
+}
+
 interface ServiceRequest {
   id: string;
   title: string;
@@ -367,13 +431,11 @@ export default function ServiceRequestDetails() {
               ]}
             />
 
-            {/* GPS Tracking Map - Show for client when professional is on the way */}
+            {/* GPS Tracking Map - Show for client when professional is sharing location */}
             {userRole === 'client' && 
              request.latitude && 
-             request.longitude && 
-             (optimisticStatus === 'on_way' || optimisticStatus === 'arrived' || 
-              request.extended_status === 'on_way' || request.extended_status === 'arrived') && (
-              <LiveTrackingMap
+             request.longitude && (
+              <LiveTrackingMapWrapper
                 requestId={request.id}
                 clientLatitude={Number(request.latitude)}
                 clientLongitude={Number(request.longitude)}

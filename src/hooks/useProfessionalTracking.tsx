@@ -61,7 +61,7 @@ export function useProfessionalTracking(requestId: string, professionalId: strin
     }
   }, [requestId, professionalId]);
 
-  const startTracking = useCallback(() => {
+  const startTracking = useCallback(async () => {
     if (!navigator.geolocation) {
       toast({
         title: "Erro",
@@ -108,11 +108,32 @@ export function useProfessionalTracking(requestId: string, professionalId: strin
       }
     );
 
+    // Notify client that tracking has started
+    try {
+      const { data: request } = await supabase
+        .from('service_requests')
+        .select('client_id')
+        .eq('id', requestId)
+        .single();
+
+      if (request) {
+        await supabase.from('notifications').insert({
+          user_id: request.client_id,
+          type: 'tracking_started',
+          title: 'Profissional a caminho',
+          message: 'O profissional iniciou o compartilhamento de localização. Você pode acompanhar em tempo real!',
+          related_id: requestId,
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+
     toast({
       title: "Rastreamento iniciado",
       description: "Sua localização está sendo compartilhada com o cliente",
     });
-  }, [updateLocation, toast]);
+  }, [updateLocation, toast, requestId]);
 
   const stopTracking = useCallback(async () => {
     if (watchIdRef.current !== null) {
