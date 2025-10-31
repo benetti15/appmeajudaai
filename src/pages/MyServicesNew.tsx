@@ -256,44 +256,15 @@ const MyServicesNew = () => {
         
       case 'accepted':
         return (
-          <>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/service-request/${service.id}`)}
-              className="gap-2 w-full sm:w-auto"
-            >
-              <span className="sm:hidden">Detalhes</span>
-              <span className="hidden sm:inline">Ver Detalhes</span>
-            </Button>
-            <Button 
-              size="sm"
-              disabled={updatingStatus === service.id}
-              onClick={async () => {
-                // Update status to in_progress first
-                await updateServiceStatus(service.id, 'in_progress');
-                // Navigate only after successful update
-                if (!updatingStatus) {
-                  navigate(`/service-request/${service.id}`);
-                }
-              }}
-              className="gap-2 w-full sm:w-auto"
-            >
-              {updatingStatus === service.id ? (
-                <>
-                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-background border-t-current" />
-                  <span className="sm:hidden">Iniciando...</span>
-                  <span className="hidden sm:inline">Iniciando...</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  <span className="sm:hidden">Iniciar</span>
-                  <span className="hidden sm:inline">Iniciar Atendimento</span>
-                </>
-              )}
-            </Button>
-          </>
+          <Button 
+            size="sm"
+            onClick={() => navigate(`/service-request/${service.id}`)}
+            className="gap-2 w-full sm:w-auto"
+          >
+            <Eye className="w-4 h-4" />
+            <span className="sm:hidden">Ver</span>
+            <span className="hidden sm:inline">Ver Detalhes do Serviço</span>
+          </Button>
         );
         
       case 'in_progress':

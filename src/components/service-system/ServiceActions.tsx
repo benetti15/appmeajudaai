@@ -59,7 +59,13 @@ export function ServiceActions({
   const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(null);
 
   const updateServiceStatus = async (newStatus: ServiceStatus, notes?: string) => {
-    console.log("🔄 Iniciando atualização de status:", { newStatus, requestId, userRole });
+    console.log("🔄 Status Transition:", {
+      from: currentStatus,
+      to: newStatus,
+      userRole,
+      requestId,
+      timestamp: new Date().toISOString()
+    });
     setLoading(true);
     
     // Optimistic update - muda o status imediatamente na UI

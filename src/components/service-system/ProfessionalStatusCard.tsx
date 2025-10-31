@@ -62,13 +62,13 @@ export function ProfessionalStatusCard({
       case 'pending':
         return "Envie seu orçamento para ser selecionado";
       case 'quoted':
-        return "Aguardando cliente aceitar orçamento";
+        return "Aguardando cliente aceitar seu orçamento";
       case 'accepted':
-        return "Inicie o atendimento ao cliente";
+        return "Vá até o cliente e inicie o serviço no local";
       case 'in_progress':
-        return "Finalize o serviço e marque como concluído";
+        return "Execute o serviço e marque como concluído ao finalizar";
       case 'completed':
-        return "Serviço finalizado com sucesso";
+        return "Serviço finalizado com sucesso! Aguarde a avaliação do cliente";
       default:
         return "";
     }
