@@ -10,16 +10,16 @@ import {
   Calendar,
   Target
 } from "lucide-react";
-import { ServiceStatus, SERVICE_STATUS_CONFIG } from "@/components/service-system/ServiceStatusFlow";
+import { ServiceStatus, ExtendedServiceStatus, SERVICE_STATUS_CONFIG } from "@/components/service-system/ServiceStatusFlow";
 
 interface ProfessionalStatusCardProps {
-  currentStatus: ServiceStatus;
+  currentStatus: ExtendedServiceStatus;
   requestTitle: string;
   clientName?: string;
   budgetEstimate?: number;
   preferredDate?: string;
   urgencyLevel: number;
-  optimisticStatus?: ServiceStatus | null;
+  optimisticStatus?: ExtendedServiceStatus | null;
 }
 
 export function ProfessionalStatusCard({ 
@@ -31,21 +31,10 @@ export function ProfessionalStatusCard({
   urgencyLevel,
   optimisticStatus = null
 }: ProfessionalStatusCardProps) {
-  const getStatusIcon = (status: ServiceStatus) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="w-5 h-5 text-yellow-600" />;
-      case 'quoted':
-        return <DollarSign className="w-5 h-5 text-blue-600" />;
-      case 'accepted':
-        return <PlayCircle className="w-5 h-5 text-green-600" />;
-      case 'in_progress':
-        return <Briefcase className="w-5 h-5 text-purple-600" />;
-      case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-700" />;
-      default:
-        return <AlertTriangle className="w-5 h-5 text-gray-500" />;
-    }
+  const getStatusIcon = (status: ExtendedServiceStatus) => {
+    const statusConfig = SERVICE_STATUS_CONFIG[status];
+    const Icon = statusConfig.icon;
+    return <Icon className={`w-5 h-5 ${statusConfig.color}`} />;
   };
 
   const getUrgencyInfo = (level: number) => {
@@ -57,16 +46,24 @@ export function ProfessionalStatusCard({
     return urgencyConfig[level as keyof typeof urgencyConfig] || urgencyConfig[1];
   };
 
-  const getNextAction = (status: ServiceStatus) => {
+  const getNextAction = (status: ExtendedServiceStatus) => {
     switch (status) {
       case 'pending':
         return "Envie seu orçamento para ser selecionado";
       case 'quoted':
         return "Aguardando cliente aceitar seu orçamento";
       case 'accepted':
-        return "Vá até o cliente e inicie o serviço no local";
+        return "Clique em 'Iniciar Atendimento' para começar";
+      case 'on_way':
+        return "Você está a caminho. Clique em 'Chegou ao Local' quando chegar";
+      case 'arrived':
+        return "Você chegou! Clique em 'Iniciar Execução do Serviço'";
       case 'in_progress':
         return "Execute o serviço e marque como concluído ao finalizar";
+      case 'awaiting_client_confirmation':
+        return "Aguardando confirmação do cliente";
+      case 'payment_confirmed':
+        return "Pagamento confirmado! Serviço será finalizado";
       case 'completed':
         return "Serviço finalizado com sucesso! Aguarde a avaliação do cliente";
       default:

@@ -379,13 +379,13 @@ export default function ServiceRequestDetails() {
             {/* Status e Próxima Ação (apenas para profissional) */}
             {userRole === 'professional' && (
               <ProfessionalStatusCard
-                currentStatus={request.status}
+                currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
                 requestTitle={request.title}
                 clientName={request.client_profile?.full_name}
                 budgetEstimate={request.budget_estimate}
                 preferredDate={request.preferred_date}
                 urgencyLevel={request.urgency_level}
-                optimisticStatus={optimisticStatus as ServiceStatus}
+                optimisticStatus={optimisticStatus}
               />
             )}
 
@@ -447,17 +447,17 @@ export default function ServiceRequestDetails() {
             {/* Enhanced Unified Timeline - Replaces both timelines */}
             <EnhancedServiceTimeline
               requestId={request.id}
-              currentStatus={optimisticStatus || request.status as ExtendedServiceStatus}
+              currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
               userRole={userRole}
             />
 
             {/* Mutual Confirmation */}
             {(['in_progress', 'awaiting_client_confirmation', 'payment_confirmed'].includes(
-              optimisticStatus || request.status
+              optimisticStatus || request.extended_status || request.status
             )) && (
               <MutualConfirmation
                 userRole={userRole}
-                currentStatus={optimisticStatus || request.status}
+                currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
                 onProfessionalComplete={handleProfessionalComplete}
                 onClientConfirm={handleClientConfirm}
                 onPaymentConfirm={handlePaymentConfirm}
@@ -484,7 +484,7 @@ export default function ServiceRequestDetails() {
           <div className="space-y-4 sm:space-y-6">
             <EnhancedServiceActions
               requestId={request.id}
-              currentStatus={request.status as any}
+              currentStatus={(request.extended_status || request.status) as ExtendedServiceStatus}
               userRole={userRole}
               professionalInfo={professional || undefined}
               clientInfo={userRole === 'professional' && request.client_profile ? {
