@@ -19,8 +19,6 @@ import {
 import { ServiceStatus, ExtendedServiceStatus, SERVICE_STATUS_CONFIG, getNextValidStatus } from "./ServiceStatusFlow";
 import { ArrivalEstimator } from "./ArrivalEstimator";
 import { MutualConfirmation } from "./MutualConfirmation";
-
-import { TemporarySupportSystem } from "../TemporarySupportSystem";
 import { ProfessionalTracking } from "./ProfessionalTracking";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -554,13 +552,6 @@ export function EnhancedServiceActions({
           </p>
         </div>
       )}
-
-
-      {/* Support Action */}
-      <TemporarySupportSystem 
-        requestId={requestId}
-        currentStatus={displayStatus}
-      />
     </div>
   );
 }

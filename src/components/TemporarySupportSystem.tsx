@@ -116,11 +116,10 @@ export function TemporarySupportSystem({ requestId, requestTitle, currentStatus 
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="gap-2 text-orange-600 border-orange-200 hover:bg-orange-50"
-          size="sm"
+          className="w-full gap-2 h-9 text-sm"
         >
-          <AlertTriangle className="w-4 h-4" />
-          Contactar Suporte
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">Contactar Suporte</span>
         </Button>
       </DialogTrigger>
       

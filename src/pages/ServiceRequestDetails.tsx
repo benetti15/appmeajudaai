@@ -30,6 +30,7 @@ import { EnhancedServiceActions } from "@/components/service-system/EnhancedServ
 import { ProfessionalStatusCard } from "@/components/service-system/ProfessionalStatusCard";
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 import { LiveTrackingMap } from "@/components/service-system/LiveTrackingMap";
+import { TemporarySupportSystem } from "@/components/TemporarySupportSystem";
 
 // Wrapper component to check if tracking is active
 function LiveTrackingMapWrapper({ 
@@ -514,6 +515,12 @@ export default function ServiceRequestDetails() {
                     }
                   />
                 )}
+                
+                <TemporarySupportSystem 
+                  requestId={request.id}
+                  requestTitle={request.title}
+                  currentStatus={request.status}
+                />
               </CardContent>
             </Card>
 
