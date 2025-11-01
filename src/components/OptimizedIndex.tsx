@@ -272,21 +272,6 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
               {action.notificationCount}
             </div>
           )}
-          <div className="text-center space-y-4">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-lg ${
-              action.isGradient ? 'bg-white/20' : `bg-gradient-to-r ${action.color}`
-            }`}>
-              <action.icon className={`w-8 h-8 ${action.isGradient ? 'text-white' : 'text-white'}`} />
-            </div>
-            <div>
-              <h4 className={`font-semibold ${action.isGradient ? 'text-white' : 'text-gray-800'}`}>
-                {action.title}
-              </h4>
-              <p className={`text-sm ${action.isGradient ? 'text-white/80' : 'text-gray-600'}`}>
-                {action.description}
-              </p>
-            </div>
-          </div>
         </MobileCard>
       ))}
     </ResponsiveGrid>
