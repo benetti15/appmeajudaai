@@ -43,7 +43,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const AdvancedSearch = lazy(() => import("./pages/AdvancedSearch"));
 
 // New optimized pages
-const TemplateSystem = lazy(() => import("@/components/TemplateSystem").then(module => ({ default: module.TemplateSystem })));
 const LoyaltySystem = lazy(() => import("@/components/LoyaltySystem").then(module => ({ default: module.LoyaltyDashboard })));
 
 // Register service worker for better performance
@@ -109,7 +108,6 @@ function AppInitializer() {
             <Route path="/search" element={<AdvancedSearch />} />
             
             {/* New optimized features */}
-            <Route path="/templates" element={<TemplateSystem />} />
             <Route path="/loyalty" element={<LoyaltySystem />} />
             <Route path="/fluxo-demo" element={<FluxoDemo />} />
             <Route path="/admin" element={<Admin />} />

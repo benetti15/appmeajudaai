@@ -130,13 +130,6 @@ const QuickMenuItems = memo(({ profile, unreadCount, unreadQuotes }: any) => {
         {userType === 'client' ? 'Nova Solicitação' : 'Oportunidades'}
       </DropdownMenuItem>
 
-      {/* New optimized features - conditional by user type */}
-      {userType === 'professional' && (
-        <DropdownMenuItem onClick={() => navigate('/templates')} className="cursor-pointer">
-          <Settings className="w-4 h-4 mr-2" />
-          Templates
-        </DropdownMenuItem>
-      )}
 
       {/* Admin */}
       <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
