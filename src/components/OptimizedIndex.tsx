@@ -137,13 +137,6 @@ const QuickMenuItems = memo(({ profile, unreadCount, unreadQuotes }: any) => {
           Templates
         </DropdownMenuItem>
       )}
-      
-      {userType === 'client' && (
-        <DropdownMenuItem onClick={() => navigate('/loyalty')} className="cursor-pointer">
-          <Award className="w-4 h-4 mr-2" />
-          Fidelidade
-        </DropdownMenuItem>
-      )}
 
       {/* Admin */}
       <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
