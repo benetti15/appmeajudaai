@@ -103,19 +103,74 @@ export function NotificationBadge() {
     fetchNotifications();
   };
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification) => {
     markAsRead(notification.id);
     
-    // Navigate based on notification type
+    // Redirecionar baseado no tipo de notificação
+    let redirectPath = '';
+    
     if (notification.related_id) {
-      if (notification.type.includes("quote")) {
-        navigate(`/my-requests`);
-      } else if (notification.type.includes("service") || notification.type.includes("professional")) {
-        navigate(`/track-requests`);
+      switch (notification.type) {
+        case 'quote_received':
+        case 'new_quote':
+          // Para orçamentos recebidos, buscar o request_id do orçamento
+          try {
+            const { data: quote } = await supabase
+              .from('quotes')
+              .select('request_id')
+              .eq('id', notification.related_id)
+              .single();
+            
+            if (quote?.request_id) {
+              redirectPath = `/service-request/${quote.request_id}`;
+            }
+          } catch (error) {
+            console.error('Error fetching quote:', error);
+            redirectPath = '/my-requests';
+          }
+          break;
+          
+        case 'quote_accepted':
+        case 'accepted':
+        case 'in_progress':
+        case 'completed':
+        case 'on_way':
+        case 'arrived':
+        case 'status_update':
+        case 'status_change':
+          // Para atualizações de status, o related_id é o request_id
+          redirectPath = `/service-request/${notification.related_id}`;
+          break;
+          
+        case 'chat_message':
+        case 'message':
+        case 'new_message':
+          // Para mensagens, ir para o chat
+          redirectPath = `/chat/${notification.related_id}`;
+          break;
+          
+        case 'new_request':
+          // Para novas solicitações (profissionais)
+          redirectPath = `/service-request/${notification.related_id}`;
+          break;
+          
+        default:
+          // Para outros tipos, tentar navegar para a página do serviço
+          if (notification.type.includes('quote')) {
+            redirectPath = '/my-requests';
+          } else if (notification.type.includes('service') || notification.type.includes('request')) {
+            redirectPath = `/service-request/${notification.related_id}`;
+          } else {
+            redirectPath = '/client-dashboard';
+          }
       }
     }
     
     setOpen(false);
+    
+    if (redirectPath) {
+      navigate(redirectPath);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
