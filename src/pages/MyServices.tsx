@@ -352,18 +352,104 @@ const MyServices = () => {
           </div>
 
           {filteredServices.length === 0 ? (
-            <Card className="text-center py-12">
-              <CardContent>
-                <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">Nenhum serviço aceito</h3>
-                <p className="text-muted-foreground mb-6">
-                  Você ainda não aceitou nenhum orçamento. Veja as oportunidades disponíveis.
-                </p>
-                <Button onClick={() => navigate("/available-requests")}>
-                  Ver Oportunidades
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card className="text-center py-12 border-2 border-dashed">
+                <CardContent>
+                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">
+                    {activeTab === 'all' ? 'Nenhum serviço aceito' : 
+                     activeTab === 'pending' ? 'Nenhum serviço pendente' :
+                     activeTab === 'active' ? 'Nenhum serviço ativo' :
+                     'Nenhum serviço finalizado'}
+                  </h3>
+                  <p className="text-muted-foreground mb-8">
+                    {activeTab === 'all' 
+                      ? 'Você ainda não aceitou nenhum orçamento.' 
+                      : 'Não há serviços nesta categoria no momento.'}
+                  </p>
+
+                  {activeTab === 'all' && (
+                    <>
+                      {/* Como receber mais serviços */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8 text-left">
+                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                          <CardHeader>
+                            <CardTitle className="text-blue-800 flex items-center gap-2 text-base">
+                              <Sparkles className="w-5 h-5" />
+                              Como receber mais serviços
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-2 text-sm text-blue-700">
+                            <div className="flex items-start gap-2">
+                              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>Adicione mais especialidades ao seu perfil</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>Expanda sua área de cobertura</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>Melhore sua avaliação média</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                          <CardHeader>
+                            <CardTitle className="text-green-800 flex items-center gap-2 text-base">
+                              <AlertCircle className="w-5 h-5" />
+                              Dicas para destacar seu perfil
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-2 text-sm text-green-700">
+                            <div className="flex items-start gap-2">
+                              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>Complete sua verificação de identidade</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>Adicione certificações profissionais</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span>Responda rápido às mensagens dos clientes</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Button 
+                          onClick={() => navigate("/available-requests")}
+                          size="lg"
+                          className="gap-2"
+                        >
+                          <Eye className="w-5 h-5" />
+                          Ver Oportunidades Disponíveis
+                        </Button>
+                        <Button 
+                          onClick={() => navigate("/professional-profile")}
+                          variant="outline"
+                          size="lg"
+                          className="gap-2"
+                        >
+                          <User className="w-5 h-5" />
+                          Melhorar Meu Perfil
+                        </Button>
+                      </div>
+                    </>
+                  )}
+
+                  {activeTab !== 'all' && (
+                    <Button onClick={() => setActiveTab('all')} variant="outline">
+                      Ver Todos os Serviços
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           ) : (
             <div className="space-y-6">
               {/* Stats Cards */}

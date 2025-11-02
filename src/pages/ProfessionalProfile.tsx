@@ -13,6 +13,7 @@ import { ArrowLeft, MapPin, Award, User } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { EnhancedVerificationSystem } from "@/components/EnhancedVerificationSystem";
 import { ProfessionalSpecialties } from "@/components/ProfessionalSpecialties";
+import { ProgressStepper } from "@/components/ui/progress-stepper";
 
 interface ServiceCategory {
   id: string;
@@ -136,23 +137,35 @@ export default function ProfessionalProfile() {
           </div>
         </div>
 
+        {/* Progress Indicator */}
+        <ProgressStepper
+          steps={[
+            { id: 'profile', label: 'Perfil', completed: !!(profileData.full_name && profileData.phone && profilePhoto) },
+            { id: 'verification', label: 'Verificação', completed: false },
+            { id: 'specialties', label: 'Especialidades', completed: false },
+            { id: 'areas', label: 'Áreas', completed: !!(profileData.city && profileData.state) }
+          ]}
+          currentStep={0}
+          className="mb-6"
+        />
+
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              Perfil
+              <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
             <TabsTrigger value="verification" className="flex items-center gap-2">
               <Award className="h-4 w-4" />
-              Verificação
+              <span className="hidden sm:inline">Verificação</span>
             </TabsTrigger>
             <TabsTrigger value="specialties" className="flex items-center gap-2">
               <Award className="h-4 w-4" />
-              Especialidades
+              <span className="hidden sm:inline">Especialidades</span>
             </TabsTrigger>
             <TabsTrigger value="areas" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Áreas de Atendimento
+              <span className="hidden sm:inline">Áreas</span>
             </TabsTrigger>
           </TabsList>
 

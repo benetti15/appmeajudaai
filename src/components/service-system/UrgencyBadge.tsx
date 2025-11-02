@@ -83,11 +83,14 @@ export function UrgencyBadge({
         border-2 
         font-semibold 
         gap-1.5 
+        break-words
         ${className}
       `}
     >
-      {showIcon && <Icon className={`${iconSizes[size]} ${config.iconColor}`} />}
-      {level === 3 ? "URGENTE!" : config.label}
+      {showIcon && <Icon className={`${iconSizes[size]} ${config.iconColor} flex-shrink-0`} />}
+      <span className="truncate sm:whitespace-normal">
+        {level === 3 ? "URGENTE!" : config.label}
+      </span>
     </Badge>
   );
 }

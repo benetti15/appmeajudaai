@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, User, MapPin, Phone, Mail } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
+import { ProgressStepper } from "@/components/ui/progress-stepper";
 
 export default function ClientProfile() {
   const { user, profile, refreshProfile } = useAuth();
@@ -126,6 +127,17 @@ export default function ClientProfile() {
             </p>
           </div>
         </div>
+
+        {/* Progress Indicator */}
+        <ProgressStepper
+          steps={[
+            { id: 'photo', label: 'Foto', completed: !!profilePhoto },
+            { id: 'personal', label: 'Dados Pessoais', completed: !!(formData.full_name && formData.phone) },
+            { id: 'address', label: 'Endereço', completed: !!(formData.address && formData.city && formData.state) }
+          ]}
+          currentStep={profilePhoto ? (formData.full_name && formData.phone ? 2 : 1) : 0}
+          className="mb-6"
+        />
 
         <div className="space-y-6">
           {/* Foto do Perfil */}

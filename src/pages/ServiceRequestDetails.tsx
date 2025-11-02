@@ -469,14 +469,49 @@ export default function ServiceRequestDetails() {
             )}
 
             {/* Review System - Show when service is completed */}
-            {request.status === 'completed' && userRole === 'client' && professional && (
-              <IntegratedReviewSystem
-                professionalId={professional.id}
-                requestId={request.id}
-                canReview={true}
-                showFilters={false}
-                mandatoryReview={false}
-              />
+            {request.status === 'completed' && (
+              <>
+                {userRole === 'client' && professional && (
+                  <IntegratedReviewSystem
+                    professionalId={professional.id}
+                    requestId={request.id}
+                    canReview={true}
+                    showFilters={false}
+                    mandatoryReview={false}
+                  />
+                )}
+                
+                {userRole === 'professional' && (
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-primary" />
+                        Avaliação do Serviço
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="bg-muted/50 rounded-lg p-4 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            Aguardando avaliação do cliente
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            O cliente poderá avaliar o serviço e deixar um comentário sobre sua experiência
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2"
+                          onClick={() => navigate(`/professional-profile/${user?.id}`)}
+                        >
+                          <Star className="w-4 h-4" />
+                          Ver Minhas Avaliações
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </div>
 

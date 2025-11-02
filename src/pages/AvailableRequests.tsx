@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ProfileCompletionChecklist } from "@/components/ui/profile-completion-checklist";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Calendar, MapPin, DollarSign, Clock, Send, Briefcase, Image, User, Home } from "lucide-react";
@@ -31,6 +32,12 @@ const AvailableRequests = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileCompletion, setProfileCompletion] = useState({
+    hasPhoto: false,
+    hasSpecialties: false,
+    hasLocation: false,
+    isVerified: false
+  });
 
   useEffect(() => {
     if (!user || profile?.user_type !== 'professional') {
@@ -38,7 +45,35 @@ const AvailableRequests = () => {
       return;
     }
     fetchAvailableRequests();
+    checkProfileCompletion();
   }, [user, profile, navigate]);
+
+  const checkProfileCompletion = async () => {
+    if (!user) return;
+
+    // Check photo
+    const hasPhoto = !!profile?.avatar_url;
+
+    // Check specialties
+    const { data: specialties } = await supabase
+      .from("professional_specialties")
+      .select("id")
+      .eq("professional_id", user.id);
+    const hasSpecialties = (specialties?.length || 0) >= 2;
+
+    // Check location
+    const hasLocation = !!(profile?.city && profile?.state);
+
+    // Check verification (simplified)
+    const isVerified = false; // You can implement proper verification check
+
+    setProfileCompletion({
+      hasPhoto,
+      hasSpecialties,
+      hasLocation,
+      isVerified
+    });
+  };
 
   const fetchAvailableRequests = async () => {
     try {
@@ -151,54 +186,93 @@ const AvailableRequests = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {requests.length === 0 ? (
-            <Card className="text-center py-12">
-              <CardContent>
-                <Briefcase className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">Nenhum pedido disponível</h3>
-                <p className="text-muted-foreground mb-6">
-                  Não encontramos pedidos disponíveis para você no momento. Isso pode acontecer por alguns motivos:
-                </p>
-                <div className="text-left max-w-lg mx-auto space-y-3 mb-8">
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                    <h4 className="font-medium text-amber-800 mb-2">📋 Principais motivos:</h4>
-                    <ul className="text-sm text-amber-700 space-y-1">
-                      <li>• Você ainda não cadastrou suas especialidades profissionais</li>
-                      <li>• Não há novos pedidos nas suas áreas de especialidade</li>
-                      <li>• Sua localização ou área de atendimento pode estar limitada</li>
-                      <li>• Os pedidos disponíveis já foram atendidos por outros profissionais</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-medium text-blue-800 mb-2">💡 O que você pode fazer:</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• Configure suas especialidades e áreas de atendimento</li>
-                      <li>• Atualize sua localização</li>
-                      <li>• Verifique se seu perfil está completo</li>
-                      <li>• Volte mais tarde para ver novos pedidos</li>
-                    </ul>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-3 justify-center">
-                  <Button 
-                    onClick={() => navigate("/professional-profile")}
-                    className="gap-2"
-                  >
-                    <User className="w-4 h-4" />
-                    Configurar Perfil
-                  </Button>
-                  <Button 
-                    onClick={() => window.location.reload()}
-                    variant="outline"
-                    className="gap-2"
-                  >
-                    <Clock className="w-4 h-4" />
-                    Atualizar Página
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card className="text-center py-12 border-2 border-dashed">
+                <CardContent>
+                  <Briefcase className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">Nenhum pedido disponível</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Não encontramos pedidos disponíveis para você no momento.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Profile Completion Checklist */}
+              <ProfileCompletionChecklist
+                items={[
+                  {
+                    id: 'photo',
+                    label: 'Adicionar foto de perfil',
+                    completed: profileCompletion.hasPhoto,
+                    action: () => navigate('/professional-profile'),
+                    actionLabel: 'Adicionar'
+                  },
+                  {
+                    id: 'specialties',
+                    label: 'Cadastrar especialidades (mínimo 2)',
+                    completed: profileCompletion.hasSpecialties,
+                    action: () => navigate('/professional-profile?tab=specialties'),
+                    actionLabel: 'Configurar'
+                  },
+                  {
+                    id: 'location',
+                    label: 'Configurar cidade e estado',
+                    completed: profileCompletion.hasLocation,
+                    action: () => navigate('/professional-profile'),
+                    actionLabel: 'Configurar'
+                  },
+                  {
+                    id: 'verification',
+                    label: 'Enviar documento de verificação',
+                    completed: profileCompletion.isVerified,
+                    action: () => navigate('/professional-profile?tab=verification'),
+                    actionLabel: 'Verificar'
+                  }
+                ]}
+                title="Complete seu Perfil para Mais Oportunidades"
+                description="Profissionais com perfil completo recebem até 5x mais pedidos"
+              />
+
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardContent className="p-6">
+                  <h4 className="font-medium text-blue-800 mb-3">💡 Dicas para Aumentar suas Chances</h4>
+                  <ul className="text-sm text-blue-700 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-600">•</span>
+                      <span>Adicione mais especialidades para aparecer em mais buscas</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-600">•</span>
+                      <span>Expanda sua área de cobertura para alcançar mais clientes</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-600">•</span>
+                      <span>Responda rapidamente aos pedidos para melhorar sua reputação</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <div className="flex gap-3 justify-center">
+                <Button 
+                  onClick={() => navigate("/professional-profile")}
+                  size="lg"
+                  className="gap-2"
+                >
+                  <User className="w-5 h-5" />
+                  Configurar Perfil Agora
+                </Button>
+                <Button 
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  size="lg"
+                  className="gap-2"
+                >
+                  <Clock className="w-4 h-4" />
+                  Atualizar
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-6">
               <div className="text-center mb-8">
