@@ -8,19 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Star, 
-  Camera, 
   Shield, 
   Award, 
   ThumbsUp, 
   MessageCircle,
   Filter,
-  TrendingUp,
   Users
 } from "lucide-react";
 import { PhotoUpload } from "@/components/ui/photo-upload";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ReviewPreview } from "@/components/reviews/ReviewPreview";
+import { ReviewConfirmation } from "@/components/reviews/ReviewConfirmation";
 
 interface ExtendedReview {
   id: string;
@@ -89,6 +89,12 @@ export function IntegratedReviewSystem({
     price_value: 0
   });
   const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{
+    rating?: string;
+    comment?: string;
+  }>({});
 
   // Fetch real reviews from database
   useEffect(() => {
@@ -217,6 +223,38 @@ export function IntegratedReviewSystem({
     );
   };
 
+  const validateReview = () => {
+    const errors: typeof validationErrors = {};
+    
+    if (rating < 3) {
+      errors.rating = "Por favor, avalie com pelo menos 3 estrelas ou entre em contato com o suporte";
+    }
+    
+    if (!comment || comment.trim().length < 20) {
+      errors.comment = "O comentário deve ter pelo menos 20 caracteres para avaliações";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handlePreSubmit = () => {
+    if (!validateReview()) {
+      toast({
+        title: "Validação falhou",
+        description: "Por favor, corrija os erros antes de continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowPreview(true);
+  };
+
+  const handleConfirm = () => {
+    setShowPreview(false);
+    setShowConfirmation(true);
+  };
+
   const submitReview = async () => {
     if (!user || rating === 0 || wouldRecommend === null) return;
 
@@ -231,24 +269,27 @@ export function IntegratedReviewSystem({
           rating,
           comment: comment.trim() || null,
           images_urls: images.length > 0 ? images : null,
-          service_quality: detailedRatings.service_quality,
-          punctuality: detailedRatings.punctuality,
-          communication: detailedRatings.communication,
-          price_value: detailedRatings.price_value,
+          service_quality: detailedRatings.service_quality || rating,
+          punctuality: detailedRatings.punctuality || rating,
+          communication: detailedRatings.communication || rating,
+          price_value: detailedRatings.price_value || rating,
           would_recommend: wouldRecommend
         });
 
       if (error) throw error;
 
       toast({
-        title: "Avaliação enviada!",
-        description: "Sua avaliação foi registrada com sucesso.",
+        title: "✅ Avaliação publicada com sucesso!",
+        description: "Obrigado pelo seu feedback.",
       });
 
-      setDialogOpen(false);
-      resetForm();
-      fetchReviews();
-      fetchStats();
+      setTimeout(() => {
+        setDialogOpen(false);
+        setShowConfirmation(false);
+        resetForm();
+        fetchReviews();
+        fetchStats();
+      }, 1500);
     } catch (error) {
       console.error("Erro ao enviar avaliação:", error);
       toast({
@@ -272,6 +313,9 @@ export function IntegratedReviewSystem({
       price_value: 0
     });
     setWouldRecommend(null);
+    setShowPreview(false);
+    setShowConfirmation(false);
+    setValidationErrors({});
   };
 
   const getVerificationBadge = (status: ExtendedReview['reviewer']['verification_status']) => {
@@ -459,12 +503,21 @@ export function IntegratedReviewSystem({
                   </div>
                   
                   {/* Comment */}
-                  <Textarea
-                    placeholder="Conte sobre sua experiência (opcional)"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    rows={4}
-                  />
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Conte sobre sua experiência (mínimo 20 caracteres)"
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      rows={4}
+                      className={validationErrors.comment ? "border-red-500" : ""}
+                    />
+                    {validationErrors.comment && (
+                      <p className="text-xs text-red-600">{validationErrors.comment}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {comment.trim().length}/20 caracteres mínimos
+                    </p>
+                  </div>
 
                   {/* Photos */}
                   <div>
@@ -474,28 +527,63 @@ export function IntegratedReviewSystem({
                     />
                   </div>
 
+                  {/* Preview */}
+                  {showPreview && (
+                    <ReviewPreview
+                      rating={rating}
+                      serviceQuality={detailedRatings.service_quality || rating}
+                      communication={detailedRatings.communication || rating}
+                      punctuality={detailedRatings.punctuality || rating}
+                      priceValue={detailedRatings.price_value || rating}
+                      comment={comment}
+                      images={images}
+                    />
+                  )}
+
                   {/* Actions */}
                   <div className="flex gap-2">
-                    {!mandatoryReview && (
+                    {!mandatoryReview && !showPreview && (
                       <Button 
                         variant="outline" 
                         className="flex-1"
-                        onClick={() => setDialogOpen(false)}
+                        onClick={() => {
+                          setDialogOpen(false);
+                          resetForm();
+                        }}
                       >
                         Cancelar
                       </Button>
                     )}
+                    {showPreview && (
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => setShowPreview(false)}
+                      >
+                        Editar
+                      </Button>
+                    )}
                     <Button 
-                      className="flex-1"
-                      onClick={submitReview}
+                      className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                      onClick={showPreview ? handleConfirm : handlePreSubmit}
                       disabled={loading || rating === 0 || wouldRecommend === null}
                     >
-                      {loading ? "Enviando..." : "Enviar Avaliação"}
+                      {loading ? "Enviando..." : showPreview ? "Confirmar e Publicar" : "Visualizar Preview"}
                     </Button>
                   </div>
                 </div>
               </DialogContent>
             </Dialog>
+            
+            {/* Confirmation Dialog */}
+            <ReviewConfirmation
+              isOpen={showConfirmation}
+              onConfirm={submitReview}
+              onCancel={() => {
+                setShowConfirmation(false);
+                setShowPreview(true);
+              }}
+            />
           </CardContent>
         </Card>
       )}

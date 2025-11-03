@@ -202,6 +202,7 @@ export type Database = {
           certifications: string | null
           created_at: string | null
           description: string | null
+          display_order: number | null
           experience_years: number | null
           hourly_rate: number | null
           id: string
@@ -212,6 +213,7 @@ export type Database = {
           certifications?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           experience_years?: number | null
           hourly_rate?: number | null
           id?: string
@@ -222,6 +224,7 @@ export type Database = {
           certifications?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           experience_years?: number | null
           hourly_rate?: number | null
           id?: string

@@ -1,25 +1,22 @@
-import { useState, useRef } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Shield, 
-  Upload, 
   CheckCircle, 
   XCircle, 
   Clock, 
-  Camera, 
   FileText, 
   Star,
   Award,
-  Verified
+  Verified,
+  Upload
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { VerificationHero } from "@/components/verification/VerificationHero";
+import { DocumentUploadDialog } from "@/components/verification/DocumentUploadDialog";
 
 interface VerificationDocument {
   id: string;
@@ -49,10 +46,7 @@ interface VerificationSystemProps {
 
 export function VerificationSystem({ userId, showUploadForm = true, compact = false }: VerificationSystemProps) {
   const [documents, setDocuments] = useState<VerificationDocument[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [selectedDocType, setSelectedDocType] = useState<string>('identity');
-  const [verificationLevel, setVerificationLevel] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -105,6 +99,15 @@ export function VerificationSystem({ userId, showUploadForm = true, compact = fa
   const allDocuments = [...documents, ...mockDocuments];
   const earnedBadges = verificationBadges.filter(badge => badge.earned_at);
 
+  const verificationProgress = useMemo(() => {
+    const totalDocTypes = 4; // id, address, professional, background
+    const approvedTypes = new Set(
+      allDocuments.filter(d => d.status === 'approved').map(d => d.type)
+    ).size;
+    
+    return Math.round((approvedTypes / totalDocTypes) * 100);
+  }, [allDocuments]);
+
   const getStatusIcon = (status: VerificationDocument['status']) => {
     switch (status) {
       case 'approved':
@@ -132,67 +135,20 @@ export function VerificationSystem({ userId, showUploadForm = true, compact = fa
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      toast({
-        title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 5MB.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      // Simulate upload process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const newDocument: VerificationDocument = {
-        id: Date.now().toString(),
-        type: selectedDocType as any,
-        name: file.name,
-        status: 'pending',
-        uploaded_at: new Date().toISOString(),
-      };
-
-      setDocuments(prev => [...prev, newDocument]);
-
-      toast({
-        title: "Documento enviado",
-        description: "Seu documento foi enviado para análise. O resultado será comunicado em até 24 horas.",
-      });
-
-      // Reset form
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-
-    } catch (error) {
-      toast({
-        title: "Erro no upload",
-        description: "Não foi possível enviar o documento. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-    }
+  const handleUploadSuccess = () => {
+    // Refresh documents after upload
+    toast({
+      title: "Documento enviado!",
+      description: "Seu documento foi enviado para análise.",
+    });
   };
 
-  const calculateVerificationLevel = () => {
-    const approvedDocs = allDocuments.filter(doc => doc.status === 'approved').length;
-    const totalDocs = 1; // identity (obrigatório apenas)
-    return Math.round((approvedDocs / totalDocs) * 100);
+  // Group documents by status
+  const groupedDocuments = {
+    approved: allDocuments.filter(d => d.status === 'approved'),
+    pending: allDocuments.filter(d => d.status === 'pending'),
+    rejected: allDocuments.filter(d => d.status === 'rejected'),
   };
-
-  const documentTypes = [
-    { value: 'identity', label: 'Documento de Identidade (RG, CNH) - Obrigatório' },
-    { value: 'address', label: 'Comprovante de Residência (Opcional)' },
-    { value: 'certification', label: 'Certificados Profissionais (Opcional)' },
-  ];
 
   if (compact) {
     return (
@@ -217,107 +173,58 @@ export function VerificationSystem({ userId, showUploadForm = true, compact = fa
 
   return (
     <div className="space-y-6">
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            Sistema de Verificação
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Nível de Verificação</span>
-              <span className="text-sm text-muted-foreground">{calculateVerificationLevel()}%</span>
-            </div>
-            <Progress value={calculateVerificationLevel()} className="h-2" />
-          </div>
+      {/* Hero Section */}
+      <VerificationHero verificationProgress={verificationProgress} />
 
-          {earnedBadges.length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Badges Conquistadas</Label>
-              <div className="flex flex-wrap gap-2">
-                {earnedBadges.map((badge) => (
-                  <div
-                    key={badge.type}
-                    className="flex items-center gap-2 bg-background border rounded-lg px-3 py-2"
-                  >
-                    <div className={`${badge.color} text-white p-1 rounded-full`}>
-                      {badge.icon}
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{badge.name}</p>
-                      <p className="text-xs text-muted-foreground">{badge.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {showUploadForm && (
+      {/* Badges Earned */}
+      {earnedBadges.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Enviar Documentos
-            </CardTitle>
+            <CardTitle>Badges Conquistadas</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="docType">Tipo de Documento</Label>
-              <select
-                id="docType"
-                value={selectedDocType}
-                onChange={(e) => setSelectedDocType(e.target.value)}
-                className="w-full p-2 border border-border rounded-md bg-background"
-              >
-                {documentTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="file">Arquivo</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  ref={fileInputRef}
-                  id="file"
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  className="flex-1"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              {earnedBadges.map((badge) => (
+                <div
+                  key={badge.type}
+                  className="flex items-center gap-2 bg-background border rounded-lg px-3 py-2"
                 >
-                  <Camera className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Formatos aceitos: JPG, PNG, PDF. Tamanho máximo: 5MB
-              </p>
+                  <div className={`${badge.color} text-white p-1 rounded-full`}>
+                    {badge.icon}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{badge.name}</p>
+                    <p className="text-xs text-muted-foreground">{badge.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            {uploading && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                Enviando documento...
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
 
+      {/* Upload Button */}
+      {showUploadForm && (
+        <div className="text-center">
+          <Button
+            size="lg"
+            onClick={() => setUploadDialogOpen(true)}
+            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+          >
+            <Upload className="w-5 h-5 mr-2" />
+            Enviar Documento para Verificação
+          </Button>
+        </div>
+      )}
+
+      {/* Upload Dialog */}
+      <DocumentUploadDialog
+        isOpen={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+      />
+
+      {/* Documents List - Grouped by Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -332,30 +239,111 @@ export function VerificationSystem({ userId, showUploadForm = true, compact = fa
               <p>Nenhum documento enviado ainda</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {allDocuments.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-3 border border-border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(doc.status)}
-                    <div>
-                      <p className="font-medium text-sm">{doc.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Enviado em {new Date(doc.uploaded_at).toLocaleDateString('pt-BR')}
-                      </p>
-                      {doc.notes && (
-                        <p className="text-xs text-red-600 mt-1">{doc.notes}</p>
-                      )}
-                    </div>
+            <div className="space-y-6">
+              {/* Approved Documents */}
+              {groupedDocuments.approved.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    Aprovados ({groupedDocuments.approved.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {groupedDocuments.approved.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-3 border border-green-200 bg-green-50/50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="font-medium text-sm">{doc.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Aprovado em {doc.reviewed_at ? new Date(doc.reviewed_at).toLocaleDateString('pt-BR') : '-'}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className="bg-green-100 text-green-700 border-green-200">
+                          Aprovado
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <Badge variant="outline" className={getStatusColor(doc.status)}>
-                    {getStatusText(doc.status)}
-                  </Badge>
                 </div>
-              ))}
+              )}
+
+              {/* Pending Documents */}
+              {groupedDocuments.pending.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-yellow-600" />
+                    Pendentes ({groupedDocuments.pending.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {groupedDocuments.pending.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-3 border border-yellow-200 bg-yellow-50/50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Clock className="h-5 w-5 text-yellow-600" />
+                          <div>
+                            <p className="font-medium text-sm">{doc.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Enviado em {new Date(doc.uploaded_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                          Pendente
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Rejected Documents */}
+              {groupedDocuments.rejected.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-red-600" />
+                    Rejeitados ({groupedDocuments.rejected.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {groupedDocuments.rejected.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-3 border border-red-200 bg-red-50/50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <XCircle className="h-5 w-5 text-red-600" />
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{doc.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Rejeitado em {doc.reviewed_at ? new Date(doc.reviewed_at).toLocaleDateString('pt-BR') : '-'}
+                            </p>
+                            {doc.notes && (
+                              <p className="text-xs text-red-600 mt-1">Motivo: {doc.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Badge className="bg-red-100 text-red-700 border-red-200">
+                            Rejeitado
+                          </Badge>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setUploadDialogOpen(true)}
+                          >
+                            Reenviar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

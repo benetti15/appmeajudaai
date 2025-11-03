@@ -65,25 +65,25 @@ export default function ProfessionalPublicProfile() {
       if (profileError) throw profileError;
       setProfile(profileData as any); // Type assertion
 
-      // Buscar categorias de serviço do profissional (simplificado)
-      // Por enquanto, vamos usar dados mock até que a tabela seja criada
-      const mockCategories: ServiceCategory[] = [
-        { id: "1", name: "Encanamento" },
-        { id: "2", name: "Elétrica" },
-        { id: "3", name: "Pintura" }
-      ];
-      setCategories(mockCategories);
+      // Fetch specialties with display_order
+      const { data: specialtiesData, error: specialtiesError } = await supabase
+        .from("professional_specialties")
+        .select(`
+          id,
+          category_id,
+          service_categories!professional_specialties_category_id_fkey(name)
+        `)
+        .eq("professional_id", professionalId)
+        .order("display_order");
 
-      // Buscar avaliações (simulado por agora)
-      // const { data: reviewsData, error: reviewsError } = await supabase
-      //   .from("reviews")
-      //   .select(`
-      //     *,
-      //     client_profile:client_id(full_name, avatar_url)
-      //   `)
-      //   .eq("professional_id", professionalId)
-      //   .order("created_at", { ascending: false })
-      //   .limit(10);
+      if (specialtiesError) throw specialtiesError;
+      
+      const formattedCategories = specialtiesData?.map((item: any) => ({
+        id: item.id,
+        name: item.service_categories?.name || "Serviço"
+      })) || [];
+      
+      setCategories(formattedCategories);
 
       // Dados simulados de avaliações
       const mockReviews: Review[] = [
