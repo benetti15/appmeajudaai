@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Navigation, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProximityAlerts } from "@/hooks/useProximityAlerts";
+import { toast as sonnerToast } from "sonner";
 
 interface LiveTrackingMapProps {
   requestId: string;
@@ -34,7 +36,16 @@ export function LiveTrackingMap({
   const [professionalLocation, setProfessionalLocation] = useState<ProfessionalLocation | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [eta, setETA] = useState<number | null>(null);
+  const [routeData, setRouteData] = useState<any>(null);
   const { toast } = useToast();
+
+  // Setup proximity alerts
+  useProximityAlerts(distance, eta, (message) => {
+    sonnerToast.info(message, {
+      duration: 5000,
+      icon: "📍",
+    });
+  });
 
   // Calculate distance between two points (Haversine formula)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -47,6 +58,31 @@ export function LiveTrackingMap({
       Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
+  };
+
+  // Fetch route from Mapbox Directions API
+  const fetchRoute = async (profLng: number, profLat: number, clientLng: number, clientLat: number) => {
+    const mapboxToken = localStorage.getItem('mapbox_token');
+    if (!mapboxToken) return null;
+
+    try {
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${profLng},${profLat};${clientLng},${clientLat}?geometries=geojson&access_token=${mapboxToken}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes && data.routes[0]) {
+        const route = data.routes[0];
+        return {
+          coordinates: route.geometry.coordinates,
+          duration: Math.round(route.duration / 60), // em minutos
+          distance: (route.distance / 1000).toFixed(1) // em km
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching route:", error);
+    }
+
+    return null;
   };
 
   // Initialize map
@@ -173,6 +209,14 @@ export function LiveTrackingMap({
 
     const { latitude, longitude, heading } = professionalLocation;
 
+    // Fetch route data for better ETA
+    fetchRoute(longitude, latitude, clientLongitude, clientLatitude).then(route => {
+      if (route) {
+        setRouteData(route);
+        setETA(route.duration);
+      }
+    });
+
     if (professionalMarker.current) {
       professionalMarker.current.setLngLat([longitude, latitude]);
       
@@ -200,13 +244,13 @@ export function LiveTrackingMap({
         .addTo(map.current);
     }
 
-    // Add or update route line
+    // Add or update route line with actual route from Mapbox
     const routeGeoJSON = {
       type: 'Feature' as const,
       properties: {},
       geometry: {
         type: 'LineString' as const,
-        coordinates: [
+        coordinates: routeData?.coordinates || [
           [longitude, latitude],
           [clientLongitude, clientLatitude]
         ]
@@ -301,9 +345,17 @@ export function LiveTrackingMap({
           className="w-full h-[400px] rounded-lg border"
         />
         
-        <div className="text-xs text-muted-foreground text-center">
-          <p>🟢 Localização atualizada em tempo real</p>
-          <p>Última atualização: {new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR')}</p>
+        <div className="text-xs text-muted-foreground space-y-1 bg-muted/30 p-3 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span>🟢 Localização em tempo real</span>
+            <span className="font-medium">{new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR')}</span>
+          </div>
+          {routeData && (
+            <div className="flex items-center justify-between text-primary">
+              <span>📍 Rota otimizada calculada</span>
+              <span className="font-medium">{routeData.distance} km</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

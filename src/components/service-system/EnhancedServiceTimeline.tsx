@@ -36,8 +36,7 @@ export function EnhancedServiceTimeline({
   events = [],
   userRole
 }: EnhancedServiceTimelineProps) {
-  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
-
+  // Auto-expand only: current, previous, and next steps
   const statusOrder: ExtendedServiceStatus[] = [
     'pending',
     'quoted', 
@@ -51,6 +50,25 @@ export function EnhancedServiceTimeline({
   ];
 
   const currentIndex = statusOrder.indexOf(currentStatus);
+
+  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(() => {
+    const initialExpanded = new Set<string>();
+    const generatedEvents = generateTimelineEvents();
+    
+    if (currentIndex > 0 && generatedEvents[currentIndex - 1]) {
+      initialExpanded.add(generatedEvents[currentIndex - 1].id);
+    }
+    if (generatedEvents[currentIndex]) {
+      initialExpanded.add(generatedEvents[currentIndex].id);
+    }
+    if (currentIndex < generatedEvents.length - 1 && generatedEvents[currentIndex + 1]) {
+      initialExpanded.add(generatedEvents[currentIndex + 1].id);
+    }
+    
+    return initialExpanded;
+  });
+
+  // Moved statusOrder and currentIndex up to useState initializer
 
   const generateTimelineEvents = (): TimelineEvent[] => {
     const generatedEvents: TimelineEvent[] = [];
@@ -78,6 +96,24 @@ export function EnhancedServiceTimeline({
     });
 
     return generatedEvents;
+  };
+
+  const estimateTimeForStatus = (status: ExtendedServiceStatus): string => {
+    const estimates: Partial<Record<ExtendedServiceStatus, string>> = {
+      'pending': '~2h',
+      'quoted': '~4h',
+      'accepted': 'Imediato',
+      'on_way': '~30min',
+      'arrived': '~5min',
+      'in_progress': '~2h',
+      'awaiting_client_confirmation': '~10min',
+      'payment_confirmed': 'Imediato',
+      'completed': 'Finalizado',
+      'cancelled': 'Cancelado',
+      'disputed': 'Em disputa'
+    };
+    
+    return estimates[status] || 'A definir';
   };
 
   const getStepDescription = (status: ExtendedServiceStatus, isEstimated: boolean, isCompleted: boolean): string => {
@@ -130,13 +166,31 @@ export function EnhancedServiceTimeline({
 
   const timelineEvents = generateTimelineEvents();
 
+  const toggleAllSteps = () => {
+    if (expandedSteps.size === timelineEvents.length) {
+      setExpandedSteps(new Set());
+    } else {
+      setExpandedSteps(new Set(timelineEvents.map(e => e.id)));
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3 sm:pb-6">
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-          <span className="text-sm sm:text-base truncate">Acompanhar Progresso do Serviço</span>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="text-sm sm:text-base truncate">Progresso do Serviço</span>
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleAllSteps}
+            className="text-xs"
+          >
+            {expandedSteps.size === timelineEvents.length ? 'Colapsar' : 'Expandir'} Todas
+          </Button>
+        </div>
       </CardHeader>
       
       <CardContent className="p-3 sm:p-6">
@@ -216,11 +270,18 @@ export function EnhancedServiceTimeline({
                           {event.description}
                         </p>
                         
-                        <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                          <span className="break-words">
-                            {event.isEstimated ? 'Estimativa: ' : ''}
-                            {format(new Date(event.timestamp), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
-                          </span>
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="text-[10px] sm:text-xs text-muted-foreground">
+                            <span className="break-words">
+                              {event.isEstimated ? 'Estimativa: ' : ''}
+                              {format(new Date(event.timestamp), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
+                            </span>
+                          </div>
+                          {event.isEstimated && (
+                            <Badge variant="outline" className="text-[10px] px-1 py-0">
+                              {estimateTimeForStatus(event.status)}
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
