@@ -167,10 +167,14 @@ export default function ServiceRequestDetails() {
           )
         `)
         .eq("id", requestId)
-        .single();
+        .maybeSingle();
 
       if (requestError) throw requestError;
-      if (!requestData) throw new Error("Solicitação não encontrada");
+      if (!requestData) {
+        setError("Solicitação não encontrada. Você pode não ter permissão para acessá-la.");
+        setLoading(false);
+        return;
+      }
 
       setRequest(requestData as any); // Type assertion
 
@@ -188,7 +192,7 @@ export default function ServiceRequestDetails() {
           `)
           .eq("request_id", requestId)
           .eq("is_accepted", true)
-          .single();
+          .maybeSingle();
 
         if (acceptedQuote?.profiles) {
           setProfessional({
