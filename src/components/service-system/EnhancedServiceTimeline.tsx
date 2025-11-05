@@ -51,71 +51,7 @@ export function EnhancedServiceTimeline({
 
   const currentIndex = statusOrder.indexOf(currentStatus);
 
-  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(() => {
-    const initialExpanded = new Set<string>();
-    const generatedEvents = generateTimelineEvents();
-    
-    if (currentIndex > 0 && generatedEvents[currentIndex - 1]) {
-      initialExpanded.add(generatedEvents[currentIndex - 1].id);
-    }
-    if (generatedEvents[currentIndex]) {
-      initialExpanded.add(generatedEvents[currentIndex].id);
-    }
-    if (currentIndex < generatedEvents.length - 1 && generatedEvents[currentIndex + 1]) {
-      initialExpanded.add(generatedEvents[currentIndex + 1].id);
-    }
-    
-    return initialExpanded;
-  });
-
-  // Moved statusOrder and currentIndex up to useState initializer
-
-  const generateTimelineEvents = (): TimelineEvent[] => {
-    const generatedEvents: TimelineEvent[] = [];
-
-    statusOrder.forEach((status, index) => {
-      const config = SERVICE_STATUS_CONFIG[status];
-      const isCompleted = index <= currentIndex;
-      const isCurrent = index === currentIndex;
-      const isEstimated = index > currentIndex;
-      
-      // Use provided event data or generate default
-      const existingEvent = events.find(e => e.status === status);
-      
-      generatedEvents.push({
-        id: existingEvent?.id || `${status}-${index}`,
-        status,
-        timestamp: existingEvent?.timestamp || new Date().toISOString(),
-        title: isEstimated ? `${config.label} (Estimado)` : config.label,
-        description: getStepDescription(status, isEstimated, isCompleted),
-        isCompleted,
-        isEstimated,
-        details: config.description,
-        user: existingEvent?.user
-      });
-    });
-
-    return generatedEvents;
-  };
-
-  const estimateTimeForStatus = (status: ExtendedServiceStatus): string => {
-    const estimates: Partial<Record<ExtendedServiceStatus, string>> = {
-      'pending': '~2h',
-      'quoted': '~4h',
-      'accepted': 'Imediato',
-      'on_way': '~30min',
-      'arrived': '~5min',
-      'in_progress': '~2h',
-      'awaiting_client_confirmation': '~10min',
-      'payment_confirmed': 'Imediato',
-      'completed': 'Finalizado',
-      'cancelled': 'Cancelado',
-      'disputed': 'Em disputa'
-    };
-    
-    return estimates[status] || 'A definir';
-  };
-
+  // Helper function to get step description
   const getStepDescription = (status: ExtendedServiceStatus, isEstimated: boolean, isCompleted: boolean): string => {
     if (isCompleted && !isEstimated) {
       // Etapa já realizada
@@ -147,6 +83,71 @@ export function EnhancedServiceTimeline({
     }
     
     return SERVICE_STATUS_CONFIG[status].description;
+  };
+
+  // Function to generate timeline events - MOVED BEFORE useState
+  const generateTimelineEvents = (): TimelineEvent[] => {
+    const generatedEvents: TimelineEvent[] = [];
+
+    statusOrder.forEach((status, index) => {
+      const config = SERVICE_STATUS_CONFIG[status];
+      const isCompleted = index <= currentIndex;
+      const isCurrent = index === currentIndex;
+      const isEstimated = index > currentIndex;
+      
+      // Use provided event data or generate default
+      const existingEvent = events.find(e => e.status === status);
+      
+      generatedEvents.push({
+        id: existingEvent?.id || `${status}-${index}`,
+        status,
+        timestamp: existingEvent?.timestamp || new Date().toISOString(),
+        title: isEstimated ? `${config.label} (Estimado)` : config.label,
+        description: getStepDescription(status, isEstimated, isCompleted),
+        isCompleted,
+        isEstimated,
+        details: config.description,
+        user: existingEvent?.user
+      });
+    });
+
+    return generatedEvents;
+  };
+
+  // Initialize expanded steps state
+  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(() => {
+    const initialExpanded = new Set<string>();
+    const generatedEvents = generateTimelineEvents();
+    
+    if (currentIndex > 0 && generatedEvents[currentIndex - 1]) {
+      initialExpanded.add(generatedEvents[currentIndex - 1].id);
+    }
+    if (generatedEvents[currentIndex]) {
+      initialExpanded.add(generatedEvents[currentIndex].id);
+    }
+    if (currentIndex < generatedEvents.length - 1 && generatedEvents[currentIndex + 1]) {
+      initialExpanded.add(generatedEvents[currentIndex + 1].id);
+    }
+    
+    return initialExpanded;
+  });
+
+  const estimateTimeForStatus = (status: ExtendedServiceStatus): string => {
+    const estimates: Partial<Record<ExtendedServiceStatus, string>> = {
+      'pending': '~2h',
+      'quoted': '~4h',
+      'accepted': 'Imediato',
+      'on_way': '~30min',
+      'arrived': '~5min',
+      'in_progress': '~2h',
+      'awaiting_client_confirmation': '~10min',
+      'payment_confirmed': 'Imediato',
+      'completed': 'Finalizado',
+      'cancelled': 'Cancelado',
+      'disputed': 'Em disputa'
+    };
+    
+    return estimates[status] || 'A definir';
   };
 
   const toggleStepExpansion = (stepId: string) => {
