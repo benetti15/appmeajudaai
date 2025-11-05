@@ -37,7 +37,7 @@ const MapView = lazy(() => import("./pages/MapView"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const ProfessionalPublicProfile = lazy(() => import("./pages/ProfessionalPublicProfile"));
-const Admin = lazy(() => import("./pages/Admin"));
+
 const FluxoDemo = lazy(() => import("./pages/FluxoDemo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdvancedSearch = lazy(() => import("./pages/AdvancedSearch"));
@@ -110,7 +110,6 @@ function AppInitializer() {
             {/* New optimized features */}
             <Route path="/loyalty" element={<LoyaltySystem />} />
             <Route path="/fluxo-demo" element={<FluxoDemo />} />
-            <Route path="/admin" element={<Admin />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

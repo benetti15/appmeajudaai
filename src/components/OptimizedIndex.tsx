@@ -129,13 +129,6 @@ const QuickMenuItems = memo(({ profile, unreadCount, unreadQuotes }: any) => {
         <Plus className="w-4 h-4 mr-2" />
         {userType === 'client' ? 'Nova Solicitação' : 'Oportunidades'}
       </DropdownMenuItem>
-
-
-      {/* Admin */}
-      <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
-        <Shield className="w-4 h-4 mr-2" />
-        Admin
-      </DropdownMenuItem>
     </>
   );
 });
