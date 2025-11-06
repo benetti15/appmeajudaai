@@ -20,7 +20,6 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ServiceStatus, ExtendedServiceStatus } from "@/components/service-system/ServiceStatusFlow";
-import { EnhancedServiceTimeline } from "@/components/service-system/EnhancedServiceTimeline";
 import { MutualConfirmation } from "@/components/service-system/MutualConfirmation";
 import { QuoteManager } from "@/components/service-system/QuoteManager";
 import { QuoteCreationModal } from "@/components/service-system/QuoteCreationModal";
@@ -498,12 +497,6 @@ export default function ServiceRequestDetails() {
               />
             )}
 
-            {/* Enhanced Unified Timeline - Replaces both timelines */}
-            <EnhancedServiceTimeline
-              requestId={request.id}
-              currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
-              userRole={userRole}
-            />
 
             {/* Mutual Confirmation */}
             {(['in_progress', 'awaiting_client_confirmation', 'payment_confirmed'].includes(
