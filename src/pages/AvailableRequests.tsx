@@ -373,7 +373,7 @@ const AvailableRequests = () => {
                           className="gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group/btn"
                         >
                           <Send className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
-                          Orçar
+                          Enviar Orçamento
                         </Button>
                       </div>
                     </div>
