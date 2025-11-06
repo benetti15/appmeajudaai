@@ -458,7 +458,7 @@ const MyServicesNew = () => {
               </div>
             </div>
             <Button 
-              onClick={() => navigate("/available-requests")}
+              onClick={() => setTimeout(() => navigate("/available-requests"), 100)}
               className="gap-2 w-full sm:w-auto flex-shrink-0"
               size="sm"
             >

@@ -123,7 +123,10 @@ const QuickMenuItems = memo(({ profile, unreadCount, unreadQuotes }: any) => {
       
       
       <DropdownMenuItem 
-        onClick={() => navigate(userType === 'client' ? '/categories' : '/available-requests')}
+        onClick={() => {
+          const targetPath = userType === 'client' ? '/categories' : '/available-requests';
+          setTimeout(() => navigate(targetPath), 100);
+        }}
         className="cursor-pointer"
       >
         <Plus className="w-4 h-4 mr-2" />
@@ -164,7 +167,10 @@ const HeroSection = memo(({ profile }: any) => {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-8 py-4 text-lg font-medium shadow-lg hover:shadow-xl transition-all"
-                onClick={() => navigate(userType === 'client' ? '/categories' : '/available-requests')}
+                onClick={() => {
+                  const targetPath = userType === 'client' ? '/categories' : '/available-requests';
+                  setTimeout(() => navigate(targetPath), 100);
+                }}
               >
                 {userType === 'client' ? 'Solicitar Serviço' : 'Ver Oportunidades'}
               </Button>
@@ -223,7 +229,10 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
       icon: Plus,
       color: 'from-primary to-accent',
       isGradient: true,
-      onClick: () => navigate(userType === 'client' ? '/categories' : '/available-requests')
+      onClick: () => {
+        const targetPath = userType === 'client' ? '/categories' : '/available-requests';
+        setTimeout(() => navigate(targetPath), 100);
+      }
     }
   ], [userType, unreadCount, unreadQuotes, navigate]);
 
