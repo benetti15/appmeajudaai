@@ -90,72 +90,17 @@ const MyRequestsNew = () => {
     );
   };
 
-  const getActionButton = (request: ServiceRequest) => {
-    switch (request.status) {
-      case 'pending':
-        return (
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => navigate(`/service-request/${request.id}`)}
-            className="w-full sm:w-auto gap-2"
-          >
-            <Eye className="w-4 h-4" />
-            Acompanhar Status
-          </Button>
-        );
-        
-      case 'quoted':
-        return (
-          <Button 
-            size="lg"
-            onClick={() => navigate(`/service-request/${request.id}`)}
-            className="w-full sm:w-auto gap-2"
-          >
-            <TrendingUp className="w-4 h-4" />
-            Ver Orçamentos
-          </Button>
-        );
-        
-      case 'accepted':
-      case 'in_progress':
-        return (
-          <Button 
-            size="lg"
-            onClick={() => navigate(`/chat/${request.id}`)}
-            className="w-full sm:w-auto gap-2"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Chat com Profissional
-          </Button>
-        );
-        
-      case 'completed':
-        return (
-          <Button 
-            variant="success"
-            size="lg"
-            onClick={() => navigate(`/service-request/${request.id}`)}
-            className="w-full sm:w-auto gap-2"
-          >
-            <Star className="w-4 h-4" />
-            Avaliar Serviço
-          </Button>
-        );
-        
-      default:
-        return (
-          <Button 
-            variant="outline"
-            size="lg"
-            onClick={() => navigate(`/service-request/${request.id}`)}
-            className="w-full sm:w-auto gap-2"
-          >
-            <Eye className="w-4 h-4" />
-            Ver Detalhes
-          </Button>
-        );
-    }
+  const getStatusBorderColor = (status: ServiceStatus) => {
+    const borderColors: Record<ServiceStatus, string> = {
+      'pending': 'border-l-warning',
+      'quoted': 'border-l-primary',
+      'accepted': 'border-l-success',
+      'in_progress': 'border-l-accent',
+      'completed': 'border-l-success',
+      'cancelled': 'border-l-destructive',
+      'disputed': 'border-l-destructive',
+    };
+    return borderColors[status] || 'border-l-muted';
   };
 
   if (loading) {
@@ -268,18 +213,39 @@ const MyRequestsNew = () => {
                 {requests.map((request) => (
                   <Card 
                     key={request.id} 
-                    className="hover-lift shadow-card transition-all duration-300 overflow-hidden"
+                    className={`
+                      group relative overflow-hidden
+                      border-l-4 ${getStatusBorderColor(request.status)}
+                      transition-all duration-300 ease-out
+                      hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1
+                      hover:border-l-8
+                      cursor-pointer
+                    `}
+                    onClick={() => navigate(`/service-request/${request.id}`)}
                   >
+                    {/* Animated gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    
                     {/* Header */}
-                    <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardHeader className="pb-3 relative">
                       <div className="flex justify-between items-start gap-4">
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg sm:text-xl mb-3 truncate">{request.title}</CardTitle>
+                          <CardTitle className="text-lg sm:text-xl mb-3 truncate group-hover:text-primary transition-colors duration-200">
+                            {request.title}
+                          </CardTitle>
                           <div className="flex flex-wrap items-center gap-2">
-                            {getStatusBadge(request.status)}
-                            {getUrgencyBadge(request.urgency_level)}
+                            <div className="animate-fade-in">
+                              {getStatusBadge(request.status)}
+                            </div>
+                            <div className="animate-fade-in" style={{ animationDelay: '50ms' }}>
+                              {getUrgencyBadge(request.urgency_level)}
+                            </div>
                             {request.service_categories && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge 
+                                variant="secondary" 
+                                className="text-xs animate-fade-in transition-transform duration-200 hover:scale-110"
+                                style={{ animationDelay: '100ms' }}
+                              >
                                 {request.service_categories.name}
                               </Badge>
                             )}
@@ -287,18 +253,21 @@ const MyRequestsNew = () => {
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <div className="text-right text-xs text-muted-foreground">
-                            <p>Criado em</p>
+                            <p className="font-medium">Criado em</p>
                             <p className="text-lg font-bold text-foreground">
                               {format(new Date(request.created_at), "dd/MM", { locale: ptBR })}
                             </p>
                           </div>
                           <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
-                            onClick={() => navigate(`/service-request/${request.id}`)}
-                            className="gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/service-request/${request.id}`);
+                            }}
+                            className="gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group/btn"
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="w-3.5 h-3.5 group-hover/btn:rotate-12 transition-transform duration-200" />
                             Detalhes
                           </Button>
                         </div>
@@ -306,39 +275,40 @@ const MyRequestsNew = () => {
                     </CardHeader>
                     
                     {/* Body */}
-                    <CardContent className="pt-4 space-y-4">
-                      <p className="text-sm text-muted-foreground truncate-2">
+                    <CardContent className="pt-4 space-y-4 relative">
+                      <p className="text-sm text-muted-foreground truncate-2 leading-relaxed">
                         {request.description}
                       </p>
                       
-                      {/* Key Info - 3 Cards */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <InfoCard 
-                          icon={MapPin}
-                          label="Localização"
-                          value={request.city}
-                          iconColor="text-primary"
-                        />
+                      {/* Key Info - Grid with animations */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="transform transition-all duration-200 hover:scale-105 hover:-translate-y-0.5">
+                          <InfoCard 
+                            icon={MapPin}
+                            label="Localização"
+                            value={request.city}
+                            iconColor="text-primary"
+                            className="h-full hover:bg-muted/70 transition-colors"
+                          />
+                        </div>
                         
                         {request.budget_estimate && (
-                          <div className="col-span-1 sm:col-span-2 flex items-center justify-center sm:justify-start p-3 rounded-lg bg-success/10">
+                          <div className="col-span-1 sm:col-span-2 flex items-center justify-center sm:justify-start p-3 rounded-lg bg-success/10 hover:bg-success/20 transition-all duration-200 transform hover:scale-105">
                             <PriceTag amount={request.budget_estimate} size="md" />
                           </div>
                         )}
                         
                         {request.preferred_date && !request.budget_estimate && (
-                          <InfoCard 
-                            icon={Calendar}
-                            label="Data Preferida"
-                            value={format(new Date(request.preferred_date), "dd/MM/yy", { locale: ptBR })}
-                            iconColor="text-accent"
-                          />
+                          <div className="transform transition-all duration-200 hover:scale-105 hover:-translate-y-0.5">
+                            <InfoCard 
+                              icon={Calendar}
+                              label="Data Preferida"
+                              value={format(new Date(request.preferred_date), "dd/MM/yy", { locale: ptBR })}
+                              iconColor="text-accent"
+                              className="h-full hover:bg-muted/70 transition-colors"
+                            />
+                          </div>
                         )}
-                      </div>
-
-                      {/* Footer - Action Button */}
-                      <div className="pt-3 border-t">
-                        {getActionButton(request)}
                       </div>
                     </CardContent>
                   </Card>
