@@ -31,6 +31,7 @@ import { ProfessionalStatusCard } from "@/components/service-system/Professional
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 import { LiveTrackingMap } from "@/components/service-system/LiveTrackingMap";
 import { TemporarySupportSystem } from "@/components/TemporarySupportSystem";
+import { AutoLocationSharing } from "@/components/service-system/AutoLocationSharing";
 
 // Wrapper component to check if tracking is active
 function LiveTrackingMapWrapper({ 
@@ -380,6 +381,21 @@ export default function ServiceRequestDetails() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Auto Location Sharing - For professionals on active service */}
+            {userRole === 'professional' && user?.id && (
+              <AutoLocationSharing
+                requestId={request.id}
+                professionalId={user.id}
+                status={(request.extended_status || request.status) as string}
+                isActive={
+                  request.extended_status === 'on_way' || 
+                  request.extended_status === 'arrived' ||
+                  request.status === 'in_progress'
+                }
+              />
+            )}
+            
             {/* Status e Próxima Ação (apenas para profissional) */}
             {userRole === 'professional' && (
               <ProfessionalStatusCard

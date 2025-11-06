@@ -7,7 +7,17 @@ interface TrackingState {
   error: string | null;
 }
 
-export function useProfessionalTracking(requestId: string, professionalId: string) {
+interface UseProfessionalTrackingOptions {
+  autoStart?: boolean;
+  silentMode?: boolean;
+}
+
+export function useProfessionalTracking(
+  requestId: string, 
+  professionalId: string,
+  options: UseProfessionalTrackingOptions = {}
+) {
+  const { autoStart = false, silentMode = false } = options;
   const [state, setState] = useState<TrackingState>({
     isTracking: false,
     error: null,
@@ -15,6 +25,7 @@ export function useProfessionalTracking(requestId: string, professionalId: strin
   const { toast } = useToast();
   const watchIdRef = useRef<number | null>(null);
   const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasAutoStartedRef = useRef(false);
 
   const updateLocation = useCallback(async (latitude: number, longitude: number, heading?: number, speed?: number) => {
     try {
@@ -61,13 +72,15 @@ export function useProfessionalTracking(requestId: string, professionalId: strin
     }
   }, [requestId, professionalId]);
 
-  const startTracking = useCallback(async () => {
+  const startTracking = useCallback(async (silent = false) => {
     if (!navigator.geolocation) {
-      toast({
-        title: "Erro",
-        description: "Geolocalização não suportada pelo navegador",
-        variant: "destructive",
-      });
+      if (!silent) {
+        toast({
+          title: "Erro",
+          description: "Geolocalização não suportada pelo navegador",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
@@ -129,13 +142,15 @@ export function useProfessionalTracking(requestId: string, professionalId: strin
       console.error('Error sending notification:', error);
     }
 
-    toast({
-      title: "Rastreamento iniciado",
-      description: "Sua localização está sendo compartilhada com o cliente",
-    });
-  }, [updateLocation, toast, requestId]);
+    if (!silent && !silentMode) {
+      toast({
+        title: "Rastreamento iniciado",
+        description: "Sua localização está sendo compartilhada com o cliente",
+      });
+    }
+  }, [updateLocation, toast, requestId, silentMode]);
 
-  const stopTracking = useCallback(async () => {
+  const stopTracking = useCallback(async (silent = false) => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
@@ -159,11 +174,21 @@ export function useProfessionalTracking(requestId: string, professionalId: strin
 
     setState({ isTracking: false, error: null });
 
-    toast({
-      title: "Rastreamento parado",
-      description: "Localização não está mais sendo compartilhada",
-    });
-  }, [requestId, professionalId, toast]);
+    if (!silent && !silentMode) {
+      toast({
+        title: "Rastreamento parado",
+        description: "Localização não está mais sendo compartilhada",
+      });
+    }
+  }, [requestId, professionalId, toast, silentMode]);
+
+  // Auto-start tracking when enabled
+  useEffect(() => {
+    if (autoStart && !hasAutoStartedRef.current && !state.isTracking) {
+      hasAutoStartedRef.current = true;
+      startTracking(true);
+    }
+  }, [autoStart, startTracking, state.isTracking]);
 
   // Cleanup on unmount
   useEffect(() => {

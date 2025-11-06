@@ -68,7 +68,7 @@ export function ProfessionalTracking({
         <div className="flex gap-2">
           {!isTracking ? (
             <Button
-              onClick={startTracking}
+              onClick={() => startTracking(false)}
               className="w-full gap-2"
               size="lg"
             >
@@ -77,7 +77,7 @@ export function ProfessionalTracking({
             </Button>
           ) : (
             <Button
-              onClick={stopTracking}
+              onClick={() => stopTracking(false)}
               variant="outline"
               className="w-full gap-2"
               size="lg"
