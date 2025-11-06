@@ -114,7 +114,10 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
         description: "Sua solicitação foi criada com sucesso",
       });
 
-      navigate("/my-requests");
+      // Pequeno delay para garantir que o módulo seja carregado corretamente
+      setTimeout(() => {
+        navigate("/my-requests");
+      }, 100);
     } catch (error) {
       console.error("Erro ao criar solicitação:", error);
       toast({
