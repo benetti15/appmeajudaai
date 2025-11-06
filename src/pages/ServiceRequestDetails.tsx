@@ -146,6 +146,12 @@ interface ServiceRequest {
   client_id: string;
   category_id?: string;
   completion_notes?: string;
+  attachments?: Array<{
+    name: string;
+    type: string;
+    url: string;
+    size: number;
+  }> | null;
   service_categories?: {
     name: string;
   };
@@ -464,25 +470,48 @@ export default function ServiceRequestDetails() {
               state={request.state}
               budgetEstimate={request.budget_estimate}
               urgencyLevel={request.urgency_level}
-              attachments={[
-                // Mock attachments - replace with real data from database
-                {
-                  id: '1',
-                  name: 'foto-problema.jpg',
-                  type: 'image',
-                  url: '/lovable-uploads/a2395b76-67d3-4ddf-917d-20d3727d187d.png',
-                  size: '2.1 MB',
-                  uploadedAt: '2 horas atrás'
-                },
-                {
-                  id: '2', 
-                  name: 'manual-equipamento.pdf',
-                  type: 'document',
-                  url: '#',
-                  size: '890 KB',
-                  uploadedAt: '1 dia atrás'
-                }
-              ]}
+              attachments={
+                // Process real attachments from database
+                request.attachments 
+                  ? (Array.isArray(request.attachments) ? request.attachments : []).map((attachment: any, index: number) => {
+                      // Detect file type from name or type field
+                      const isImage = attachment.type === 'image' || 
+                                     /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.name);
+                      
+                      // Format file size
+                      const formatSize = (bytes: number) => {
+                        if (!bytes) return 'Tamanho desconhecido';
+                        const k = 1024;
+                        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                        const i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+                      };
+                      
+                      // Calculate relative time
+                      const getRelativeTime = () => {
+                        const now = new Date();
+                        const created = new Date(request.created_at);
+                        const diffMs = now.getTime() - created.getTime();
+                        const diffMins = Math.floor(diffMs / 60000);
+                        const diffHours = Math.floor(diffMs / 3600000);
+                        const diffDays = Math.floor(diffMs / 86400000);
+                        
+                        if (diffMins < 60) return `${diffMins} minuto${diffMins !== 1 ? 's' : ''} atrás`;
+                        if (diffHours < 24) return `${diffHours} hora${diffHours !== 1 ? 's' : ''} atrás`;
+                        return `${diffDays} dia${diffDays !== 1 ? 's' : ''} atrás`;
+                      };
+                      
+                      return {
+                        id: `${request.id}-${index}`,
+                        name: attachment.name,
+                        type: isImage ? 'image' as const : 'document' as const,
+                        url: attachment.url,
+                        size: formatSize(attachment.size),
+                        uploadedAt: getRelativeTime()
+                      };
+                    })
+                  : []
+              }
             />
 
             {/* GPS Tracking Map - Show for client when professional is sharing location */}
