@@ -190,7 +190,7 @@ const AvailableRequests = () => {
               <Home className="w-4 h-4" />
               Início
             </Button>
-            <h1 className="text-2xl font-bold text-primary">Pedidos Disponíveis</h1>
+            <h1 className="text-2xl font-bold text-primary">Serviços Disponíveis</h1>
           </div>
         </div>
       </header>
