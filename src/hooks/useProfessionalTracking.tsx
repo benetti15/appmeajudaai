@@ -184,11 +184,20 @@ export function useProfessionalTracking(
 
   // Auto-start tracking when enabled
   useEffect(() => {
+    console.log('🚀 useProfessionalTracking - autoStart check:', {
+      autoStart,
+      hasAutoStarted: hasAutoStartedRef.current,
+      isTracking: state.isTracking,
+      requestId,
+      professionalId
+    });
+    
     if (autoStart && !hasAutoStartedRef.current && !state.isTracking) {
+      console.log('✅ Auto-starting tracking now!');
       hasAutoStartedRef.current = true;
       startTracking(true);
     }
-  }, [autoStart, startTracking, state.isTracking]);
+  }, [autoStart, startTracking, state.isTracking, requestId, professionalId]);
 
   // Cleanup on unmount
   useEffect(() => {

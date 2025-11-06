@@ -17,7 +17,23 @@ export function AutoLocationSharing({
   status,
   isActive,
 }: AutoLocationSharingProps) {
-  const shouldTrack = status === "on_way" || status === "arrived" || status === "in_progress";
+  // Verificar múltiplos status que indicam que o profissional deveria estar compartilhando
+  const shouldTrack = 
+    status === "on_way" || 
+    status === "arrived" || 
+    status === "in_progress" ||
+    status === "accepted"; // Incluir accepted também
+  
+  // Logs de debug
+  useEffect(() => {
+    console.log('🔍 AutoLocationSharing Debug:', {
+      status,
+      isActive,
+      shouldTrack,
+      requestId,
+      professionalId
+    });
+  }, [status, isActive, shouldTrack, requestId, professionalId]);
   
   const { isTracking, startTracking, stopTracking } = useProfessionalTracking(
     requestId,
@@ -31,11 +47,13 @@ export function AutoLocationSharing({
   // Stop tracking when service is completed or cancelled
   useEffect(() => {
     if (!shouldTrack && isTracking) {
+      console.log('⏹️ Stopping tracking - status changed:', status);
       stopTracking(true);
     }
-  }, [shouldTrack, isTracking, stopTracking]);
+  }, [shouldTrack, isTracking, stopTracking, status]);
 
-  if (!isActive) return null;
+  // Não retornar null para debug - mostrar sempre quando deveria estar ativo
+  if (!shouldTrack) return null;
 
   return (
     <Card className="border-primary/20 bg-primary/5">

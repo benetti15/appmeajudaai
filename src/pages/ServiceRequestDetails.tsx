@@ -50,13 +50,20 @@ function LiveTrackingMapWrapper({
 
   useEffect(() => {
     const checkTracking = async () => {
-      const { data } = await supabase
+      console.log('🗺️ LiveTrackingMapWrapper - Checking for active tracking:', requestId);
+      
+      const { data, error } = await supabase
         .from('professional_live_location')
         .select('id')
         .eq('request_id', requestId)
-        .single();
+        .maybeSingle();
       
-      setHasActiveTracking(!!data);
+      if (error) {
+        console.error('❌ Error checking tracking:', error);
+      }
+      
+      console.log('🗺️ Tracking data found:', !!data, data);
+      setHasActiveTracking(!!data && !error);
       setIsLoading(false);
     };
 
@@ -84,8 +91,33 @@ function LiveTrackingMapWrapper({
     };
   }, [requestId]);
 
-  if (isLoading) return null;
-  if (!hasActiveTracking) return null;
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">Verificando localização do profissional...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (!hasActiveTracking) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Rastreamento em Tempo Real
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-8">
+            O profissional ainda não iniciou o deslocamento. O mapa aparecerá quando ele estiver a caminho.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <LiveTrackingMap
@@ -391,6 +423,8 @@ export default function ServiceRequestDetails() {
                 isActive={
                   request.extended_status === 'on_way' || 
                   request.extended_status === 'arrived' ||
+                  request.extended_status === 'in_progress' ||
+                  request.status === 'accepted' ||
                   request.status === 'in_progress'
                 }
               />
