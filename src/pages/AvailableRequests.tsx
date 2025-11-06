@@ -144,8 +144,30 @@ const AvailableRequests = () => {
 
   const getUrgencyColor = (level: number) => {
     if (level >= 3) return "text-destructive";
-    if (level === 2) return "text-amber-600";
-    return "text-muted-foreground";
+    if (level === 2) return "text-warning";
+    return "text-success";
+  };
+
+  const getUrgencyBorderColor = (level: number) => {
+    if (level >= 3) return "border-l-destructive";
+    if (level === 2) return "border-l-warning";
+    return "border-l-success";
+  };
+
+  const getUrgencyBadge = (level: number) => {
+    const config = {
+      1: { label: "Baixa", variant: "success" as const },
+      2: { label: "Média", variant: "warning" as const },
+      3: { label: "Alta", variant: "destructive" as const }
+    };
+    const urgencyInfo = config[level as keyof typeof config] || config[1];
+    
+    return (
+      <Badge variant={urgencyInfo.variant} className="gap-1">
+        <Clock className="w-3 h-3" />
+        {urgencyInfo.label}
+      </Badge>
+    );
   };
 
 
@@ -282,99 +304,123 @@ const AvailableRequests = () => {
               </div>
 
               {requests.map((request) => (
-                <Card key={request.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-green-500">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <CardTitle className="text-xl">{request.title}</CardTitle>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">Novo Pedido</Badge>
+                <Card 
+                  key={request.id} 
+                  className={`
+                    group relative overflow-hidden
+                    border-l-4 ${getUrgencyBorderColor(request.urgency_level)}
+                    transition-all duration-300 ease-out
+                    hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1
+                    hover:border-l-8
+                    cursor-pointer
+                  `}
+                  onClick={() => navigate(`/request-details/${request.id}`)}
+                >
+                  {/* Animated gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  
+                  <CardHeader className="relative">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors duration-200 truncate">
+                          {request.title}
+                        </CardTitle>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="animate-fade-in">
+                            <Badge variant="secondary" className="gap-1.5">
+                              <Briefcase className="w-3 h-3" />
+                              Novo
+                            </Badge>
+                          </div>
+                          <div className="animate-fade-in" style={{ animationDelay: '50ms' }}>
+                            {getUrgencyBadge(request.urgency_level)}
+                          </div>
                           {request.service_categories && (
-                            <Badge variant="outline">
+                            <Badge 
+                              variant="outline" 
+                              className="animate-fade-in transition-transform duration-200 hover:scale-110"
+                              style={{ animationDelay: '100ms' }}
+                            >
                               {request.service_categories.name}
                             </Badge>
                           )}
                           {request.images_urls && request.images_urls.length > 0 && (
-                            <Badge variant="outline" className="text-blue-600 border-blue-600">
-                              <Image className="w-3 h-3 mr-1" />
+                            <Badge 
+                              variant="outline" 
+                              className="gap-1 text-primary border-primary animate-fade-in transition-transform duration-200 hover:scale-110"
+                              style={{ animationDelay: '150ms' }}
+                            >
+                              <Image className="w-3 h-3" />
                               {request.images_urls.length} foto{request.images_urls.length > 1 ? 's' : ''}
                             </Badge>
                           )}
                         </div>
                       </div>
-                      <div className="text-right text-sm text-muted-foreground">
-                        <p>Publicado em</p>
-                        <p className="font-medium">
-                          {format(new Date(request.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                        </p>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="text-right text-xs text-muted-foreground">
+                          <p className="font-medium">Publicado</p>
+                          <p className="text-lg font-bold text-foreground">
+                            {format(new Date(request.created_at), "dd/MM", { locale: ptBR })}
+                          </p>
+                        </div>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/request-details/${request.id}`);
+                          }}
+                          className="gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group/btn"
+                        >
+                          <Send className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                          Orçar
+                        </Button>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground">{request.description}</p>
+                  
+                  <CardContent className="space-y-4 relative">
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      {request.description}
+                    </p>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-primary" />
-                        <span>{request.city}, {request.state}</span>
+                    {/* Key Info - Grid with animations */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
+                        <div className="p-2 rounded-lg bg-background">
+                          <MapPin className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">Localização</p>
+                          <p className="text-sm font-semibold truncate">{request.city}, {request.state}</p>
+                        </div>
                       </div>
                       
                       {request.budget_estimate && (
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-green-600" />
-                          <span>
-                            Orçamento: R$ {request.budget_estimate.toLocaleString('pt-BR')}
-                          </span>
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 hover:bg-success/20 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
+                          <div className="p-2 rounded-lg bg-background">
+                            <DollarSign className="w-4 h-4 text-success" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground">Orçamento</p>
+                            <p className="text-sm font-semibold">R$ {request.budget_estimate.toLocaleString('pt-BR')}</p>
+                          </div>
                         </div>
                       )}
                       
                       {request.preferred_date && (
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-blue-600" />
-                          <span>
-                            {format(new Date(request.preferred_date), "dd/MM/yyyy", { locale: ptBR })}
-                          </span>
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
+                          <div className="p-2 rounded-lg bg-background">
+                            <Calendar className="w-4 h-4 text-accent" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground">Data Preferida</p>
+                            <p className="text-sm font-semibold truncate">
+                              {format(new Date(request.preferred_date), "dd/MM/yy", { locale: ptBR })}
+                            </p>
+                          </div>
                         </div>
                       )}
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="flex items-center gap-2">
-                        <Clock className={`w-4 h-4 ${getUrgencyColor(request.urgency_level)}`} />
-                        <span className="text-sm">
-                          Urgência: {request.urgency_level === 1 ? "Baixa" : 
-                                   request.urgency_level === 2 ? "Média" : "Alta"}
-                        </span>
-                      </div>
-                      
-                      <div className="flex gap-2 flex-wrap">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate(`/request-details/${request.id}`)}
-                        >
-                          Ver Detalhes
-                        </Button>
-                        {request.images_urls && request.images_urls.length > 0 && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="gap-2 text-blue-600 border-blue-600 hover:bg-blue-50"
-                            onClick={() => navigate(`/request-details/${request.id}#images`)}
-                          >
-                            <Image className="w-4 h-4" />
-                            Ver Fotos ({request.images_urls.length})
-                          </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          className="gap-2"
-                          onClick={() => navigate(`/request-details/${request.id}`)}
-                        >
-                          <Send className="w-4 h-4" />
-                          Ver e Enviar Orçamento
-                        </Button>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
