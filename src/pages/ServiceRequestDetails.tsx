@@ -486,15 +486,36 @@ export default function ServiceRequestDetails() {
             />
 
             {/* GPS Tracking Map - Show for client when professional is sharing location */}
-            {userRole === 'client' && 
-             request.latitude && 
-             request.longitude && (
-              <LiveTrackingMapWrapper
-                requestId={request.id}
-                clientLatitude={Number(request.latitude)}
-                clientLongitude={Number(request.longitude)}
-                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
-              />
+            {userRole === 'client' && (
+              <>
+                {request.latitude && request.longitude ? (
+                  <LiveTrackingMapWrapper
+                    requestId={request.id}
+                    clientLatitude={Number(request.latitude)}
+                    clientLongitude={Number(request.longitude)}
+                    clientAddress={`${request.address}, ${request.city} - ${request.state}`}
+                  />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5" />
+                        Rastreamento em Tempo Real
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-6 space-y-3">
+                        <p className="text-muted-foreground">
+                          O rastreamento em tempo real estará disponível quando o profissional iniciar o deslocamento.
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          📍 Endereço: {request.address}, {request.city} - {request.state}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
 
 

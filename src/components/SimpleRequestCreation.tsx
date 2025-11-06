@@ -72,6 +72,28 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
     setLoading(true);
 
     try {
+      // Geocodificar o endereço para obter coordenadas
+      let latitude = null;
+      let longitude = null;
+      
+      try {
+        const fullAddress = `${formData.address}, ${formData.city}, ${formData.state}, Brasil`;
+        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=${import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token')}&limit=1`;
+        
+        const geoResponse = await fetch(geocodeUrl);
+        const geoData = await geoResponse.json();
+        
+        if (geoData.features && geoData.features.length > 0) {
+          const [lng, lat] = geoData.features[0].center;
+          longitude = lng;
+          latitude = lat;
+          console.log('✅ Coordenadas obtidas:', { latitude, longitude });
+        }
+      } catch (geoError) {
+        console.error('⚠️ Erro ao geocodificar endereço:', geoError);
+        // Continue mesmo sem coordenadas
+      }
+
       // Adicionar informação do horário preferido na descrição se selecionado
       let fullDescription = formData.description;
       if (formData.preferred_time) {
@@ -94,6 +116,8 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
           address: formData.address,
           city: formData.city,
           state: formData.state,
+          latitude,
+          longitude,
           urgency_level: parseInt(formData.urgency_level),
           preferred_date: formData.preferred_date || null,
           status: "pending",
