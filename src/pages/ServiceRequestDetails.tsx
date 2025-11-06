@@ -27,7 +27,6 @@ import { QuoteCreationModal } from "@/components/service-system/QuoteCreationMod
 import { UrgencyBadge } from "@/components/service-system/UrgencyBadge";
 import { ServiceAttachments } from "@/components/service-system/ServiceAttachments";
 import { EnhancedServiceActions } from "@/components/service-system/EnhancedServiceActions";
-import { ProfessionalStatusCard } from "@/components/service-system/ProfessionalStatusCard";
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 import { TemporarySupportSystem } from "@/components/TemporarySupportSystem";
 import { ProfessionalMiniMap } from "@/components/service-system/ProfessionalMiniMap";
@@ -349,20 +348,6 @@ export default function ServiceRequestDetails() {
               />
             )}
             
-            {/* Status e Próxima Ação (apenas para profissional) */}
-            {userRole === 'professional' && (
-              <div className="animate-fade-in">
-                <ProfessionalStatusCard
-                  currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
-                  requestTitle={request.title}
-                  clientName={request.client_profile?.full_name}
-                  budgetEstimate={request.budget_estimate}
-                  preferredDate={request.preferred_date}
-                  urgencyLevel={request.urgency_level}
-                  optimisticStatus={optimisticStatus}
-                />
-              </div>
-            )}
 
             {/* Quote Manager */}
             <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
