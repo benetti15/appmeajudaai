@@ -11,15 +11,13 @@ import {
   ArrowLeft, 
   Calendar, 
   MapPin, 
-  MessageCircle, 
-  Star, 
-  User, 
   Play,
   CheckCircle,
   Briefcase,
   Search,
   DollarSign,
-  Eye
+  Eye,
+  User
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -54,10 +52,9 @@ const MyServicesNew = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeServices, setActiveServices] = useState<ServiceRequest[]>([]);
-  const [availableServices, setAvailableServices] = useState<ServiceRequest[]>([]);
   const [completedServices, setCompletedServices] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("available");
+  const [activeTab, setActiveTab] = useState("active");
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,40 +74,6 @@ const MyServicesNew = () => {
     console.log("MyServicesNew - fetchServices iniciado");
     
     try {
-      console.log("MyServicesNew - Buscando serviços disponíveis...");
-      
-      // Fetch available requests (not yet quoted by this professional)
-      const { data: availableData, error: availableError } = await supabase
-        .from("service_requests")
-        .select(`
-          *,
-          service_categories!service_requests_category_id_fkey (name),
-          client_profile:profiles!service_requests_client_id_fkey (
-            full_name,
-            phone
-          )
-        `)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (availableError) {
-        console.error("MyServicesNew - Erro ao buscar serviços disponíveis:", availableError);
-        throw availableError;
-      }
-      
-      console.log("MyServicesNew - Serviços disponíveis encontrados:", availableData?.length);
-
-      // Filter out requests this professional already quoted
-      console.log("MyServicesNew - Verificando orçamentos já enviados...");
-      const quotedRequestIds = await getQuotedRequestIds();
-      console.log("MyServicesNew - IDs de requests já orçados:", quotedRequestIds);
-      
-      const filteredAvailable = availableData?.filter(
-        request => !quotedRequestIds.includes(request.id)
-      ) || [];
-      
-      console.log("MyServicesNew - Serviços disponíveis após filtro:", filteredAvailable.length);
-
       // Fetch active services (where this professional has accepted quotes)
       console.log("MyServicesNew - Buscando serviços ativos...");
       const { data: activeData, error: activeError } = await supabase
@@ -171,9 +134,8 @@ const MyServicesNew = () => {
       
       console.log("MyServicesNew - Serviços concluídos encontrados:", completedData?.length);
 
-      setAvailableServices(filteredAvailable as any); // Type assertion
-      setActiveServices((activeData || []) as any); // Type assertion
-      setCompletedServices((completedData || []) as any); // Type assertion
+      setActiveServices((activeData || []) as any);
+      setCompletedServices((completedData || []) as any);
       
       console.log("MyServicesNew - fetchServices concluído com sucesso");
     } catch (error) {
@@ -184,31 +146,36 @@ const MyServicesNew = () => {
     }
   };
 
-  const getQuotedRequestIds = async () => {
-    console.log("MyServicesNew - getQuotedRequestIds iniciado");
+  const getStatusBorderColor = (status: ServiceStatus) => {
+    const borderColors: Record<ServiceStatus, string> = {
+      'pending': 'border-l-warning',
+      'quoted': 'border-l-primary',
+      'accepted': 'border-l-success',
+      'in_progress': 'border-l-accent',
+      'completed': 'border-l-success',
+      'cancelled': 'border-l-destructive',
+      'disputed': 'border-l-destructive',
+    };
+    return borderColors[status] || 'border-l-muted';
+  };
+
+  const getUrgencyBadge = (level: number) => {
+    const config = {
+      1: { label: "Baixa", variant: "success" as const },
+      2: { label: "Média", variant: "warning" as const },
+      3: { label: "Alta", variant: "destructive" as const }
+    };
+    const urgencyInfo = config[level as keyof typeof config] || config[1];
     
-    try {
-      const { data, error } = await supabase
-        .from("quotes")
-        .select("request_id")
-        .eq("professional_id", user?.id);
-      
-      if (error) {
-        console.error("MyServicesNew - Erro ao buscar IDs orçados:", error);
-        return [];
-      }
-      
-      const requestIds = data?.map(q => q.request_id) || [];
-      console.log("MyServicesNew - getQuotedRequestIds concluído:", requestIds);
-      return requestIds;
-    } catch (error) {
-      console.error("MyServicesNew - Erro geral em getQuotedRequestIds:", error);
-      return [];
-    }
+    return (
+      <Badge variant={urgencyInfo.variant} className="gap-1">
+        <User className="w-3 h-3" />
+        {urgencyInfo.label}
+      </Badge>
+    );
   };
 
   const updateServiceStatus = async (serviceId: string, newStatus: ServiceStatus) => {
-    // Temporarily cast to any to avoid type issues while we implement the database changes
     const dbStatus = newStatus as any;
     
     setUpdatingStatus(serviceId);
@@ -220,13 +187,11 @@ const MyServicesNew = () => {
       
       if (error) throw error;
       
-      
       toast({
         title: "Status atualizado!",
         description: "O atendimento foi iniciado com sucesso.",
       });
       
-      // Refresh services after status update
       await fetchServices();
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
@@ -238,93 +203,6 @@ const MyServicesNew = () => {
     } finally {
       setUpdatingStatus(null);
     }
-  };
-
-  const getActionButton = (service: ServiceRequest) => {
-    switch (service.status) {
-      case 'pending':
-        return (
-          <Button 
-            size="sm"
-            onClick={() => navigate(`/service-request/${service.id}`)}
-            className="gap-2"
-          >
-            <DollarSign className="w-4 h-4" />
-            Enviar Orçamento
-          </Button>
-        );
-        
-      case 'accepted':
-        return (
-          <Button 
-            size="sm"
-            onClick={() => navigate(`/service-request/${service.id}`)}
-            className="gap-2 w-full sm:w-auto"
-          >
-            <Eye className="w-4 h-4" />
-            <span className="sm:hidden">Ver</span>
-            <span className="hidden sm:inline">Ver Detalhes do Serviço</span>
-          </Button>
-        );
-        
-      case 'in_progress':
-        return (
-          <>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/chat/${service.id}`)}
-              className="gap-2 w-full sm:w-auto"
-            >
-              <MessageCircle className="w-4 h-4" />
-              Chat
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => navigate(`/service-request/${service.id}`)}
-              className="gap-2 w-full sm:w-auto"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Finalizar
-            </Button>
-          </>
-        );
-        
-      case 'completed':
-        return (
-          <>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/service-request/${service.id}`)}
-              className="gap-2 w-full sm:w-auto"
-            >
-              <Star className="w-4 h-4" />
-              Avaliar
-            </Button>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/service-request/${service.id}`)}
-              className="gap-2 w-full sm:w-auto"
-            >
-              Ver Detalhes
-            </Button>
-          </>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
-  const getUrgencyInfo = (level: number) => {
-    const urgencyConfig = {
-      1: { label: "Baixa", color: "text-green-600" },
-      2: { label: "Média", color: "text-yellow-600" }, 
-      3: { label: "Alta", color: "text-red-600" }
-    };
-    return urgencyConfig[level as keyof typeof urgencyConfig] || urgencyConfig[1];
   };
 
   if (loading) {
@@ -339,95 +217,126 @@ const MyServicesNew = () => {
   }
 
   const ServiceCard = ({ service }: { service: ServiceRequest }) => {
-    const urgencyInfo = getUrgencyInfo(service.urgency_level);
+    const statusConfig = SERVICE_STATUS_CONFIG[service.status];
+    const StatusIcon = statusConfig.icon;
     
     return (
-      <Card className="hover:shadow-lg transition-all duration-200">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
+      <Card 
+        className={`
+          group relative overflow-hidden
+          border-l-4 ${getStatusBorderColor(service.status)}
+          transition-all duration-300 ease-out
+          hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1
+          hover:border-l-8
+          cursor-pointer
+        `}
+        onClick={() => navigate(`/service-request/${service.id}`)}
+      >
+        {/* Animated gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        
+        <CardHeader className="pb-3 relative">
+          <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-base sm:text-lg mb-2 line-clamp-1 pr-2 sm:pr-0">{service.title}</CardTitle>
-              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                <ServiceStatusFlow 
-                  currentStatus={service.status} 
-                  compact 
-                  showDescription={false}
-                  showProgress={false}
-                />
+              <CardTitle className="text-lg sm:text-xl mb-3 truncate group-hover:text-primary transition-colors duration-200">
+                {service.title}
+              </CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="animate-fade-in">
+                  <Badge variant="outline" className={`gap-1.5 ${statusConfig.color} border-current`}>
+                    <StatusIcon className="w-3 h-3" />
+                    {statusConfig.label}
+                  </Badge>
+                </div>
+                <div className="animate-fade-in" style={{ animationDelay: '50ms' }}>
+                  {getUrgencyBadge(service.urgency_level)}
+                </div>
                 {service.service_categories && (
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs animate-fade-in transition-transform duration-200 hover:scale-110"
+                    style={{ animationDelay: '100ms' }}
+                  >
                     {service.service_categories.name}
                   </Badge>
                 )}
                 {service.accepted_quote && (
-                  <Badge variant="default" className="text-xs px-1.5 py-0.5">
+                  <Badge 
+                    variant="default" 
+                    className="gap-1 animate-fade-in transition-transform duration-200 hover:scale-110"
+                    style={{ animationDelay: '150ms' }}
+                  >
+                    <DollarSign className="w-3 h-3" />
                     R$ {service.accepted_quote.amount.toLocaleString('pt-BR')}
                   </Badge>
                 )}
               </div>
             </div>
-            <div className="text-right text-xs sm:text-sm text-muted-foreground flex-shrink-0">
-              <p className="text-xs">Criado</p>
-              <p className="font-medium">
-                {format(new Date(service.created_at), "dd/MM", { locale: ptBR })}
-              </p>
+            <div className="flex flex-col items-end gap-2">
+              <div className="text-right text-xs text-muted-foreground">
+                <p className="font-medium">Criado</p>
+                <p className="text-lg font-bold text-foreground">
+                  {format(new Date(service.created_at), "dd/MM", { locale: ptBR })}
+                </p>
+              </div>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/service-request/${service.id}`);
+                }}
+                className="gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group/btn"
+              >
+                <Eye className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform duration-200" />
+                Detalhes
+              </Button>
             </div>
           </div>
         </CardHeader>
         
-        <CardContent className="pt-0 space-y-4">
-          <p className="text-sm text-muted-foreground line-clamp-2">
+        <CardContent className="space-y-4 relative">
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
             {service.description}
           </p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs">
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-primary flex-shrink-0" />
-              <span className="truncate">{service.city}</span>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${urgencyInfo.color.replace('text-', 'bg-')}`} />
-              <span className="truncate">Urgência {urgencyInfo.label}</span>
+          {/* Key Info - Grid with animations */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
+              <div className="p-2 rounded-lg bg-background">
+                <MapPin className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-muted-foreground">Localização</p>
+                <p className="text-sm font-semibold truncate">{service.city}</p>
+              </div>
             </div>
             
             {service.client_profile && (
-              <div className="flex items-center gap-1">
-                <User className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                <span className="truncate">{service.client_profile.full_name}</span>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
+                <div className="p-2 rounded-lg bg-background">
+                  <User className="w-4 h-4 text-accent" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">Cliente</p>
+                  <p className="text-sm font-semibold truncate">{service.client_profile.full_name}</p>
+                </div>
               </div>
             )}
             
             {service.preferred_date && (
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-blue-600 flex-shrink-0" />
-                <span className="truncate">{format(new Date(service.preferred_date), "dd/MM", { locale: ptBR })}</span>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
+                <div className="p-2 rounded-lg bg-background">
+                  <Calendar className="w-4 h-4 text-accent" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">Data Preferida</p>
+                  <p className="text-sm font-semibold truncate">
+                    {format(new Date(service.preferred_date), "dd/MM/yy", { locale: ptBR })}
+                  </p>
+                </div>
               </div>
             )}
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center pt-3 border-t">
-            {service.status !== 'pending' && (
-              <ServiceStatusFlow 
-                currentStatus={service.status} 
-                showDescription={false}
-                showProgress={true}
-                compact={true}
-              />
-            )}
-            
-            <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 sm:ml-auto">
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/service-request/${service.id}`)}
-                className="gap-2 w-full sm:w-auto"
-              >
-                <Eye className="w-4 h-4" />
-                Acompanhar
-              </Button>
-              {getActionButton(service)}
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -463,8 +372,7 @@ const MyServicesNew = () => {
               size="sm"
             >
               <Search className="w-4 h-4" />
-              <span className="sm:hidden">Buscar</span>
-              <span className="hidden sm:inline">Buscar Serviços</span>
+              Buscar Novos Serviços
             </Button>
           </div>
         </div>
@@ -474,86 +382,46 @@ const MyServicesNew = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="available" className="flex items-center gap-1 px-2 sm:px-3">
-                <Search className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Disponíveis</span>
-                {availableServices.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs px-1 min-w-[16px] h-4">
-                    {availableServices.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="active" className="flex items-center gap-1 px-2 sm:px-3">
-                <Play className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Ativos</span>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="active" className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                <span>Em Andamento</span>
                 {activeServices.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs px-1 min-w-[16px] h-4">
+                  <Badge variant="secondary" className="ml-1">
                     {activeServices.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="completed" className="flex items-center gap-1 px-2 sm:px-3">
-                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Concluídos</span>
+              <TabsTrigger value="completed" className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                <span>Concluídos</span>
                 {completedServices.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 text-xs px-1 min-w-[16px] h-4">
+                  <Badge variant="secondary" className="ml-1">
                     {completedServices.length}
                   </Badge>
                 )}
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="available" className="space-y-4">
-              {availableServices.length === 0 ? (
-                <Card className="text-center py-16">
-                  <CardContent>
-                    <div className="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Search className="w-12 h-12 text-primary" />
-                    </div>
-                    <h3 className="text-2xl font-semibold mb-3">Nenhuma oportunidade disponível</h3>
-                    <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                      Não há novos pedidos de serviço disponíveis no momento. 
-                      Verifique novamente em alguns minutos.
-                    </p>
-                    <Button 
-                      onClick={() => window.location.reload()}
-                      size="lg"
-                      className="gap-2"
-                    >
-                      <Search className="w-5 h-5" />
-                      Atualizar Lista
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 gap-4">
-                  {availableServices.map((service) => (
-                    <ServiceCard key={service.id} service={service} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
             <TabsContent value="active" className="space-y-4">
               {activeServices.length === 0 ? (
-                <Card className="text-center py-16">
+                <Card className="text-center py-16 border-2 border-dashed">
                   <CardContent>
-                    <div className="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Briefcase className="w-12 h-12 text-primary" />
+                    <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-6 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-glow">
+                      <Briefcase className="w-10 sm:w-12 h-10 sm:h-12 text-white" />
                     </div>
-                    <h3 className="text-2xl font-semibold mb-3">Nenhum serviço ativo</h3>
-                    <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3">Nenhum serviço em andamento</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-md mx-auto">
                       Você não tem serviços ativos no momento. 
-                      Envie orçamentos para pedidos disponíveis para começar.
+                      Busque novos serviços disponíveis para começar.
                     </p>
                     <Button 
-                      onClick={() => setActiveTab("available")}
+                      onClick={() => navigate("/available-requests")}
                       size="lg"
-                      className="gap-2"
+                      className="gap-2 shadow-lg hover-lift"
                     >
                       <Search className="w-5 h-5" />
-                      Ver Oportunidades
+                      Buscar Serviços
                     </Button>
                   </CardContent>
                 </Card>
@@ -568,13 +436,13 @@ const MyServicesNew = () => {
 
             <TabsContent value="completed" className="space-y-4">
               {completedServices.length === 0 ? (
-                <Card className="text-center py-16">
+                <Card className="text-center py-16 border-2 border-dashed">
                   <CardContent>
-                    <div className="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-12 h-12 text-primary" />
+                    <div className="w-20 sm:w-24 h-20 sm:h-24 mx-auto mb-6 bg-gradient-success rounded-2xl flex items-center justify-center shadow-glow">
+                      <CheckCircle className="w-10 sm:w-12 h-10 sm:h-12 text-white" />
                     </div>
-                    <h3 className="text-2xl font-semibold mb-3">Nenhum serviço concluído</h3>
-                    <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3">Nenhum serviço concluído</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-md mx-auto">
                       Seus serviços concluídos aparecerão aqui. 
                       Complete alguns atendimentos para ver seu histórico.
                     </p>
