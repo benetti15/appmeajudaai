@@ -190,15 +190,6 @@ const AvailableRequests = () => {
               <Home className="w-4 h-4" />
               Início
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/professional-dashboard")}
-              className="gap-2"
-            >
-              <Briefcase className="w-4 h-4" />
-              Dashboard
-            </Button>
             <h1 className="text-2xl font-bold text-primary">Pedidos Disponíveis</h1>
           </div>
         </div>
