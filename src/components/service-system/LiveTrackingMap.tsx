@@ -132,13 +132,21 @@ export function LiveTrackingMap({
   // Load initial location data
   useEffect(() => {
     const loadInitialLocation = async () => {
+      console.log('🗺️ LiveTrackingMap - Loading initial location for request:', requestId);
+      
       const { data, error } = await supabase
         .from('professional_live_location')
         .select('*')
         .eq('request_id', requestId)
-        .single();
+        .maybeSingle();
 
-      if (data && !error) {
+      if (error) {
+        console.error('❌ Error loading initial location:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('✅ Initial location loaded:', data);
         setProfessionalLocation(data as ProfessionalLocation);
         
         // Calculate initial distance and ETA
@@ -153,6 +161,8 @@ export function LiveTrackingMap({
         const avgSpeed = data.speed ? data.speed * 3.6 : 30;
         const estimatedTime = (dist / avgSpeed) * 60;
         setETA(Math.round(estimatedTime));
+      } else {
+        console.log('ℹ️ No initial location data found yet');
       }
     };
 
@@ -161,6 +171,8 @@ export function LiveTrackingMap({
 
   // Subscribe to real-time location updates
   useEffect(() => {
+    console.log('📡 LiveTrackingMap - Setting up realtime subscription for request:', requestId);
+    
     const channel = supabase
       .channel('professional-location')
       .on(
@@ -172,6 +184,8 @@ export function LiveTrackingMap({
           filter: `request_id=eq.${requestId}`,
         },
         (payload) => {
+          console.log('🔄 Realtime update received:', payload.eventType, payload);
+          
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const newLocation = payload.new as ProfessionalLocation;
             setProfessionalLocation(newLocation);
@@ -190,15 +204,19 @@ export function LiveTrackingMap({
             const estimatedTime = (dist / avgSpeed) * 60; // in minutes
             setETA(Math.round(estimatedTime));
           } else if (payload.eventType === 'DELETE') {
+            console.log('🗑️ Location tracking stopped');
             setProfessionalLocation(null);
             setDistance(null);
             setETA(null);
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('📡 Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [requestId, clientLatitude, clientLongitude]);
@@ -318,22 +336,22 @@ export function LiveTrackingMap({
           Rastreamento em Tempo Real
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-            <MapPin className="h-5 w-5 text-primary" />
+      <CardContent className="space-y-3 p-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
+            <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
             <div>
               <p className="text-xs text-muted-foreground">Distância</p>
-              <p className="font-semibold">
+              <p className="font-semibold text-sm">
                 {distance ? `${distance.toFixed(1)} km` : 'Calculando...'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-            <Clock className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
+            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
             <div>
               <p className="text-xs text-muted-foreground">Tempo estimado</p>
-              <p className="font-semibold">
+              <p className="font-semibold text-sm">
                 {eta ? `${eta} min` : 'Calculando...'}
               </p>
             </div>
@@ -342,17 +360,20 @@ export function LiveTrackingMap({
         
         <div 
           ref={mapContainer} 
-          className="w-full h-[400px] rounded-lg border"
+          className="w-full h-[250px] rounded-lg border"
         />
         
-        <div className="text-xs text-muted-foreground space-y-1 bg-muted/30 p-3 rounded-lg">
+        <div className="text-xs text-muted-foreground space-y-1 bg-muted/30 p-2.5 rounded-lg">
           <div className="flex items-center justify-between">
-            <span>🟢 Localização em tempo real</span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Localização ao vivo
+            </span>
             <span className="font-medium">{new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR')}</span>
           </div>
           {routeData && (
             <div className="flex items-center justify-between text-primary">
-              <span>📍 Rota otimizada calculada</span>
+              <span>📍 Rota otimizada</span>
               <span className="font-medium">{routeData.distance} km</span>
             </div>
           )}
