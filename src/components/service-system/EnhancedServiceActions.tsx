@@ -253,15 +253,6 @@ export function EnhancedServiceActions({
     return (
       <div className="space-y-6">
         
-        {/* GPS Tracking - Show when professional is on the way or at service location */}
-        {professionalInfo && (displayStatus === 'on_way' || displayStatus === 'arrived' || displayStatus === 'in_progress') && (
-          <ProfessionalTracking
-            requestId={requestId}
-            professionalId={professionalInfo.id}
-            isActive={true}
-          />
-        )}
-
         {/* 1. INICIAR ATENDIMENTO - Status: A Caminho */}
         {currentStatus === 'accepted' && !optimisticStatus && (
           <Button 

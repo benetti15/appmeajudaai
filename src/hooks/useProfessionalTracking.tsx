@@ -182,22 +182,16 @@ export function useProfessionalTracking(
     }
   }, [requestId, professionalId, toast, silentMode]);
 
-  // Auto-start tracking when enabled
+  // Auto-start/stop tracking based on autoStart prop changes
   useEffect(() => {
-    console.log('🚀 useProfessionalTracking - autoStart check:', {
-      autoStart,
-      hasAutoStarted: hasAutoStartedRef.current,
-      isTracking: state.isTracking,
-      requestId,
-      professionalId
-    });
-    
-    if (autoStart && !hasAutoStartedRef.current && !state.isTracking) {
-      console.log('✅ Auto-starting tracking now!');
-      hasAutoStartedRef.current = true;
+    if (autoStart && !state.isTracking) {
+      console.log('✅ Auto-starting tracking on status change...');
       startTracking(true);
+    } else if (!autoStart && state.isTracking) {
+      console.log('⏹️ Auto-stopping tracking on status change...');
+      stopTracking(true);
     }
-  }, [autoStart, startTracking, state.isTracking, requestId, professionalId]);
+  }, [autoStart, startTracking, stopTracking]);
 
   // Cleanup on unmount
   useEffect(() => {

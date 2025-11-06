@@ -28,105 +28,9 @@ import { ServiceAttachments } from "@/components/service-system/ServiceAttachmen
 import { EnhancedServiceActions } from "@/components/service-system/EnhancedServiceActions";
 import { ProfessionalStatusCard } from "@/components/service-system/ProfessionalStatusCard";
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
-import { LiveTrackingMap } from "@/components/service-system/LiveTrackingMap";
 import { TemporarySupportSystem } from "@/components/TemporarySupportSystem";
-import { AutoLocationSharing } from "@/components/service-system/AutoLocationSharing";
-
-// Wrapper component to check if tracking is active
-function LiveTrackingMapWrapper({ 
-  requestId, 
-  clientLatitude, 
-  clientLongitude, 
-  clientAddress 
-}: {
-  requestId: string;
-  clientLatitude: number;
-  clientLongitude: number;
-  clientAddress: string;
-}) {
-  const [hasActiveTracking, setHasActiveTracking] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkTracking = async () => {
-      console.log('🗺️ LiveTrackingMapWrapper - Checking for active tracking:', requestId);
-      
-      const { data, error } = await supabase
-        .from('professional_live_location')
-        .select('id')
-        .eq('request_id', requestId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('❌ Error checking tracking:', error);
-      }
-      
-      console.log('🗺️ Tracking data found:', !!data, data);
-      setHasActiveTracking(!!data && !error);
-      setIsLoading(false);
-    };
-
-    checkTracking();
-
-    // Subscribe to changes
-    const channel = supabase
-      .channel(`tracking-check-${requestId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'professional_live_location',
-          filter: `request_id=eq.${requestId}`,
-        },
-        (payload) => {
-          setHasActiveTracking(payload.eventType !== 'DELETE');
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [requestId]);
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">Verificando localização do profissional...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  if (!hasActiveTracking) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Rastreamento em Tempo Real
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            O profissional ainda não iniciou o deslocamento. O mapa aparecerá quando ele estiver a caminho.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <LiveTrackingMap
-      requestId={requestId}
-      clientLatitude={clientLatitude}
-      clientLongitude={clientLongitude}
-      clientAddress={clientAddress}
-    />
-  );
-}
+import { ProfessionalMiniMap } from "@/components/service-system/ProfessionalMiniMap";
+import { ClientTrackingMiniMap } from "@/components/service-system/ClientTrackingMiniMap";
 
 interface ServiceRequest {
   id: string;
@@ -321,9 +225,12 @@ export default function ServiceRequestDetails() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando detalhes do serviço...</p>
+        <div className="text-center space-y-4">
+          <div className="relative w-16 h-16 mx-auto">
+            <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin"></div>
+          </div>
+          <p className="text-muted-foreground animate-pulse">Carregando detalhes do serviço...</p>
         </div>
       </div>
     );
@@ -383,10 +290,10 @@ export default function ServiceRequestDetails() {
             
             {/* Quote Creation Button - Highlighted at top for Professionals */}
             {userRole === 'professional' && request.status === 'pending' && (
-              <Card className="border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg">
+              <Card className="border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in">
                 <CardHeader className="pb-3 sm:pb-6">
                   <CardTitle className="text-green-800 flex items-center gap-2 text-sm sm:text-base">
-                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 animate-pulse" />
                     <span className="truncate">Oportunidade de Negócio</span>
                   </CardTitle>
                   <p className="text-green-700 text-xs sm:text-sm">
@@ -406,10 +313,10 @@ export default function ServiceRequestDetails() {
 
             {/* Chat Button - Prominently displayed for both users */}
             {(professional || userRole === 'professional') && (
-              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
                 <CardContent className="p-3 sm:p-4">
                   <Button 
-                    className="w-full gap-2 sm:gap-3 h-10 sm:h-12 text-sm sm:text-base font-medium"
+                    className="w-full gap-2 sm:gap-3 h-10 sm:h-12 text-sm sm:text-base font-medium hover:scale-105 transition-transform"
                     onClick={() => navigate(`/chat/${request.id}`)}
                   >
                     <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -419,155 +326,137 @@ export default function ServiceRequestDetails() {
               </Card>
             )}
 
-            {/* Auto Location Sharing - For professionals on active service */}
-            {userRole === 'professional' && user?.id && (
-              <AutoLocationSharing
+            {/* Professional Mini Map - Show client location */}
+            {userRole === 'professional' && user?.id && request.latitude && request.longitude && (
+              <ProfessionalMiniMap
+                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
+                clientLatitude={Number(request.latitude)}
+                clientLongitude={Number(request.longitude)}
                 requestId={request.id}
                 professionalId={user.id}
                 status={(request.extended_status || request.status) as string}
-                isActive={
-                  request.extended_status === 'on_way' || 
-                  request.extended_status === 'arrived' ||
-                  request.extended_status === 'in_progress' ||
-                  request.status === 'accepted' ||
-                  request.status === 'in_progress'
-                }
+              />
+            )}
+
+            {/* Client Tracking Mini Map - Show when professional is sharing location */}
+            {userRole === 'client' && request.latitude && request.longitude && (
+              <ClientTrackingMiniMap
+                requestId={request.id}
+                clientLatitude={Number(request.latitude)}
+                clientLongitude={Number(request.longitude)}
+                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
               />
             )}
             
             {/* Status e Próxima Ação (apenas para profissional) */}
             {userRole === 'professional' && (
-              <ProfessionalStatusCard
-                currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
-                requestTitle={request.title}
-                clientName={request.client_profile?.full_name}
-                budgetEstimate={request.budget_estimate}
-                preferredDate={request.preferred_date}
-                urgencyLevel={request.urgency_level}
-                optimisticStatus={optimisticStatus}
-              />
+              <div className="animate-fade-in">
+                <ProfessionalStatusCard
+                  currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
+                  requestTitle={request.title}
+                  clientName={request.client_profile?.full_name}
+                  budgetEstimate={request.budget_estimate}
+                  preferredDate={request.preferred_date}
+                  urgencyLevel={request.urgency_level}
+                  optimisticStatus={optimisticStatus}
+                />
+              </div>
             )}
 
             {/* Quote Manager */}
-            <QuoteManager
-              requestId={request.id}
-              clientId={request.client_id}
-              currentStatus={request.status}
-              userRole={userRole}
-              onQuoteAccepted={handleStatusUpdate}
-            />
+            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <QuoteManager
+                requestId={request.id}
+                clientId={request.client_id}
+                currentStatus={request.status}
+                userRole={userRole}
+                onQuoteAccepted={handleStatusUpdate}
+              />
+            </div>
 
             {/* Enhanced Service Details with Attachments */}
-            <ServiceAttachments
-              title={request.title}
-              description={request.description}
-              preferredDate={request.preferred_date ? format(new Date(request.preferred_date), "dd/MM/yyyy", { locale: ptBR }) : undefined}
-              preferredTime={request.preferred_date ? format(new Date(request.preferred_date), "HH:mm", { locale: ptBR }) : undefined}
-              hasTimeFlexibility={request.urgency_level <= 2}
-              category={request.service_categories?.name}
-              address={request.address}
-              city={request.city}
-              state={request.state}
-              budgetEstimate={request.budget_estimate}
-              urgencyLevel={request.urgency_level}
-              attachments={
-                // Process real attachments from database
-                request.attachments 
-                  ? (Array.isArray(request.attachments) ? request.attachments : []).map((attachment: any, index: number) => {
-                      // Detect file type from name or type field
-                      const isImage = attachment.type === 'image' || 
-                                     /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.name);
-                      
-                      // Format file size
-                      const formatSize = (bytes: number) => {
-                        if (!bytes) return 'Tamanho desconhecido';
-                        const k = 1024;
-                        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                        const i = Math.floor(Math.log(bytes) / Math.log(k));
-                        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-                      };
-                      
-                      // Calculate relative time
-                      const getRelativeTime = () => {
-                        const now = new Date();
-                        const created = new Date(request.created_at);
-                        const diffMs = now.getTime() - created.getTime();
-                        const diffMins = Math.floor(diffMs / 60000);
-                        const diffHours = Math.floor(diffMs / 3600000);
-                        const diffDays = Math.floor(diffMs / 86400000);
+            <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <ServiceAttachments
+                title={request.title}
+                description={request.description}
+                preferredDate={request.preferred_date ? format(new Date(request.preferred_date), "dd/MM/yyyy", { locale: ptBR }) : undefined}
+                preferredTime={request.preferred_date ? format(new Date(request.preferred_date), "HH:mm", { locale: ptBR }) : undefined}
+                hasTimeFlexibility={request.urgency_level <= 2}
+                category={request.service_categories?.name}
+                address={request.address}
+                city={request.city}
+                state={request.state}
+                budgetEstimate={request.budget_estimate}
+                urgencyLevel={request.urgency_level}
+                attachments={
+                  // Process real attachments from database
+                  request.attachments 
+                    ? (Array.isArray(request.attachments) ? request.attachments : []).map((attachment: any, index: number) => {
+                        // Detect file type from name or type field
+                        const isImage = attachment.type === 'image' || 
+                                       /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.name);
                         
-                        if (diffMins < 60) return `${diffMins} minuto${diffMins !== 1 ? 's' : ''} atrás`;
-                        if (diffHours < 24) return `${diffHours} hora${diffHours !== 1 ? 's' : ''} atrás`;
-                        return `${diffDays} dia${diffDays !== 1 ? 's' : ''} atrás`;
-                      };
-                      
-                      return {
-                        id: `${request.id}-${index}`,
-                        name: attachment.name,
-                        type: isImage ? 'image' as const : 'document' as const,
-                        url: attachment.url,
-                        size: formatSize(attachment.size),
-                        uploadedAt: getRelativeTime()
-                      };
-                    })
-                  : []
-              }
-            />
+                        // Format file size
+                        const formatSize = (bytes: number) => {
+                          if (!bytes) return 'Tamanho desconhecido';
+                          const k = 1024;
+                          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                          const i = Math.floor(Math.log(bytes) / Math.log(k));
+                          return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+                        };
+                        
+                        // Calculate relative time
+                        const getRelativeTime = () => {
+                          const now = new Date();
+                          const created = new Date(request.created_at);
+                          const diffMs = now.getTime() - created.getTime();
+                          const diffMins = Math.floor(diffMs / 60000);
+                          const diffHours = Math.floor(diffMs / 3600000);
+                          const diffDays = Math.floor(diffMs / 86400000);
+                          
+                          if (diffMins < 60) return `${diffMins} minuto${diffMins !== 1 ? 's' : ''} atrás`;
+                          if (diffHours < 24) return `${diffHours} hora${diffHours !== 1 ? 's' : ''} atrás`;
+                          return `${diffDays} dia${diffDays !== 1 ? 's' : ''} atrás`;
+                        };
+                        
+                        return {
+                          id: `${request.id}-${index}`,
+                          name: attachment.name,
+                          type: isImage ? 'image' as const : 'document' as const,
+                          url: attachment.url,
+                          size: formatSize(attachment.size),
+                          uploadedAt: getRelativeTime()
+                        };
+                      })
+                    : []
+                }
+              />
+            </div>
 
-            {/* GPS Tracking Map - Show for client when professional is sharing location */}
-            {userRole === 'client' && (
-              <>
-                {request.latitude && request.longitude ? (
-                  <LiveTrackingMapWrapper
-                    requestId={request.id}
-                    clientLatitude={Number(request.latitude)}
-                    clientLongitude={Number(request.longitude)}
-                    clientAddress={`${request.address}, ${request.city} - ${request.state}`}
-                  />
-                ) : (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5" />
-                        Rastreamento em Tempo Real
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-6 space-y-3">
-                        <p className="text-muted-foreground">
-                          O rastreamento em tempo real estará disponível quando o profissional iniciar o deslocamento.
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          📍 Endereço: {request.address}, {request.city} - {request.state}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </>
-            )}
 
 
             {/* Mutual Confirmation */}
             {(['in_progress', 'awaiting_client_confirmation', 'payment_confirmed'].includes(
               optimisticStatus || request.extended_status || request.status
             )) && (
-              <MutualConfirmation
-                userRole={userRole}
-                currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
-                onProfessionalComplete={handleProfessionalComplete}
-                onClientConfirm={handleClientConfirm}
-                onPaymentConfirm={handlePaymentConfirm}
-                professionalName={professional?.full_name}
-                clientName={request.client_profile?.full_name}
-                serviceAmount={request.budget_estimate || undefined}
-                loading={!!optimisticStatus}
-              />
+              <div className="animate-fade-in" style={{ animationDelay: '300ms' }}>
+                <MutualConfirmation
+                  userRole={userRole}
+                  currentStatus={(optimisticStatus || request.extended_status || request.status) as ExtendedServiceStatus}
+                  onProfessionalComplete={handleProfessionalComplete}
+                  onClientConfirm={handleClientConfirm}
+                  onPaymentConfirm={handlePaymentConfirm}
+                  professionalName={professional?.full_name}
+                  clientName={request.client_profile?.full_name}
+                  serviceAmount={request.budget_estimate || undefined}
+                  loading={!!optimisticStatus}
+                />
+              </div>
             )}
 
             {/* Review System - Show when service is completed */}
             {request.status === 'completed' && (
-              <>
+              <div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
                 {userRole === 'client' && professional && (
                   <IntegratedReviewSystem
                     professionalId={professional.id}
@@ -579,7 +468,7 @@ export default function ServiceRequestDetails() {
                 )}
                 
                 {userRole === 'professional' && (
-                  <Card className="border-primary/20">
+                  <Card className="border-primary/20 hover:shadow-lg transition-shadow duration-300">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Star className="w-5 h-5 text-primary" />
@@ -598,7 +487,7 @@ export default function ServiceRequestDetails() {
                         </div>
                         <Button
                           variant="outline"
-                          className="w-full gap-2"
+                          className="w-full gap-2 hover:scale-105 transition-transform"
                           onClick={() => navigate(`/professional-profile/${user?.id}`)}
                         >
                           <Star className="w-4 h-4" />
@@ -608,27 +497,29 @@ export default function ServiceRequestDetails() {
                     </CardContent>
                   </Card>
                 )}
-              </>
+              </div>
             )}
           </div>
 
           {/* Right Column - Actions & Extra Features */}
-          <div className="space-y-4 sm:space-y-6">
-            <EnhancedServiceActions
-              requestId={request.id}
-              currentStatus={(request.extended_status || request.status) as ExtendedServiceStatus}
-              userRole={userRole}
-              professionalInfo={professional || undefined}
-              clientInfo={userRole === 'professional' && request.client_profile ? {
-                id: request.client_id,
-                ...request.client_profile
-              } : undefined}
-              onStatusUpdate={handleStatusUpdate}
-              onOptimisticStatusChange={handleOptimisticStatusChange}
-            />
+          <div className="space-y-4 sm:space-y-6 animate-slide-in-right">
+            <div className="hover:scale-[1.02] transition-transform duration-200">
+              <EnhancedServiceActions
+                requestId={request.id}
+                currentStatus={(request.extended_status || request.status) as ExtendedServiceStatus}
+                userRole={userRole}
+                professionalInfo={professional || undefined}
+                clientInfo={userRole === 'professional' && request.client_profile ? {
+                  id: request.client_id,
+                  ...request.client_profile
+                } : undefined}
+                onStatusUpdate={handleStatusUpdate}
+                onOptimisticStatusChange={handleOptimisticStatusChange}
+              />
+            </div>
 
             {/* Quick Actions */}
-            <Card>
+            <Card className="hover:shadow-lg transition-shadow duration-300">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">Ações Rápidas</CardTitle>
               </CardHeader>
@@ -640,7 +531,7 @@ export default function ServiceRequestDetails() {
                     requestTitle={request.title}
                     onQuoteSubmitted={handleStatusUpdate}
                     trigger={
-                      <Button variant="outline" className="w-full gap-2 h-9 text-sm">
+                      <Button variant="outline" className="w-full gap-2 h-9 text-sm hover:scale-105 transition-transform">
                         <DollarSign className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">Editar Orçamento</span>
                       </Button>
@@ -658,7 +549,7 @@ export default function ServiceRequestDetails() {
 
             {/* Professional Rating */}
             {professional && (
-              <Card>
+              <Card className="hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm">Profissional</CardTitle>
                 </CardHeader>
@@ -677,7 +568,7 @@ export default function ServiceRequestDetails() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full mt-2 h-8 text-xs"
+                      className="w-full mt-2 h-8 text-xs hover:scale-105 transition-transform"
                       onClick={() => navigate(`/professional-profile/${professional.id}`)}
                     >
                       <span className="truncate">Ver Perfil Completo</span>
