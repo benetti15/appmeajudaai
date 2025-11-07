@@ -29,7 +29,7 @@ import { ServiceAttachments } from "@/components/service-system/ServiceAttachmen
 import { EnhancedServiceActions } from "@/components/service-system/EnhancedServiceActions";
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 import { TemporarySupportSystem } from "@/components/TemporarySupportSystem";
-import { ClientLocationMap } from "@/components/service-system/ClientLocationMap";
+import { EnhancedLocationCard } from "@/components/service-system/EnhancedLocationCard";
 import { ClientTrackingMiniMap } from "@/components/service-system/ClientTrackingMiniMap";
 
 interface ServiceRequest {
@@ -326,13 +326,20 @@ export default function ServiceRequestDetails() {
               </Card>
             )}
 
-            {/* Professional Location Map - Show client location */}
+            {/* Professional Location Card - Show client location */}
             {userRole === 'professional' && request.latitude && request.longitude && (
-              <ClientLocationMap
-                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
-                clientLatitude={Number(request.latitude)}
-                clientLongitude={Number(request.longitude)}
-              />
+              <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
+                <EnhancedLocationCard
+                  address={request.address}
+                  city={request.city}
+                  state={request.state}
+                  latitude={Number(request.latitude)}
+                  longitude={Number(request.longitude)}
+                  showDistance={true}
+                  title="Localização do Cliente"
+                  variant="professional"
+                />
+              </div>
             )}
 
             {/* Client Tracking Mini Map - Show when professional is sharing location */}
