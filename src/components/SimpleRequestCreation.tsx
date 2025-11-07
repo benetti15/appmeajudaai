@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import { EnhancedAddressInput } from "@/components/address/EnhancedAddressInput";
 import { FileUpload } from "@/components/ui/file-upload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Calendar, Clock } from "lucide-react";
+import { MapPin, Calendar, Clock, User } from "lucide-react";
+import { AddressData, formatAddress } from "@/lib/address-utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface UploadedFile {
   id: string;
@@ -27,25 +29,71 @@ interface SimpleRequestCreationProps {
 
 export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    address: "",
-    city: "Uberlândia",
-    state: "MG",
     preferred_time: "",
     urgency_level: "1",
     preferred_date: ""
   });
   
+  const [addressData, setAddressData] = useState<AddressData>({
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    latitude: null,
+    longitude: null,
+    formatted_address: ""
+  });
+  
   const [loading, setLoading] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<UploadedFile[]>([]);
+  const [showProfileAddressOption, setShowProfileAddressOption] = useState(false);
+
+  // Verificar se usuário tem endereço no perfil
+  useEffect(() => {
+    if (profile?.street && profile?.city && profile?.state) {
+      setShowProfileAddressOption(true);
+    }
+  }, [profile]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleUseProfileAddress = () => {
+    if (!profile) return;
+
+    setAddressData({
+      street: profile.street || "",
+      number: profile.number || "",
+      complement: profile.complement || "",
+      neighborhood: profile.neighborhood || "",
+      city: profile.city || "",
+      state: profile.state || "",
+      postal_code: profile.postal_code || "",
+      latitude: profile.latitude ? Number(profile.latitude) : null,
+      longitude: profile.longitude ? Number(profile.longitude) : null,
+      formatted_address: profile.formatted_address || formatAddress({
+        street: profile.street,
+        number: profile.number,
+        neighborhood: profile.neighborhood,
+        city: profile.city,
+        state: profile.state
+      })
+    });
+
+    toast({
+      title: "Endereço carregado",
+      description: "Endereço do seu perfil foi carregado com sucesso"
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +108,7 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
       return;
     }
 
-    if (!formData.title || !formData.description || !formData.address) {
+    if (!formData.title || !formData.description || !addressData.street) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios",
@@ -69,30 +117,19 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
       return;
     }
 
+    // Validar se o endereço está geocodificado
+    if (!addressData.latitude || !addressData.longitude) {
+      toast({
+        title: "Endereço não validado",
+        description: "Por favor, use a busca de endereço para garantir uma localização precisa",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Geocodificar o endereço para obter coordenadas
-      let latitude = null;
-      let longitude = null;
-      
-      try {
-        const fullAddress = `${formData.address}, ${formData.city}, ${formData.state}, Brasil`;
-        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=${import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token')}&limit=1`;
-        
-        const geoResponse = await fetch(geocodeUrl);
-        const geoData = await geoResponse.json();
-        
-        if (geoData.features && geoData.features.length > 0) {
-          const [lng, lat] = geoData.features[0].center;
-          longitude = lng;
-          latitude = lat;
-          console.log('✅ Coordenadas obtidas:', { latitude, longitude });
-        }
-      } catch (geoError) {
-        console.error('⚠️ Erro ao geocodificar endereço:', geoError);
-        // Continue mesmo sem coordenadas
-      }
 
       // Adicionar informação do horário preferido na descrição se selecionado
       let fullDescription = formData.description;
@@ -113,11 +150,17 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
           category_id: categoryId,
           title: formData.title,
           description: fullDescription,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          latitude,
-          longitude,
+          street: addressData.street,
+          number: addressData.number,
+          complement: addressData.complement || null,
+          neighborhood: addressData.neighborhood,
+          city: addressData.city,
+          state: addressData.state,
+          postal_code: addressData.postal_code,
+          address: addressData.formatted_address,
+          formatted_address: addressData.formatted_address,
+          latitude: addressData.latitude,
+          longitude: addressData.longitude,
           urgency_level: parseInt(formData.urgency_level),
           preferred_date: formData.preferred_date || null,
           status: "pending",
@@ -187,41 +230,40 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <AddressAutocomplete
-                value={formData.address}
-                onChange={(address) => handleInputChange("address", address)}
-                onCityChange={(city) => handleInputChange("city", city)}
-                onStateChange={(state) => handleInputChange("state", state)}
-                placeholder="Digite o endereço para buscar sugestões..."
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="city">Cidade *</Label>
-              <Select value={formData.city} onValueChange={(value) => handleInputChange("city", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a cidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Uberlândia">Uberlândia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="state">Estado *</Label>
-              <Input
-                id="state"
-                value={formData.state}
-                onChange={(e) => handleInputChange("state", e.target.value)}
-                placeholder="UF"
-                maxLength={2}
-                required
-              />
-            </div>
+          {/* Opção de usar endereço do perfil */}
+          {showProfileAddressOption && !addressData.street && (
+            <Alert className="border-primary/30 bg-primary/5">
+              <User className="h-4 w-4 text-primary" />
+              <AlertDescription className="flex items-center justify-between">
+                <span className="text-sm">
+                  Usar endereço cadastrado no perfil?
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  onClick={handleUseProfileAddress}
+                  className="ml-2"
+                >
+                  Usar endereço do perfil
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Campo de Endereço Aprimorado */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              Endereço
+              <span className="text-destructive">*</span>
+            </Label>
+            <EnhancedAddressInput
+              value={addressData}
+              onChange={setAddressData}
+              required
+              allowCurrentLocation
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
