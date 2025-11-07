@@ -326,42 +326,47 @@ export default function ServiceRequestDetails() {
               </Card>
             )}
 
-            {/* Professional Location Card - Show client location */}
-            {userRole === 'professional' && request.latitude && request.longitude && (
-              <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
-                <EnhancedLocationCard
-                  address={request.address}
-                  city={request.city}
-                  state={request.state}
-                  latitude={Number(request.latitude)}
-                  longitude={Number(request.longitude)}
-                  showDistance={true}
-                  title="Localização do Cliente"
-                  variant="professional"
+            {/* Location & Quotes Grid - Organized Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '150ms' }}>
+              {/* Professional Location Card - Show client location */}
+              {userRole === 'professional' && request.latitude && request.longitude && (
+                <div className="lg:col-span-1">
+                  <EnhancedLocationCard
+                    address={request.address}
+                    city={request.city}
+                    state={request.state}
+                    latitude={Number(request.latitude)}
+                    longitude={Number(request.longitude)}
+                    showDistance={true}
+                    title="Localização do Cliente"
+                    variant="professional"
+                    mapHeight="240px"
+                  />
+                </div>
+              )}
+
+              {/* Client Tracking Mini Map - Show when professional is sharing location */}
+              {userRole === 'client' && request.latitude && request.longitude && (
+                <div className="lg:col-span-1">
+                  <ClientTrackingMiniMap
+                    requestId={request.id}
+                    clientLatitude={Number(request.latitude)}
+                    clientLongitude={Number(request.longitude)}
+                    clientAddress={`${request.address}, ${request.city} - ${request.state}`}
+                  />
+                </div>
+              )}
+
+              {/* Quote Manager */}
+              <div className={request.latitude && request.longitude ? "lg:col-span-1" : "lg:col-span-2"}>
+                <QuoteManager
+                  requestId={request.id}
+                  clientId={request.client_id}
+                  currentStatus={request.status}
+                  userRole={userRole}
+                  onQuoteAccepted={handleStatusUpdate}
                 />
               </div>
-            )}
-
-            {/* Client Tracking Mini Map - Show when professional is sharing location */}
-            {userRole === 'client' && request.latitude && request.longitude && (
-              <ClientTrackingMiniMap
-                requestId={request.id}
-                clientLatitude={Number(request.latitude)}
-                clientLongitude={Number(request.longitude)}
-                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
-              />
-            )}
-            
-
-            {/* Quote Manager */}
-            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-              <QuoteManager
-                requestId={request.id}
-                clientId={request.client_id}
-                currentStatus={request.status}
-                userRole={userRole}
-                onQuoteAccepted={handleStatusUpdate}
-              />
             </div>
 
             {/* Enhanced Service Details with Attachments */}
