@@ -259,16 +259,22 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           city: string | null
+          complement: string | null
           cpf: string | null
           created_at: string | null
           email: string | null
+          formatted_address: string | null
           full_name: string | null
           id: string
           latitude: number | null
           longitude: number | null
+          neighborhood: string | null
+          number: string | null
           phone: string | null
+          postal_code: string | null
           service_radius_km: number | null
           state: string | null
+          street: string | null
           updated_at: string | null
           user_type: string
         }
@@ -276,16 +282,22 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           city?: string | null
+          complement?: string | null
           cpf?: string | null
           created_at?: string | null
           email?: string | null
+          formatted_address?: string | null
           full_name?: string | null
           id: string
           latitude?: number | null
           longitude?: number | null
+          neighborhood?: string | null
+          number?: string | null
           phone?: string | null
+          postal_code?: string | null
           service_radius_km?: number | null
           state?: string | null
+          street?: string | null
           updated_at?: string | null
           user_type?: string
         }
@@ -293,16 +305,22 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           city?: string | null
+          complement?: string | null
           cpf?: string | null
           created_at?: string | null
           email?: string | null
+          formatted_address?: string | null
           full_name?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          neighborhood?: string | null
+          number?: string | null
           phone?: string | null
+          postal_code?: string | null
           service_radius_km?: number | null
           state?: string | null
+          street?: string | null
           updated_at?: string | null
           user_type?: string
         }
@@ -486,16 +504,22 @@ export type Database = {
           category_id_backup: string | null
           city: string
           client_id: string
+          complement: string | null
           created_at: string | null
           description: string
           extended_status: string | null
+          formatted_address: string | null
           id: string
           images_urls: string[] | null
           latitude: number | null
           longitude: number | null
+          neighborhood: string | null
+          number: string | null
+          postal_code: string | null
           preferred_date: string | null
           state: string
           status: string
+          street: string | null
           title: string
           updated_at: string | null
           urgency_level: number | null
@@ -508,16 +532,22 @@ export type Database = {
           category_id_backup?: string | null
           city?: string
           client_id: string
+          complement?: string | null
           created_at?: string | null
           description: string
           extended_status?: string | null
+          formatted_address?: string | null
           id?: string
           images_urls?: string[] | null
           latitude?: number | null
           longitude?: number | null
+          neighborhood?: string | null
+          number?: string | null
+          postal_code?: string | null
           preferred_date?: string | null
           state?: string
           status?: string
+          street?: string | null
           title: string
           updated_at?: string | null
           urgency_level?: number | null
@@ -530,16 +560,22 @@ export type Database = {
           category_id_backup?: string | null
           city?: string
           client_id?: string
+          complement?: string | null
           created_at?: string | null
           description?: string
           extended_status?: string | null
+          formatted_address?: string | null
           id?: string
           images_urls?: string[] | null
           latitude?: number | null
           longitude?: number | null
+          neighborhood?: string | null
+          number?: string | null
+          postal_code?: string | null
           preferred_date?: string | null
           state?: string
           status?: string
+          street?: string | null
           title?: string
           updated_at?: string | null
           urgency_level?: number | null
@@ -676,6 +712,16 @@ export type Database = {
           state: string
           total_reviews: number
         }[]
+      }
+      format_address_auto: {
+        Args: {
+          p_city: string
+          p_neighborhood: string
+          p_number: string
+          p_state: string
+          p_street: string
+        }
+        Returns: string
       }
       has_quote_for_request: {
         Args: { _request_id: string; _user_id: string }
