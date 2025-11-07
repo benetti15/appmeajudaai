@@ -3,8 +3,10 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Navigation, MapPin, Clock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Navigation, MapPin, Clock, Loader2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { initializeMapbox } from "@/lib/mapbox";
 
 interface ClientTrackingMiniMapProps {
   requestId: string;
@@ -35,6 +37,7 @@ export function ClientTrackingMiniMap({
   const [eta, setETA] = useState<number | null>(null);
   const [hasActiveTracking, setHasActiveTracking] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   // Calculate distance between two points
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -126,35 +129,50 @@ export function ClientTrackingMiniMap({
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current || !hasActiveTracking) return;
+    
+    // Verificar se coordenadas do cliente existem
+    if (!clientLatitude || !clientLongitude) {
+      setMapError('Coordenadas do cliente não disponíveis');
+      return;
+    }
 
-    const mapboxToken = localStorage.getItem('mapbox_token');
-    if (!mapboxToken) return;
+    const initMap = async () => {
+      try {
+        const token = await initializeMapbox();
+        mapboxgl.accessToken = token;
 
-    mapboxgl.accessToken = mapboxToken;
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: "mapbox://styles/mapbox/streets-v12",
+          center: [clientLongitude, clientLatitude],
+          zoom: 13,
+        });
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: [clientLongitude, clientLatitude],
-      zoom: 13,
-    });
+        map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
-    map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+        // Add client marker (home icon)
+        const clientEl = document.createElement('div');
+        clientEl.className = 'w-10 h-10';
+        clientEl.innerHTML = `
+          <div class="w-full h-full flex items-center justify-center bg-primary rounded-full shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </div>
+        `;
 
-    // Add client marker (home icon)
-    const clientEl = document.createElement('div');
-    clientEl.className = 'w-10 h-10';
-    clientEl.innerHTML = `
-      <div class="w-full h-full flex items-center justify-center bg-primary rounded-full shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-        </svg>
-      </div>
-    `;
+        new mapboxgl.Marker(clientEl)
+          .setLngLat([clientLongitude, clientLatitude])
+          .addTo(map.current);
+        
+        setMapError(null);
+      } catch (error) {
+        console.error('Erro ao inicializar mapa:', error);
+        setMapError('Não foi possível carregar o mapa');
+      }
+    };
 
-    new mapboxgl.Marker(clientEl)
-      .setLngLat([clientLongitude, clientLatitude])
-      .addTo(map.current);
+    initMap();
 
     return () => {
       map.current?.remove();
@@ -279,10 +297,20 @@ export function ClientTrackingMiniMap({
           </div>
         </div>
         
-        <div 
-          ref={mapContainer} 
-          className="w-full h-[250px] rounded-lg border shadow-sm"
-        />
+        {mapError ? (
+          <Alert variant="default" className="border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <p className="font-medium">{mapError}</p>
+              <p className="text-sm mt-1">Verifique sua conexão e tente novamente</p>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div 
+            ref={mapContainer} 
+            className="w-full h-[250px] rounded-lg border shadow-sm"
+          />
+        )}
         
         {professionalLocation && (
           <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg flex items-center justify-between">

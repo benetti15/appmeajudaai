@@ -6,11 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, MapPin, Phone, Mail } from "lucide-react";
+import { ArrowLeft, User, MapPin } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProgressStepper } from "@/components/ui/progress-stepper";
+import { EnhancedAddressInput } from "@/components/address/EnhancedAddressInput";
+import { AddressData } from "@/lib/address-utils";
 
 export default function ClientProfile() {
   const { user, profile, refreshProfile } = useAuth();
@@ -23,11 +24,20 @@ export default function ClientProfile() {
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || "",
     phone: profile?.phone || "",
-    address: profile?.address || "",
+    document_number: profile?.document_number || "",
+  });
+
+  const [addressData, setAddressData] = useState<AddressData>({
+    street: profile?.street || "",
+    number: profile?.number || "",
+    complement: profile?.complement || "",
+    neighborhood: profile?.neighborhood || "",
     city: profile?.city || "",
     state: profile?.state || "",
-    document_number: profile?.document_number || "",
     postal_code: profile?.postal_code || "",
+    latitude: profile?.latitude || null,
+    longitude: profile?.longitude || null,
+    formatted_address: profile?.formatted_address || ""
   });
 
   const [profilePhoto, setProfilePhoto] = useState<string | null>(profile?.avatar_url || null);
@@ -52,11 +62,19 @@ export default function ClientProfile() {
       setFormData({
         full_name: profile.full_name || "",
         phone: profile.phone || "",
-        address: profile.address || "",
+        document_number: profile.document_number || "",
+      });
+      setAddressData({
+        street: profile.street || "",
+        number: profile.number || "",
+        complement: profile.complement || "",
+        neighborhood: profile.neighborhood || "",
         city: profile.city || "",
         state: profile.state || "",
-        document_number: profile.document_number || "",
         postal_code: profile.postal_code || "",
+        latitude: profile.latitude || null,
+        longitude: profile.longitude || null,
+        formatted_address: profile.formatted_address || ""
       });
       setProfilePhoto(profile.avatar_url || null);
     }
@@ -70,12 +88,18 @@ export default function ClientProfile() {
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
           document_number: formData.document_number,
-          postal_code: formData.postal_code,
           avatar_url: profilePhoto,
+          street: addressData.street,
+          number: addressData.number,
+          complement: addressData.complement,
+          neighborhood: addressData.neighborhood,
+          city: addressData.city,
+          state: addressData.state,
+          postal_code: addressData.postal_code,
+          latitude: addressData.latitude,
+          longitude: addressData.longitude,
+          formatted_address: addressData.formatted_address
         })
         .eq("id", user?.id);
 
@@ -133,7 +157,7 @@ export default function ClientProfile() {
           steps={[
             { id: 'photo', label: 'Foto', completed: !!profilePhoto },
             { id: 'personal', label: 'Dados Pessoais', completed: !!(formData.full_name && formData.phone) },
-            { id: 'address', label: 'Endereço', completed: !!(formData.address && formData.city && formData.state) }
+            { id: 'address', label: 'Endereço', completed: !!(addressData.latitude && addressData.longitude) }
           ]}
           currentStep={profilePhoto ? (formData.full_name && formData.phone ? 2 : 1) : 0}
           className="mb-6"
@@ -208,47 +232,14 @@ export default function ClientProfile() {
                 Endereço
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="address">Endereço</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  placeholder="Rua, número, complemento"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="city">Cidade</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    placeholder="Sua cidade"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="state">Estado</Label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
-                    placeholder="UF"
-                    maxLength={2}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="postal_code">CEP</Label>
-                  <Input
-                    id="postal_code"
-                    value={formData.postal_code}
-                    onChange={(e) => handleInputChange("postal_code", e.target.value)}
-                    placeholder="00000-000"
-                  />
-                </div>
-              </div>
+            <CardContent>
+              <EnhancedAddressInput
+                value={addressData}
+                onChange={setAddressData}
+                required={true}
+                showMap={false}
+                allowCurrentLocation={true}
+              />
             </CardContent>
           </Card>
 

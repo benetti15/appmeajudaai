@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Navigation } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MapPin, Navigation, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfessionalTracking } from "@/hooks/useProfessionalTracking";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { initializeMapbox } from "@/lib/mapbox";
 
 interface ProfessionalMiniMapProps {
   clientAddress: string;
@@ -27,6 +29,8 @@ export function ProfessionalMiniMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [isLoadingMap, setIsLoadingMap] = useState(true);
   const { latitude, longitude, getCurrentPosition } = useGeolocation(true);
   
   const { isTracking, startTracking, stopTracking } = useProfessionalTracking(
@@ -56,34 +60,53 @@ export function ProfessionalMiniMap({
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+    
+    // Verificar se coordenadas do cliente existem
+    if (!clientLatitude || !clientLongitude) {
+      setMapError('Coordenadas do cliente não disponíveis');
+      setIsLoadingMap(false);
+      return;
+    }
 
-    const mapboxToken = localStorage.getItem('mapbox_token');
-    if (!mapboxToken) return;
+    const initMap = async () => {
+      try {
+        setIsLoadingMap(true);
+        const token = await initializeMapbox();
+        mapboxgl.accessToken = token;
 
-    mapboxgl.accessToken = mapboxToken;
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: "mapbox://styles/mapbox/light-v11",
+          center: [clientLongitude, clientLatitude],
+          zoom: 14,
+          interactive: false,
+        });
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v11",
-      center: [clientLongitude, clientLatitude],
-      zoom: 14,
-      interactive: false,
-    });
+        // Add client marker
+        const clientEl = document.createElement('div');
+        clientEl.className = 'w-8 h-8';
+        clientEl.innerHTML = `
+          <div class="w-full h-full flex items-center justify-center bg-primary rounded-full shadow-lg animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </div>
+        `;
 
-    // Add client marker
-    const clientEl = document.createElement('div');
-    clientEl.className = 'w-8 h-8';
-    clientEl.innerHTML = `
-      <div class="w-full h-full flex items-center justify-center bg-primary rounded-full shadow-lg animate-pulse">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-        </svg>
-      </div>
-    `;
+        new mapboxgl.Marker(clientEl)
+          .setLngLat([clientLongitude, clientLatitude])
+          .addTo(map.current);
+        
+        setMapError(null);
+        setIsLoadingMap(false);
+      } catch (error) {
+        console.error('Erro ao inicializar mapa:', error);
+        setMapError('Não foi possível carregar o mapa');
+        setIsLoadingMap(false);
+      }
+    };
 
-    new mapboxgl.Marker(clientEl)
-      .setLngLat([clientLongitude, clientLatitude])
-      .addTo(map.current);
+    initMap();
 
     return () => {
       map.current?.remove();
@@ -99,10 +122,27 @@ export function ProfessionalMiniMap({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div 
-          ref={mapContainer} 
-          className="w-full h-[200px] rounded-lg border border-primary/10 shadow-sm"
-        />
+        {isLoadingMap ? (
+          <div className="w-full h-[200px] rounded-lg border border-primary/10 shadow-sm flex items-center justify-center bg-muted/30">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Carregando mapa...</p>
+            </div>
+          </div>
+        ) : mapError ? (
+          <Alert variant="default" className="border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <p className="font-medium">{mapError}</p>
+              <p className="text-sm mt-1">Endereço: {clientAddress}</p>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div 
+            ref={mapContainer} 
+            className="w-full h-[200px] rounded-lg border border-primary/10 shadow-sm"
+          />
+        )}
         
         <div className="flex items-center justify-between text-sm bg-muted/50 p-3 rounded-lg">
           <div className="flex items-center gap-2">
