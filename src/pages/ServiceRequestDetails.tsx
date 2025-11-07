@@ -29,7 +29,7 @@ import { ServiceAttachments } from "@/components/service-system/ServiceAttachmen
 import { EnhancedServiceActions } from "@/components/service-system/EnhancedServiceActions";
 import { IntegratedReviewSystem } from "@/components/IntegratedReviewSystem";
 import { TemporarySupportSystem } from "@/components/TemporarySupportSystem";
-import { ProfessionalMiniMap } from "@/components/service-system/ProfessionalMiniMap";
+import { ClientLocationMap } from "@/components/service-system/ClientLocationMap";
 import { ClientTrackingMiniMap } from "@/components/service-system/ClientTrackingMiniMap";
 
 interface ServiceRequest {
@@ -326,15 +326,12 @@ export default function ServiceRequestDetails() {
               </Card>
             )}
 
-            {/* Professional Mini Map - Show client location */}
-            {userRole === 'professional' && user?.id && request.latitude && request.longitude && (
-              <ProfessionalMiniMap
+            {/* Professional Location Map - Show client location */}
+            {userRole === 'professional' && request.latitude && request.longitude && (
+              <ClientLocationMap
                 clientAddress={`${request.address}, ${request.city} - ${request.state}`}
                 clientLatitude={Number(request.latitude)}
                 clientLongitude={Number(request.longitude)}
-                requestId={request.id}
-                professionalId={user.id}
-                status={(request.extended_status || request.status) as string}
               />
             )}
 

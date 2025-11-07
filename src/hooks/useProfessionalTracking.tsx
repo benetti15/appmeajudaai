@@ -191,7 +191,7 @@ export function useProfessionalTracking(
       console.log('⏹️ Auto-stopping tracking on status change...');
       stopTracking(true);
     }
-  }, [autoStart, startTracking, stopTracking]);
+  }, [autoStart, state.isTracking]);
 
   // Cleanup on unmount
   useEffect(() => {

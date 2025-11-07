@@ -33,11 +33,11 @@ export function ProfessionalMiniMap({
   const [isLoadingMap, setIsLoadingMap] = useState(true);
   const { latitude, longitude, getCurrentPosition } = useGeolocation(true);
   
-  const { isTracking, startTracking, stopTracking } = useProfessionalTracking(
+  const { isTracking } = useProfessionalTracking(
     requestId,
     professionalId,
     { 
-      autoStart: status === "on_way",
+      autoStart: ["on_way", "arrived", "service_started"].includes(status),
       silentMode: true 
     }
   );
@@ -154,25 +154,15 @@ export function ProfessionalMiniMap({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2">
-            {isTracking ? (
-              <>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs text-muted-foreground">Compartilhando localização</span>
-              </>
-            ) : (
-              <span className="text-xs text-muted-foreground">Compartilhamento pausado</span>
-            )}
-          </div>
-          <Button 
-            size="sm" 
-            variant={isTracking ? "outline" : "default"}
-            onClick={() => isTracking ? stopTracking(false) : startTracking(false)}
-            className="h-7 text-xs"
-          >
-            {isTracking ? "Pausar" : "Iniciar"}
-          </Button>
+        <div className="flex items-center gap-2">
+          {isTracking ? (
+            <>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-xs text-muted-foreground">Compartilhando localização automaticamente</span>
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground">Compartilhamento inativo</span>
+          )}
         </div>
       </CardContent>
     </Card>

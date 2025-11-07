@@ -178,7 +178,10 @@ export function ImprovedServiceActions({
             />
             
             <Button 
-              onClick={() => updateServiceStatus('on_way')} 
+              onClick={() => {
+                updateServiceStatus('on_way');
+                toast.info('📍 Compartilhamento de localização iniciado automaticamente');
+              }} 
               disabled={loading} 
               size="lg"
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
