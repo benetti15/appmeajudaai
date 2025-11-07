@@ -134,7 +134,7 @@ export function ClientTrackingMiniMap({
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current || !hasActiveTracking) return;
+    if (!mapContainer.current || map.current) return;
     
     // Verificar se coordenadas do cliente existem
     if (!clientLatitude || !clientLongitude) {
@@ -271,32 +271,47 @@ export function ClientTrackingMiniMap({
     );
   }
 
-  if (!hasActiveTracking) {
-    return null; // Don't show anything if tracking is not active
-  }
-
   return (
-    <Card className="border-green-500/30 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/30 shadow-lg animate-fade-in overflow-hidden">
+    <Card className={hasActiveTracking 
+      ? "border-green-500/30 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/30 shadow-lg animate-fade-in overflow-hidden"
+      : "border-primary/20 bg-gradient-to-br from-background via-primary/5 to-primary/10 shadow-lg animate-fade-in overflow-hidden"
+    }>
       {/* Header com badge animado */}
-      <CardHeader className="pb-3 bg-gradient-to-r from-green-500/5 to-emerald-500/5">
+      <CardHeader className={hasActiveTracking 
+        ? "pb-3 bg-gradient-to-r from-green-500/5 to-emerald-500/5"
+        : "pb-3 bg-gradient-to-r from-primary/5 to-primary/10"
+      }>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <div className="p-1.5 bg-green-500/10 rounded-lg">
-              <Navigation className="w-4 h-4 text-green-600 animate-pulse" />
+            <div className={hasActiveTracking 
+              ? "p-1.5 bg-green-500/10 rounded-lg"
+              : "p-1.5 bg-primary/10 rounded-lg"
+            }>
+              {hasActiveTracking ? (
+                <Navigation className="w-4 h-4 text-green-600 animate-pulse" />
+              ) : (
+                <MapPin className="w-4 h-4 text-primary" />
+              )}
             </div>
-            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold">
-              Profissional a Caminho
+            <span className={hasActiveTracking 
+              ? "bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold"
+              : "text-foreground font-bold"
+            }>
+              {hasActiveTracking ? "Profissional a Caminho" : "Localização do Atendimento"}
             </span>
           </CardTitle>
-          <Badge variant="outline" className="bg-green-500 text-white border-green-600 animate-pulse shadow-md hover:shadow-lg transition-shadow">
-            <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-ping" />
-            <span className="relative">AO VIVO</span>
-          </Badge>
+          {hasActiveTracking && (
+            <Badge variant="outline" className="bg-green-500 text-white border-green-600 animate-pulse shadow-md hover:shadow-lg transition-shadow">
+              <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-ping" />
+              <span className="relative">AO VIVO</span>
+            </Badge>
+          )}
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* Info cards com animação */}
+        {/* Info cards com animação - só mostra se houver tracking ativo */}
+        {hasActiveTracking && (
         <div className="grid grid-cols-3 gap-2">
           <div className="flex flex-col items-center gap-1.5 p-3 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 rounded-xl hover:shadow-md transition-all duration-300 hover:scale-105">
             <div className="p-2 bg-green-500/10 rounded-lg">
@@ -334,6 +349,7 @@ export function ClientTrackingMiniMap({
             </div>
           </div>
         </div>
+        )}
         
         {/* Mapa ou erro */}
         {mapError ? (
@@ -356,21 +372,30 @@ export function ClientTrackingMiniMap({
         )}
         
         {/* Status bar */}
-        {professionalLocation && (
-          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 rounded-xl animate-fade-in">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-600"></span>
+        {hasActiveTracking ? (
+          professionalLocation && (
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 rounded-xl animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-600"></span>
+                </span>
+                <span className="text-xs font-medium text-green-700">Localização ao vivo</span>
+              </div>
+              <span className="text-xs font-semibold text-green-600">
+                {new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
               </span>
-              <span className="text-xs font-medium text-green-700">Localização ao vivo</span>
             </div>
-            <span className="text-xs font-semibold text-green-600">
-              {new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </span>
+          )
+        ) : (
+          <div className="flex items-center justify-center p-3 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-xl">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span className="text-xs font-medium">Aguardando profissional iniciar deslocamento</span>
+            </div>
           </div>
         )}
       </CardContent>
