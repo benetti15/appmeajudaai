@@ -38,7 +38,8 @@ export function ClientTrackingMiniMap({
   const [eta, setETA] = useState<number | null>(null);
   const [hasActiveTracking, setHasActiveTracking] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [mapError, setMapError] = useState<string | null>(null);
+const [mapError, setMapError] = useState<string | null>(null);
+  const [isLoadingMap, setIsLoadingMap] = useState(true);
 
   // Calculate distance between two points
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -134,19 +135,35 @@ export function ClientTrackingMiniMap({
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current) {
+      console.log('🗺️ [ClientTrackingMiniMap] Pulando inicialização:', {
+        hasContainer: !!mapContainer.current,
+        hasMap: !!map.current
+      });
+      return;
+    }
     
     // Verificar se coordenadas do cliente existem
     if (!clientLatitude || !clientLongitude) {
+      console.error('❌ [ClientTrackingMiniMap] Coordenadas do cliente não disponíveis');
       setMapError('Coordenadas do cliente não disponíveis');
       return;
     }
 
+    console.log('🗺️ [ClientTrackingMiniMap] Iniciando mapa...', {
+      clientLat: clientLatitude,
+      clientLng: clientLongitude
+    });
+
     const initMap = async () => {
       try {
+        console.log('📡 [ClientTrackingMiniMap] Obtendo token Mapbox...');
         const token = await initializeMapbox();
+        console.log('✅ [ClientTrackingMiniMap] Token obtido com sucesso');
+        
         mapboxgl.accessToken = token;
 
+        console.log('🗺️ [ClientTrackingMiniMap] Criando instância do mapa...');
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: "mapbox://styles/mapbox/streets-v12",
@@ -154,46 +171,90 @@ export function ClientTrackingMiniMap({
           zoom: 13,
         });
 
-        map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+        console.log('⏳ [ClientTrackingMiniMap] Aguardando evento "load"...');
 
-        // Add client marker (home icon)
-        const clientEl = document.createElement('div');
-        clientEl.className = 'w-10 h-10';
-        clientEl.innerHTML = `
-          <div class="w-full h-full flex items-center justify-center bg-primary rounded-full shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-          </div>
-        `;
+        // CRITICAL: Wait for map to load before adding any content
+        map.current.on('load', () => {
+          console.log('✅ [ClientTrackingMiniMap] Mapa carregado! Adicionando conteúdo...');
 
-        new mapboxgl.Marker(clientEl)
-          .setLngLat([clientLongitude, clientLatitude])
-          .addTo(map.current);
+          if (!map.current) {
+            console.error('❌ [ClientTrackingMiniMap] Referência do mapa perdida após load');
+            return;
+          }
+
+          // Add navigation controls
+          console.log('🧭 [ClientTrackingMiniMap] Adicionando controles de navegação...');
+          map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+
+          // Add client marker (home icon)
+          console.log('📍 [ClientTrackingMiniMap] Adicionando marcador do cliente...');
+          const clientEl = document.createElement('div');
+          clientEl.className = 'w-10 h-10';
+          clientEl.innerHTML = `
+            <div class="w-full h-full flex items-center justify-center bg-primary rounded-full shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+              </svg>
+            </div>
+          `;
+
+          new mapboxgl.Marker(clientEl)
+            .setLngLat([clientLongitude, clientLatitude])
+            .addTo(map.current);
+          
+          console.log('✅ [ClientTrackingMiniMap] Mapa totalmente inicializado!');
+          setMapError(null);
+          setIsLoadingMap(false);
+        });
+
+        // Error handling
+        map.current.on('error', (e) => {
+          console.error('❌ [ClientTrackingMiniMap] Erro no mapa:', e);
+          setMapError('Erro ao carregar o mapa');
+          setIsLoadingMap(false);
+        });
         
-        setMapError(null);
       } catch (error) {
-        console.error('Erro ao inicializar mapa:', error);
+        console.error('❌ [ClientTrackingMiniMap] Erro ao inicializar mapa:', error);
         setMapError('Não foi possível carregar o mapa');
+        setIsLoadingMap(false);
       }
     };
 
     initMap();
 
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        console.log('🧹 [ClientTrackingMiniMap] Limpando mapa...');
+        map.current.remove();
+        map.current = null;
+      }
     };
-  }, [clientLatitude, clientLongitude, hasActiveTracking]);
+  }, [clientLatitude, clientLongitude]); // Removed hasActiveTracking from dependencies
 
   // Update professional marker
   useEffect(() => {
-    if (!map.current || !professionalLocation || !hasActiveTracking) return;
+    if (!map.current || !professionalLocation || !hasActiveTracking) {
+      console.log('🔄 [ClientTrackingMiniMap] Pulando atualização de marcador:', {
+        hasMap: !!map.current,
+        hasLocation: !!professionalLocation,
+        hasTracking: hasActiveTracking
+      });
+      return;
+    }
+
+    console.log('🔄 [ClientTrackingMiniMap] Atualizando marcador do profissional...', {
+      lat: professionalLocation.latitude,
+      lng: professionalLocation.longitude
+    });
 
     const { latitude, longitude } = professionalLocation;
 
     if (professionalMarker.current) {
+      console.log('📍 [ClientTrackingMiniMap] Atualizando posição do marcador existente...');
       professionalMarker.current.setLngLat([longitude, latitude]);
     } else {
+      console.log('📍 [ClientTrackingMiniMap] Criando novo marcador do profissional...');
       const profEl = document.createElement('div');
       profEl.className = 'w-12 h-12';
       profEl.innerHTML = `
@@ -213,6 +274,7 @@ export function ClientTrackingMiniMap({
     }
 
     // Draw route line
+    console.log('🛣️ [ClientTrackingMiniMap] Atualizando linha de rota...');
     const routeGeoJSON = {
       type: 'Feature' as const,
       properties: {},
@@ -226,8 +288,10 @@ export function ClientTrackingMiniMap({
     };
 
     if (map.current.getSource('route')) {
+      console.log('🔄 [ClientTrackingMiniMap] Source "route" encontrada, atualizando dados...');
       (map.current.getSource('route') as mapboxgl.GeoJSONSource).setData(routeGeoJSON as any);
     } else {
+      console.log('➕ [ClientTrackingMiniMap] Criando source e layer "route"...');
       map.current.addSource('route', {
         type: 'geojson',
         data: routeGeoJSON as any
@@ -251,6 +315,7 @@ export function ClientTrackingMiniMap({
     }
 
     // Fit bounds
+    console.log('🎯 [ClientTrackingMiniMap] Ajustando bounds do mapa...');
     const bounds = new mapboxgl.LngLatBounds();
     bounds.extend([longitude, latitude]);
     bounds.extend([clientLongitude, clientLatitude]);
@@ -259,6 +324,8 @@ export function ClientTrackingMiniMap({
       padding: 50,
       maxZoom: 15,
     });
+    
+    console.log('✅ [ClientTrackingMiniMap] Atualização completa!');
   }, [professionalLocation, clientLatitude, clientLongitude, hasActiveTracking]);
 
   if (isLoading) {
@@ -352,7 +419,14 @@ export function ClientTrackingMiniMap({
         )}
         
         {/* Mapa ou erro */}
-        {mapError ? (
+        {isLoadingMap ? (
+          <div className="w-full h-[280px] rounded-xl border-2 border-primary/10 shadow-lg flex items-center justify-center bg-muted/30">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Carregando mapa...</p>
+            </div>
+          </div>
+        ) : mapError ? (
           <Alert variant="default" className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 animate-fade-in">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-800">
