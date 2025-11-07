@@ -47,7 +47,10 @@ export function ClientLocationMap({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
     
+    console.log('🗺️ Inicializando mapa com coordenadas:', { clientLatitude, clientLongitude });
+    
     if (!clientLatitude || !clientLongitude) {
+      console.error('❌ Coordenadas não disponíveis');
       setMapError('Coordenadas do cliente não disponíveis');
       setIsLoadingMap(false);
       return;
@@ -55,8 +58,10 @@ export function ClientLocationMap({
 
     const initMap = async () => {
       try {
+        console.log('📍 Buscando token do Mapbox...');
         setIsLoadingMap(true);
         const token = await initializeMapbox();
+        console.log('✅ Token do Mapbox obtido');
         mapboxgl.accessToken = token;
 
         map.current = new mapboxgl.Map({
