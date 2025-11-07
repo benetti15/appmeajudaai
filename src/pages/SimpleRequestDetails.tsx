@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, MapPin, Calendar, DollarSign, Clock, User, Home, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { ServiceAttachments } from "@/components/service-system/ServiceAttachments";
 
 interface ServiceRequest {
   id: string;
@@ -27,6 +28,9 @@ interface ServiceRequest {
   status: string;
   created_at: string;
   client_id: string;
+  attachments?: any;
+  images_urls?: string[];
+  formatted_address?: string;
   profiles?: {
     full_name: string;
     phone: string;
@@ -323,6 +327,19 @@ export default function SimpleRequestDetails() {
             )}
           </CardContent>
         </Card>
+
+        {/* Attachments Section */}
+        {(request.attachments || request.images_urls) && (
+          <ServiceAttachments
+            title={request.title}
+            description={request.description}
+            address={request.formatted_address || `${request.address}, ${request.city} - ${request.state}`}
+            budgetEstimate={request.budget_estimate}
+            urgencyLevel={request.urgency_level}
+            preferredDate={request.preferred_date}
+            attachments={request.attachments as any}
+          />
+        )}
 
         {/* Quote Form for Professionals */}
         {isProfessional && !hasUserQuote && request.status === "pending" && (
