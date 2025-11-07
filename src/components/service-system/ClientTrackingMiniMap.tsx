@@ -4,9 +4,10 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Navigation, MapPin, Clock, Loader2, AlertCircle } from "lucide-react";
+import { Navigation, MapPin, Clock, Loader2, AlertCircle, Route } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { initializeMapbox } from "@/lib/mapbox";
+import { useProximityAlerts } from "@/hooks/useProximityAlerts";
 
 interface ClientTrackingMiniMapProps {
   requestId: string;
@@ -51,6 +52,11 @@ export function ClientTrackingMiniMap({
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     return R * c;
   };
+
+  // Use proximity alerts
+  useProximityAlerts(distance, eta, (message) => {
+    console.log('🔔 Proximity alert:', message);
+  });
 
   // Check if tracking is active
   useEffect(() => {
@@ -189,12 +195,15 @@ export function ClientTrackingMiniMap({
       professionalMarker.current.setLngLat([longitude, latitude]);
     } else {
       const profEl = document.createElement('div');
-      profEl.className = 'w-10 h-10';
+      profEl.className = 'w-12 h-12';
       profEl.innerHTML = `
-        <div class="w-full h-full flex items-center justify-center bg-green-500 rounded-full shadow-lg animate-pulse">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
+        <div class="relative w-full h-full">
+          <div class="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
+          <div class="relative w-full h-full flex items-center justify-center bg-green-600 rounded-full shadow-xl border-2 border-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          </div>
         </div>
       `;
 
@@ -228,10 +237,15 @@ export function ClientTrackingMiniMap({
         id: 'route',
         type: 'line',
         source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
         paint: {
           'line-color': '#10b981',
-          'line-width': 3,
-          'line-opacity': 0.7
+          'line-width': 4,
+          'line-opacity': 0.85,
+          'line-dasharray': [2, 1]
         }
       });
     }
@@ -262,43 +276,68 @@ export function ClientTrackingMiniMap({
   }
 
   return (
-    <Card className="border-green-200 bg-gradient-to-br from-background to-green-50/30 animate-fade-in">
-      <CardHeader className="pb-3">
+    <Card className="border-green-500/30 bg-gradient-to-br from-background via-green-50/20 to-emerald-50/30 shadow-lg animate-fade-in overflow-hidden">
+      {/* Header com badge animado */}
+      <CardHeader className="pb-3 bg-gradient-to-r from-green-500/5 to-emerald-500/5">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Navigation className="w-4 h-4 text-green-600" />
-            Profissional a Caminho
+            <div className="p-1.5 bg-green-500/10 rounded-lg">
+              <Navigation className="w-4 h-4 text-green-600 animate-pulse" />
+            </div>
+            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold">
+              Profissional a Caminho
+            </span>
           </CardTitle>
-          <Badge variant="outline" className="bg-green-500 text-white border-green-600 animate-pulse">
-            <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5" />
-            AO VIVO
+          <Badge variant="outline" className="bg-green-500 text-white border-green-600 animate-pulse shadow-md hover:shadow-lg transition-shadow">
+            <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-ping" />
+            <span className="relative">AO VIVO</span>
           </Badge>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
-            <MapPin className="h-3.5 w-3.5 text-primary" />
-            <div>
-              <p className="text-xs text-muted-foreground">Distância</p>
-              <p className="font-semibold text-sm">
+        {/* Info cards com animação */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col items-center gap-1.5 p-3 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 rounded-xl hover:shadow-md transition-all duration-300 hover:scale-105">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <MapPin className="h-4 w-4 text-green-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground font-medium">Distância</p>
+              <p className="font-bold text-sm text-green-600">
                 {distance ? `${distance.toFixed(1)} km` : '...'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
-            <Clock className="h-3.5 w-3.5 text-primary" />
-            <div>
-              <p className="text-xs text-muted-foreground">Chegada</p>
-              <p className="font-semibold text-sm">
+
+          <div className="flex flex-col items-center gap-1.5 p-3 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200/50 rounded-xl hover:shadow-md transition-all duration-300 hover:scale-105">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Clock className="h-4 w-4 text-blue-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground font-medium">Chegada em</p>
+              <p className="font-bold text-sm text-blue-600">
                 {eta ? `${eta} min` : '...'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center gap-1.5 p-3 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/50 rounded-xl hover:shadow-md transition-all duration-300 hover:scale-105">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <Route className="h-4 w-4 text-purple-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground font-medium">Rota</p>
+              <p className="font-bold text-sm text-purple-600">
+                Ativa
               </p>
             </div>
           </div>
         </div>
         
+        {/* Mapa ou erro */}
         {mapError ? (
-          <Alert variant="default" className="border-amber-200 bg-amber-50">
+          <Alert variant="default" className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 animate-fade-in">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-800">
               <p className="font-medium">{mapError}</p>
@@ -306,17 +345,31 @@ export function ClientTrackingMiniMap({
             </AlertDescription>
           </Alert>
         ) : (
-          <div 
-            ref={mapContainer} 
-            className="w-full h-[250px] rounded-lg border shadow-sm"
-          />
+          <div className="relative rounded-xl overflow-hidden border-2 border-green-200/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div 
+              ref={mapContainer} 
+              className="w-full h-[280px]"
+            />
+            {/* Overlay com gradiente */}
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+          </div>
         )}
         
+        {/* Status bar */}
         {professionalLocation && (
-          <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg flex items-center justify-between">
-            <span>Última atualização</span>
-            <span className="font-medium">
-              {new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR')}
+          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50 rounded-xl animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-600"></span>
+              </span>
+              <span className="text-xs font-medium text-green-700">Localização ao vivo</span>
+            </div>
+            <span className="text-xs font-semibold text-green-600">
+              {new Date(professionalLocation.updated_at).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
             </span>
           </div>
         )}
