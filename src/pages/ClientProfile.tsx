@@ -24,7 +24,7 @@ export default function ClientProfile() {
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || "",
     phone: profile?.phone || "",
-    document_number: profile?.document_number || "",
+    cpf: profile?.cpf || "",
   });
 
   const [addressData, setAddressData] = useState<AddressData>({
@@ -62,7 +62,7 @@ export default function ClientProfile() {
       setFormData({
         full_name: profile.full_name || "",
         phone: profile.phone || "",
-        document_number: profile.document_number || "",
+        cpf: profile.cpf || "",
       });
       setAddressData({
         street: profile.street || "",
@@ -88,7 +88,7 @@ export default function ClientProfile() {
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
-          document_number: formData.document_number,
+          cpf: formData.cpf,
           avatar_url: profilePhoto,
           street: addressData.street,
           number: addressData.number,
@@ -212,11 +212,11 @@ export default function ClientProfile() {
               </div>
 
               <div>
-                <Label htmlFor="document_number">CPF</Label>
+                <Label htmlFor="cpf">CPF</Label>
                 <Input
-                  id="document_number"
-                  value={formData.document_number}
-                  onChange={(e) => handleInputChange("document_number", e.target.value)}
+                  id="cpf"
+                  value={formData.cpf}
+                  onChange={(e) => handleInputChange("cpf", e.target.value)}
                   placeholder="000.000.000-00"
                   maxLength={14}
                 />
