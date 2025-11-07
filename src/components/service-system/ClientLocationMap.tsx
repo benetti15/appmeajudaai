@@ -55,7 +55,22 @@ export function ClientLocationMap({
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    console.log('🔍 useEffect executado. Estado:', {
+      hasContainer: !!mapContainer.current,
+      hasMap: !!map.current,
+      clientLatitude,
+      clientLongitude
+    });
+
+    if (!mapContainer.current) {
+      console.log('⚠️ mapContainer.current não existe ainda');
+      return;
+    }
+    
+    if (map.current) {
+      console.log('⚠️ map.current já existe, não reinicializando');
+      return;
+    }
     
     console.log('🗺️ Inicializando mapa com coordenadas:', { clientLatitude, clientLongitude });
     
