@@ -21,12 +21,22 @@ export function ClientLocationMap({
   showDistance = true,
   mapHeight = "200px",
 }: ClientLocationMapProps) {
+  console.log('🗺️ ClientLocationMap renderizado com:', { 
+    clientAddress, 
+    clientLatitude, 
+    clientLongitude,
+    showDistance,
+    mapHeight 
+  });
+
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [isLoadingMap, setIsLoadingMap] = useState(true);
   const { latitude, longitude } = useGeolocation(true);
+  
+  console.log('📍 Geolocation do profissional:', { latitude, longitude });
 
   // Calculate distance
   useEffect(() => {
