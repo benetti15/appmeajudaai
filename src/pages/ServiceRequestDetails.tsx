@@ -326,6 +326,17 @@ export default function ServiceRequestDetails() {
               </Card>
             )}
 
+            {/* Quote Manager */}
+            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <QuoteManager
+                requestId={request.id}
+                clientId={request.client_id}
+                currentStatus={request.status}
+                userRole={userRole}
+                onQuoteAccepted={handleStatusUpdate}
+              />
+            </div>
+
             {/* Professional Location Card - Show client location */}
             {userRole === 'professional' && request.latitude && request.longitude && (
               <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
@@ -351,18 +362,6 @@ export default function ServiceRequestDetails() {
                 clientAddress={`${request.address}, ${request.city} - ${request.state}`}
               />
             )}
-            
-
-            {/* Quote Manager */}
-            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-              <QuoteManager
-                requestId={request.id}
-                clientId={request.client_id}
-                currentStatus={request.status}
-                userRole={userRole}
-                onQuoteAccepted={handleStatusUpdate}
-              />
-            </div>
 
             {/* Enhanced Service Details with Attachments */}
             <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
