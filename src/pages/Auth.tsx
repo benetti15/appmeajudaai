@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, UserPlus, Wrench, Mail, Phone, Eye, EyeOff, MapPin, FileText } from "lucide-react";
+import { User, UserPlus, Wrench, Mail, Phone, Eye, EyeOff, MapPin, FileText, CheckCircle2, XCircle } from "lucide-react";
 import heroImage from "/lovable-uploads/bcdf9267-23f4-43c5-9f60-203b73298aa4.png";
 import { validateCPF, formatCPF } from "@/lib/cpf-validator";
 // Using the new logo directly from public uploads
@@ -24,6 +24,7 @@ const Auth = () => {
   const [userType, setUserType] = useState<"client" | "professional" | "">("");
   const [showPassword, setShowPassword] = useState(false);
   const [cpf, setCpf] = useState("");
+  const [cpfValid, setCpfValid] = useState<boolean | null>(null);
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("Uberlândia");
   const [state, setState] = useState("MG");
@@ -71,7 +72,18 @@ const Auth = () => {
   };
 
   const handleCpfChange = (value: string) => {
-    setCpf(formatCPF(value));
+    const formatted = formatCPF(value);
+    setCpf(formatted);
+    
+    // Validar em tempo real apenas se tiver 11 dígitos
+    const cleanCPF = formatted.replace(/\D/g, '');
+    if (cleanCPF.length === 11) {
+      setCpfValid(validateCPF(formatted));
+    } else if (cleanCPF.length === 0) {
+      setCpfValid(null);
+    } else {
+      setCpfValid(false);
+    }
   };
 
   const detectInputType = (input: string) => {
@@ -576,11 +588,23 @@ const Auth = () => {
                          placeholder="000.000.000-00"
                          value={cpf}
                          onChange={(e) => handleCpfChange(e.target.value)}
-                         className="pl-10 h-12"
+                         className={`pl-10 pr-10 h-12 ${
+                           cpfValid === true ? 'border-green-500 focus:border-green-500' : 
+                           cpfValid === false ? 'border-red-500 focus:border-red-500' : ''
+                         }`}
                          required
                          maxLength={14}
                        />
+                       {cpfValid === true && (
+                         <CheckCircle2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500 w-5 h-5" />
+                       )}
+                       {cpfValid === false && (
+                         <XCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 w-5 h-5" />
+                       )}
                      </div>
+                     {cpfValid === false && cpf.replace(/\D/g, '').length === 11 && (
+                       <p className="text-sm text-red-500">CPF inválido</p>
+                     )}
                    </div>
 
                    <div className="space-y-3">
