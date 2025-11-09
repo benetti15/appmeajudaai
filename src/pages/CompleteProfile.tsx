@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Phone, FileText, MapPin, User } from "lucide-react";
+import { validateCPF, formatCPF } from "@/lib/cpf-validator";
 
 const CompleteProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -55,20 +56,6 @@ const CompleteProfile = () => {
     setPhone(formatPhone(value));
   };
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 11) {
-      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, (_, first, second, third, fourth) => {
-        let formatted = first;
-        if (second) formatted += `.${second}`;
-        if (third) formatted += `.${third}`;
-        if (fourth) formatted += `-${fourth}`;
-        return formatted;
-      });
-    }
-    return value;
-  };
-
   const handleCpfChange = (value: string) => {
     setCpf(formatCPF(value));
   };
@@ -98,6 +85,15 @@ const CompleteProfile = () => {
       toast({
         title: "CPF obrigatório",
         description: "Por favor, informe seu CPF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateCPF(cpf)) {
+      toast({
+        title: "CPF inválido",
+        description: "O CPF informado não é válido. Verifique os números digitados.",
         variant: "destructive",
       });
       return;

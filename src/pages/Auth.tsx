@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserPlus, Wrench, Mail, Phone, Eye, EyeOff, MapPin, FileText } from "lucide-react";
 import heroImage from "/lovable-uploads/bcdf9267-23f4-43c5-9f60-203b73298aa4.png";
+import { validateCPF, formatCPF } from "@/lib/cpf-validator";
 // Using the new logo directly from public uploads
 
 const Auth = () => {
@@ -67,20 +68,6 @@ const Auth = () => {
 
   const handlePhoneChange = (value: string) => {
     setPhone(formatPhone(value));
-  };
-
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 11) {
-      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, (_, first, second, third, fourth) => {
-        let formatted = first;
-        if (second) formatted += `.${second}`;
-        if (third) formatted += `.${third}`;
-        if (fourth) formatted += `-${fourth}`;
-        return formatted;
-      });
-    }
-    return value;
   };
 
   const handleCpfChange = (value: string) => {
@@ -234,6 +221,15 @@ const Auth = () => {
       toast({
         title: "CPF obrigatório",
         description: "Por favor, informe seu CPF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateCPF(cpf)) {
+      toast({
+        title: "CPF inválido",
+        description: "Por favor, informe um CPF válido.",
         variant: "destructive",
       });
       return;
