@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,9 +11,10 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Calendar, Clock, User } from "lucide-react";
+import { MapPin, Calendar, Clock, User, FileText, AlertCircle, Send, Loader2, ArrowLeft } from "lucide-react";
 import { AddressData, formatAddress } from "@/lib/address-utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 interface UploadedFile {
   id: string;
@@ -198,140 +199,250 @@ export function SimpleRequestCreation({ categoryId }: SimpleRequestCreationProps
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
-          Nova Solicitação de Serviço
+    <Card className="w-full max-w-3xl mx-auto shadow-2xl border-2 border-border/50
+                   bg-gradient-to-br from-card via-card to-primary/5
+                   animate-fade-in">
+      <CardHeader className="space-y-2 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 
+                           border-b border-border/50">
+        <CardTitle className="flex items-center gap-3 text-2xl">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-primary/30 to-accent/20 shadow-lg">
+            <FileText className="h-6 w-6 text-primary" />
+          </div>
+          Detalhes da Solicitação
         </CardTitle>
+        <CardDescription className="text-base">
+          Preencha as informações para receber orçamentos de profissionais qualificados
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Título do Serviço *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              placeholder="Ex: Conserto de torneira, Limpeza de casa..."
-              required
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição Detalhada *</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              placeholder="Descreva com detalhes o serviço que precisa..."
-              rows={4}
-              required
-            />
-          </div>
-
-          {/* Opção de usar endereço do perfil */}
-          {showProfileAddressOption && !addressData.street && (
-            <Alert className="border-primary/30 bg-primary/5">
-              <User className="h-4 w-4 text-primary" />
-              <AlertDescription className="flex items-center justify-between">
-                <span className="text-sm">
-                  Usar endereço cadastrado no perfil?
-                </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="default"
-                  onClick={handleUseProfileAddress}
-                  className="ml-2"
-                >
-                  Usar endereço do perfil
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Campo de Endereço Aprimorado */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              Endereço
-              <span className="text-destructive">*</span>
-            </Label>
-            <EnhancedAddressInput
-              value={addressData}
-              onChange={setAddressData}
-              required
-              allowCurrentLocation
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="preferred_time" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Melhor Horário para Atendimento
-              </Label>
-              <Select value={formData.preferred_time} onValueChange={(value) => handleInputChange("preferred_time", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o horário" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manha">Manhã (08:00 - 12:00)</SelectItem>
-                  <SelectItem value="tarde">Tarde (12:00 - 18:00)</SelectItem>
-                  <SelectItem value="noite">Noite (18:00 - 22:00)</SelectItem>
-                  <SelectItem value="flexivel">Flexível</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <CardContent className="pt-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Seção 1: Informações Básicas */}
+          <div className="space-y-5 p-5 rounded-xl bg-muted/30 border border-border/50">
+            <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
+              <FileText className="h-5 w-5 text-primary" />
+              Informações do Serviço
+            </h3>
             
             <div className="space-y-2">
-              <Label htmlFor="preferred_date" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Data Preferida (opcional)
+              <Label htmlFor="title" className="text-base font-medium">
+                Título do Serviço <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="preferred_date"
-                type="date"
-                value={formData.preferred_date}
-                onChange={(e) => handleInputChange("preferred_date", e.target.value)}
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                placeholder="Ex: Conserto de torneira, Limpeza de casa..."
+                className="h-12 text-base border-2 focus:border-primary transition-colors"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-base font-medium">
+                Descrição Detalhada <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange("description", e.target.value)}
+                placeholder="Descreva com detalhes o serviço que precisa..."
+                rows={5}
+                className="text-base border-2 focus:border-primary transition-colors resize-none"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Quanto mais detalhes, mais precisos serão os orçamentos
+              </p>
+            </div>
+          </div>
+
+          {/* Seção 2: Localização */}
+          <div className="space-y-5 p-5 rounded-xl bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 
+                        border border-primary/20">
+            <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
+              <MapPin className="h-5 w-5 text-primary" />
+              Onde será realizado o serviço?
+            </h3>
+
+            {/* Opção de usar endereço do perfil */}
+            {showProfileAddressOption && !addressData.street && (
+              <Alert className="border-primary/30 bg-primary/10 animate-fade-in">
+                <User className="h-4 w-4 text-primary" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Usar endereço cadastrado no perfil?
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleUseProfileAddress}
+                    className="ml-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                  >
+                    Usar endereço do perfil
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-base font-medium">
+                <MapPin className="h-4 w-4 text-primary" />
+                Endereço Completo
+                <span className="text-destructive">*</span>
+              </Label>
+              <EnhancedAddressInput
+                value={addressData}
+                onChange={setAddressData}
+                required
+                allowCurrentLocation
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="urgency_level">Nível de Urgência</Label>
-            <Select value={formData.urgency_level} onValueChange={(value) => handleInputChange("urgency_level", value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Baixa - Posso aguardar alguns dias</SelectItem>
-                <SelectItem value="2">Média - Preciso em alguns dias</SelectItem>
-                <SelectItem value="3">Alta - Preciso urgentemente</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Seção 3: Agendamento e Preferências */}
+          <div className="space-y-5 p-5 rounded-xl bg-muted/30 border border-border/50">
+            <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
+              <Clock className="h-5 w-5 text-primary" />
+              Preferências de Agendamento
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <Label htmlFor="preferred_time" className="flex items-center gap-2 text-base font-medium">
+                  <Clock className="h-4 w-4" />
+                  Melhor Horário
+                </Label>
+                <Select value={formData.preferred_time} onValueChange={(value) => handleInputChange("preferred_time", value)}>
+                  <SelectTrigger className="h-12 text-base border-2 focus:border-primary transition-colors">
+                    <SelectValue placeholder="Selecione o horário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manha" className="text-base py-3">
+                      ☀️ Manhã (08:00 - 12:00)
+                    </SelectItem>
+                    <SelectItem value="tarde" className="text-base py-3">
+                      🌤️ Tarde (12:00 - 18:00)
+                    </SelectItem>
+                    <SelectItem value="noite" className="text-base py-3">
+                      🌙 Noite (18:00 - 22:00)
+                    </SelectItem>
+                    <SelectItem value="flexivel" className="text-base py-3">
+                      ⏰ Flexível
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="preferred_date" className="flex items-center gap-2 text-base font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Data Preferida
+                </Label>
+                <Input
+                  id="preferred_date"
+                  type="date"
+                  value={formData.preferred_date}
+                  onChange={(e) => handleInputChange("preferred_date", e.target.value)}
+                  className="h-12 text-base border-2 focus:border-primary transition-colors"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+
+            {/* Campo de Urgência com Visual Aprimorado */}
+            <div className="space-y-3">
+              <Label htmlFor="urgency_level" className="text-base font-semibold flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-primary" />
+                Nível de Urgência
+              </Label>
+              <Select value={formData.urgency_level} onValueChange={(value) => handleInputChange("urgency_level", value)}>
+                <SelectTrigger className="h-14 text-base border-2 focus:border-primary transition-colors">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1" className="text-base py-4 cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 px-3 py-1">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Baixa
+                      </Badge>
+                      <span>Posso aguardar alguns dias</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="2" className="text-base py-4 cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30 px-3 py-1">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Média
+                      </Badge>
+                      <span>Preciso em alguns dias</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="3" className="text-base py-4 cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30 px-3 py-1">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Alta
+                      </Badge>
+                      <span>Preciso urgentemente</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* File Upload Section */}
-          <FileUpload
-            onFilesUploaded={setAttachedFiles}
-            maxFiles={3}
-            maxSizePerFile={5}
-            acceptedFileTypes={['image/*', 'application/pdf']}
-            existingFiles={attachedFiles}
-          />
+          {/* File Upload Section com Visual Melhorado */}
+          <div className="p-5 rounded-xl bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 
+                        border border-primary/20">
+            <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground mb-4">
+              <FileText className="h-5 w-5 text-primary" />
+              Fotos e Documentos (Opcional)
+            </h3>
+            <FileUpload
+              onFilesUploaded={setAttachedFiles}
+              maxFiles={3}
+              maxSizePerFile={5}
+              acceptedFileTypes={['image/*', 'application/pdf']}
+              existingFiles={attachedFiles}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Adicione fotos ou documentos que ajudem o profissional a entender melhor o serviço
+            </p>
+          </div>
 
-          <div className="flex justify-end gap-4">
+          {/* Botões de Ação Melhorados */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-4 border-t border-border/50">
             <Button
               type="button"
               variant="outline"
+              size="lg"
               onClick={() => navigate("/categories")}
+              className="h-12 text-base border-2 hover:bg-muted transition-all duration-200"
             >
-              Cancelar
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Criando..." : "Criar Solicitação"}
+            <Button 
+              type="submit" 
+              disabled={loading} 
+              size="lg"
+              className="h-12 text-base bg-gradient-to-r from-primary to-accent 
+                       hover:opacity-90 hover:scale-105 transition-all duration-200 
+                       shadow-lg hover:shadow-xl disabled:opacity-50 disabled:hover:scale-100"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Criando Solicitação...
+                </>
+              ) : (
+                <>
+                  <Send className="h-5 w-5 mr-2" />
+                  Criar Solicitação
+                </>
+              )}
             </Button>
           </div>
         </form>

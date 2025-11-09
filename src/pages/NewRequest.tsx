@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Zap, Wrench, Snowflake, Home, Paintbrush, HardHat, Sparkles, Leaf, Package, Refrigerator } from "lucide-react";
 import { SimpleRequestCreation } from "@/components/SimpleRequestCreation";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface ServiceCategory {
   id: string;
@@ -34,6 +35,19 @@ interface Quote {
     full_name: string;
   };
 }
+
+const categoryIcons: Record<string, React.ComponentType<any>> = {
+  "Elétrica": Zap,
+  "Encanamento": Wrench,
+  "Ar Condicionado": Snowflake,
+  "Pequenos Reparos": Home,
+  "Pintura": Paintbrush,
+  "Marcenaria": HardHat,
+  "Limpeza": Sparkles,
+  "Jardinagem": Leaf,
+  "Montagem e Instalações": Package,
+  "Eletrodomésticos": Refrigerator,
+};
 
 export default function NewRequest() {
   const { categoryId } = useParams();
@@ -125,8 +139,8 @@ export default function NewRequest() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Carregando...</div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <LoadingSpinner message="Carregando..." fullScreen />
       </div>
     );
   }
@@ -138,22 +152,58 @@ export default function NewRequest() {
   }
 
   // Otherwise, show new request creation form
+  const IconComponent = category ? categoryIcons[category.name] || Home : Home;
+  
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/categories")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Novo Pedido</h1>
-            <p className="text-muted-foreground">
-              {category ? `Categoria: ${category.name}` : "Criar solicitação de serviço"}
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        {/* Header Visual Aprimorado */}
+        <div className="mb-8 animate-fade-in">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/categories")}
+              className="hover:scale-110 transition-transform duration-200"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            
+            {/* Breadcrumb Visual */}
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="hover:text-primary transition-colors cursor-pointer" 
+                    onClick={() => navigate("/categories")}>
+                Categorias
+              </span>
+              <span>/</span>
+              <span className="text-foreground font-medium">Novo Pedido</span>
+            </div>
+          </div>
+
+          {/* Card de Header com Ícone da Categoria */}
+          <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 
+                        rounded-2xl p-6 border-2 border-primary/20 shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 
+                            shadow-lg animate-scale-in">
+                <IconComponent className="h-10 w-10 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground mb-1">
+                  Novo Pedido
+                </h1>
+                <p className="text-lg text-muted-foreground flex items-center gap-2">
+                  {category ? (
+                    <>
+                      <span className="font-semibold text-primary">{category.name}</span>
+                      <span className="text-sm">• {category.description}</span>
+                    </>
+                  ) : (
+                    "Criar solicitação de serviço"
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
