@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -462,6 +462,12 @@ const Auth = () => {
                   >
                     {isLoading ? "Entrando..." : "Entrar"}
                   </Button>
+                  
+                  <Link to="/forgot-password" className="block text-center">
+                    <Button variant="link" className="w-full text-sm text-muted-foreground hover:text-primary">
+                      Esqueci minha senha
+                    </Button>
+                  </Link>
                 </form>
               </TabsContent>
 

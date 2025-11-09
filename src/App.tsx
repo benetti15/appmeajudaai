@@ -14,6 +14,8 @@ import { initializeStorageBuckets } from "@/lib/storage";
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 const ServiceCategories = lazy(() => import("./pages/ServiceCategories"));
 const NewRequest = lazy(() => import("./pages/NewRequest"));
@@ -84,6 +86,8 @@ function AppInitializer() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/complete-profile" element={<CompleteProfile />} />
             <Route path="/categories" element={<ServiceCategories />} />
             <Route path="/new-request/:categoryId" element={<NewRequest />} />
