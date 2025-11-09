@@ -34,7 +34,19 @@ const Auth = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        // Verificar se o perfil está completo
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone, cpf, user_type')
+          .eq('id', session.user.id)
+          .single();
+        
+        // Se faltar algum dado, redirecionar para completar perfil
+        if (!profile?.phone || !profile?.cpf || !profile?.user_type) {
+          navigate('/complete-profile');
+        } else {
+          navigate('/');
+        }
       }
     };
     checkAuth();
