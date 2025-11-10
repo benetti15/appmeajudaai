@@ -12,7 +12,6 @@ import { MobileBottomNav, MobileCard, ResponsiveGrid } from "@/components/Mobile
 import { LazyImage } from "@/components/PerformanceOptimizations";
 import { DebugInfo } from "@/components/DebugInfo";
 import { OnboardingTour } from "@/components/OnboardingTour";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -432,9 +431,6 @@ export const OptimizedIndex = () => {
           <StatsSection profile={profile} />
         </div>
       </main>
-
-      {/* Floating Action Button */}
-      <FloatingActionButton userType={profile?.user_type || 'client'} />
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav items={bottomNavItems} />
