@@ -332,8 +332,27 @@ const Auth = () => {
           alt="Professional Services Platform" 
           className="absolute inset-0 w-full h-full object-cover"
         />
+        
+        {/* Partículas flutuantes */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(15)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-white/30 rounded-full animate-float"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${5 + Math.random() * 10}s`
+              }}
+            />
+          ))}
+        </div>
+        
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-          <img src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" alt="Me Ajuda ai" className="w-20 h-20 mb-8 animate-float" />
+          <img src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
+               alt="Me Ajuda ai" 
+               className="w-20 h-20 mb-8 animate-bounce-in" />
           <h1 className="text-5xl font-display font-bold mb-6 text-center">
             Me Ajuda ai!
           </h1>
@@ -341,6 +360,32 @@ const Auth = () => {
             Conectando você aos melhores profissionais da sua região. 
             Solicite serviços ou ofereça seus talentos.
           </p>
+          
+          {/* Estatísticas animadas */}
+          <div className="mt-12 space-y-4 w-full max-w-md">
+            <div className="glass-dark rounded-2xl p-6 backdrop-blur-sm animate-slide-up" 
+                 style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-accent/80 to-primary/80 
+                                flex items-center justify-center text-white font-bold text-lg">
+                  ⭐
+                </div>
+                <div>
+                  <p className="font-semibold text-lg">Profissionais Verificados</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-yellow-400">★</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-white/80 text-sm italic">
+                "Encontrei um eletricista em minutos! Serviço impecável."
+              </p>
+              <p className="text-white/60 text-xs mt-2">- João Silva, Cliente</p>
+            </div>
+          </div>
+          
           <div className="mt-8 flex items-center gap-4 opacity-80">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -352,32 +397,32 @@ const Auth = () => {
 
       {/* Right Side - Auth Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md bg-white/90 backdrop-blur-xl border-0 shadow-2xl">
+        <Card className="w-full max-w-md glass border-white/20 shadow-2xl animate-slide-up">
           <CardHeader className="space-y-3 text-center pb-6">
             <div className="lg:hidden flex justify-center mb-4">
-              <img src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" alt="Me Ajuda ai" className="w-16 h-16" />
+              <img src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" alt="Me Ajuda ai" className="w-16 h-16 animate-bounce-in" />
             </div>
-            <CardTitle className="text-3xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
               Me Ajuda ai
             </CardTitle>
-            <CardDescription className="text-base text-gray-600">
+            <CardDescription className="text-base text-muted-foreground">
               Conecte-se com profissionais qualificados
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1">
-                <TabsTrigger value="signin" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50 backdrop-blur-sm p-1.5 rounded-xl relative">
+                <TabsTrigger value="signin" className="flex items-center gap-2 relative z-10 data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">
                   <User className="w-4 h-4" />
                   Entrar
                 </TabsTrigger>
-                <TabsTrigger value="signup" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsTrigger value="signup" className="flex items-center gap-2 relative z-10 data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">
                   <UserPlus className="w-4 h-4" />
                   Cadastrar
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="signin" className="space-y-6">
+              <TabsContent value="signin" className="space-y-6 animate-fade-in">
                 {/* Google Sign In Button */}
                 <div className="space-y-4">
                   <Button
@@ -385,9 +430,16 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full h-12 border-2 hover:bg-gray-50 transition-colors"
+                    className="w-full h-12 border-2 border-border hover:border-primary/50 hover:bg-primary/5
+                               transition-all duration-300 hover:shadow-lg hover:shadow-primary/20
+                               hover:-translate-y-1 group relative overflow-hidden"
                   >
-                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full 
+                                    transition-transform duration-1000 bg-gradient-to-r 
+                                    from-transparent via-primary/10 to-transparent"></div>
+                    
+                    <svg className="w-5 h-5 mr-2 relative z-10 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -405,7 +457,7 @@ const Auth = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    Continuar com Google
+                    <span className="font-semibold relative z-10">Continuar com Google</span>
                   </Button>
                   
                   <div className="relative">
@@ -420,58 +472,89 @@ const Auth = () => {
 
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-input">Email ou Telefone</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Label htmlFor="signin-input" className="text-foreground font-medium">Email ou Telefone</Label>
+                    <div className="relative group">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 
+                                       group-focus-within:text-primary transition-colors" />
                       <Input
                         id="signin-input"
                         type="text"
                         placeholder="seu@email.com ou (11) 99999-9999"
                         value={loginInput}
                         onChange={(e) => handleInputChange(e.target.value)}
-                        className="pl-10 h-12"
+                        className="pl-10 h-12 border-2 border-border focus:border-primary 
+                                   focus:ring-4 focus:ring-primary/20 transition-all duration-300"
                         required
                       />
+                      {/* Glow effect no foco */}
+                      <div className="absolute inset-0 rounded-lg bg-primary/20 blur-xl opacity-0 
+                                      group-focus-within:opacity-100 transition-opacity duration-500 -z-10"></div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Senha</Label>
-                    <div className="relative">
+                    <Label htmlFor="signin-password" className="text-foreground font-medium">Senha</Label>
+                    <div className="relative group">
                       <Input
                         id="signin-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Sua senha"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pr-10 h-12"
+                        className="pr-10 h-12 border-2 border-border focus:border-primary 
+                                   focus:ring-4 focus:ring-primary/20 transition-all duration-300"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 
+                                   text-muted-foreground hover:text-primary transition-colors"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
+                      {/* Glow effect no foco */}
+                      <div className="absolute inset-0 rounded-lg bg-primary/20 blur-xl opacity-0 
+                                      group-focus-within:opacity-100 transition-opacity duration-500 -z-10"></div>
                     </div>
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg font-medium" 
+                    className="w-full h-14 bg-gradient-to-r from-primary via-accent to-primary
+                               bg-[length:200%_auto] hover:bg-[position:right_center]
+                               text-white font-semibold text-lg shadow-xl hover:shadow-2xl 
+                               hover:shadow-primary/50 transition-all duration-500
+                               disabled:opacity-70 disabled:cursor-not-allowed
+                               relative overflow-hidden group" 
                     disabled={isLoading}
                   >
-                    {isLoading ? "Entrando..." : "Entrar"}
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full 
+                                    transition-transform duration-1000 bg-gradient-to-r 
+                                    from-transparent via-white/20 to-transparent"></div>
+                    
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="w-5 h-5 border-3 border-white/30 border-t-white 
+                                        rounded-full animate-spin"></div>
+                        <span>Entrando...</span>
+                      </div>
+                    ) : (
+                      <span className="relative z-10">Entrar</span>
+                    )}
                   </Button>
                   
-                  <Link to="/forgot-password" className="block text-center">
-                    <Button variant="link" className="w-full text-sm text-muted-foreground hover:text-primary">
+                  <Link to="/forgot-password" className="block text-center group">
+                    <span className="text-sm text-muted-foreground group-hover:text-primary 
+                                     relative inline-block transition-colors duration-300">
                       Esqueci minha senha
-                    </Button>
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary
+                                       group-hover:w-full transition-all duration-300"></span>
+                    </span>
                   </Link>
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup" className="space-y-6">
+              <TabsContent value="signup" className="space-y-6 animate-fade-in">
                 {/* Google Sign Up Button */}
                 <div className="space-y-4">
                   <Button

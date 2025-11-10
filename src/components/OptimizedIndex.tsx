@@ -12,6 +12,8 @@ import { MobileBottomNav, MobileCard, ResponsiveGrid } from "@/components/Mobile
 import { LazyImage } from "@/components/PerformanceOptimizations";
 import { DebugInfo } from "@/components/DebugInfo";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Wrench, 
@@ -38,18 +40,22 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
   const navigate = useNavigate();
   
   return (
-    <header className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-sm sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+    <header className="bg-white/70 backdrop-blur-2xl border-b border-white/30 shadow-xl sticky top-0 z-40 animate-slide-down">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5"></div>
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center relative">
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+          className="flex items-center gap-3 group cursor-pointer"
         >
-          <LazyImage 
-            src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
-            alt="Me Ajuda ai" 
-            className="w-10 h-10 animate-float" 
-          />
-          <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="relative">
+            <LazyImage 
+              src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
+              alt="Me Ajuda ai" 
+              className="w-12 h-12 animate-float group-hover:scale-110 transition-transform" 
+            />
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+          </div>
+          <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
             Me Ajuda ai!
           </h1>
         </button>
@@ -144,7 +150,31 @@ const HeroSection = memo(({ profile }: any) => {
   
   return (
     <section className="relative overflow-hidden py-20 px-4">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/10">
+        <div className="absolute inset-0 opacity-20" 
+             style={{
+               backgroundImage: `
+                 linear-gradient(to right, hsl(var(--primary)) 1px, transparent 1px),
+                 linear-gradient(to bottom, hsl(var(--primary)) 1px, transparent 1px)
+               `,
+               backgroundSize: '40px 40px'
+             }}>
+        </div>
+      </div>
+      
+      {/* Elementos decorativos flutuantes */}
+      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-primary/20 to-accent/20 
+                      rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-accent/20 to-primary/20 
+                      rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+      
+      {/* Badge animado de estatística */}
+      <div className="absolute top-10 right-4 md:right-20 bg-white/90 backdrop-blur-xl rounded-full px-4 md:px-6 py-3 
+                      shadow-2xl animate-slide-in-right flex items-center gap-2 border border-primary/20">
+        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+        <span className="font-semibold text-xs md:text-sm">1000+ Profissionais Online</span>
+      </div>
+      
       <div className="container mx-auto max-w-6xl relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
@@ -212,7 +242,8 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
       description: 'Configurar perfil',
       icon: User,
       color: 'from-blue-500 to-blue-600',
-      onClick: () => navigate(userType === 'client' ? '/client-profile' : '/professional-profile')
+      onClick: () => navigate(userType === 'client' ? '/client-profile' : '/professional-profile'),
+      isHighlighted: false
     },
     {
       title: userType === 'client' ? 'Minhas Solicitações' : 'Meus Serviços',
@@ -243,10 +274,16 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
           key={index}
           touchable
           onClick={action.onClick}
-          className={`p-6 hover:shadow-xl transition-all group bg-white/80 backdrop-blur-xl border-0 shadow-lg relative ${
-            action.isGradient ? 'bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg' : ''
+          className={`p-6 hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 group 
+                     bg-white/80 backdrop-blur-xl border-2 border-transparent hover:border-primary/50 
+                     shadow-lg relative overflow-hidden cursor-pointer hover:-translate-y-2 hover:scale-105 ${
+            action.isGradient ? 'bg-gradient-to-r from-primary to-accent text-white border-0' : ''
           }`}
         >
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full 
+                          transition-transform duration-1000 bg-gradient-to-r 
+                          from-transparent via-white/30 to-transparent"></div>
           {action.hasNotification && action.notificationCount > 0 && (
             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-semibold shadow-lg">
               {action.notificationCount}
@@ -277,7 +314,7 @@ const StatsSection = memo(({ profile }: any) => {
   const statsData = useMemo(() => [
     {
       icon: Users,
-      value: '1000+',
+      value: 1000,
       label: 'Profissionais Ativos',
       color: 'from-primary to-accent'
     },
@@ -285,26 +322,34 @@ const StatsSection = memo(({ profile }: any) => {
       icon: Shield,
       value: profile.is_verified ? '✓' : '⏳',
       label: profile.is_verified ? 'Conta Verificada' : 'Verificação Pendente',
-      color: 'from-accent to-primary'
+      color: 'from-accent to-primary',
+      isText: true
     },
     {
       icon: Star,
-      value: '5.0',
+      value: 5,
       label: 'Avaliação Média',
-      color: 'from-primary/80 to-accent/80'
+      color: 'from-primary/80 to-accent/80',
+      suffix: '.0'
     }
   ], [profile.is_verified]);
 
   return (
     <ResponsiveGrid cols={{ xs: 1, md: 3 }} className="animate-scale-in">
       {statsData.map((stat, index) => (
-        <Card key={index} className="text-center p-6 bg-white/80 backdrop-blur-xl border-0 shadow-lg hover:shadow-xl transition-all">
-          <div className={`w-16 h-16 bg-gradient-to-r ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+        <Card key={index} className="text-center p-6 glass border-white/20 shadow-lg hover:shadow-xl 
+                                     transition-all hover:-translate-y-1 duration-300">
+          <div className={`w-16 h-16 bg-gradient-to-r ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate-bounce-in`}
+               style={{ animationDelay: `${index * 0.1}s` }}>
             <stat.icon className="w-8 h-8 text-white" />
           </div>
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-gray-800">{stat.value}</div>
-            <div className="text-sm text-gray-600">{stat.label}</div>
+            {stat.isText || typeof stat.value === 'string' ? (
+              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+            ) : (
+              <AnimatedCounter value={stat.value as number} suffix={stat.suffix} />
+            )}
+            <div className="text-sm text-muted-foreground">{stat.label}</div>
           </div>
         </Card>
       ))}
@@ -388,12 +433,24 @@ export const OptimizedIndex = () => {
         </div>
       </main>
 
+      {/* Floating Action Button */}
+      <FloatingActionButton userType={profile?.user_type || 'client'} />
+
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav items={bottomNavItems} />
 
-      {/* Footer */}
-      <footer className="bg-white/60 backdrop-blur-xl border-t border-white/20 mt-16 py-8">
-        <div className="container mx-auto px-4 text-center">
+      {/* Footer com wave animation */}
+      <footer className="relative bg-gradient-to-b from-white/60 to-white/80 
+                         backdrop-blur-xl border-t border-white/30 mt-20 py-12 overflow-hidden">
+        {/* Wave animation */}
+        <div className="absolute top-0 left-0 w-full overflow-hidden leading-none">
+          <svg className="relative block w-full h-12" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" 
+                  className="fill-primary/10 animate-wave"></path>
+          </svg>
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
           <div className="flex justify-center items-center gap-3 mb-4">
             <LazyImage 
               src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
