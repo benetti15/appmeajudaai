@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Mic, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Bot, X, Send, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface AIMessage {
   role: 'user' | 'assistant';
