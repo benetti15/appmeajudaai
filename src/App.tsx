@@ -163,9 +163,6 @@ function AppInitializer() {
           </Routes>
         </Suspense>
       </BrowserRouter>
-      
-      {/* AI Agent Widget - disponível para usuários autenticados */}
-      {user && <AIAgentWidget />}
     </>
   );
 }
