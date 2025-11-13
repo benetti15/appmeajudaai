@@ -1,5 +1,8 @@
 project_id = "sqsiskngtlbfgsksftjf"
 
+[functions.ai-agent]
+verify_jwt = true
+
 [functions.geocode]
 verify_jwt = false
 

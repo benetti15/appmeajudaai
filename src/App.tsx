@@ -4,12 +4,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { PWAManager } from "@/components/PWAManager";
 import { LoadingFallback, ErrorFallback, registerServiceWorker } from "@/components/PerformanceOptimizations";
 import { ErrorBoundary } from "react-error-boundary";
 import { useNotificationService } from "@/hooks/useNotificationService";
 import { initializeStorageBuckets } from "@/lib/storage";
+import { AIAgentWidget } from "@/components/ai/AIAgentWidget";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -69,6 +71,8 @@ function App() {
 
 // Component to handle initialization after providers are available
 function AppInitializer() {
+  const { user } = useAuth();
+  
   // Initialize notification service and storage
   useNotificationService();
   
@@ -88,40 +92,79 @@ function AppInitializer() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/complete-profile" element={<CompleteProfile />} />
+            <Route path="/not-found" element={<NotFound />} />
+            <Route
+              path="/complete-profile"
+              element={
+                <ProtectedRoute>
+                  <CompleteProfile />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/categories" element={<ServiceCategories />} />
-            <Route path="/new-request/:categoryId" element={<NewRequest />} />
-            <Route path="/my-requests" element={<MyRequestsNew />} />
-            <Route path="/track-requests" element={<TrackRequests />} />
-            <Route path="/track-request/:requestId" element={<TrackRequestDetail />} />
-            <Route path="/request-details/:requestId" element={<SimpleRequestDetails />} />
-            <Route path="/available-requests" element={<AvailableRequests />} />
-            <Route path="/chat/:requestId" element={<Chat />} />
-            <Route path="/conversations" element={<Conversations />} />
-            <Route path="/professional-profile" element={<ProfessionalProfile />} />
-            <Route path="/client-profile" element={<ClientProfile />} />
-            <Route path="/my-requests-new" element={<MyRequestsNew />} />
-            <Route path="/my-services-new" element={<MyServicesNew />} />
-            <Route path="/service-request/:requestId" element={<ServiceRequestDetails />} />
-            <Route path="/client-dashboard" element={<ClientDashboard />} />
-            <Route path="/professional-dashboard" element={<ProfessionalDashboard />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/map" element={<MapView />} />
             <Route path="/nearby-professionals" element={<NearbyProfessionals />} />
-            <Route path="/verification" element={<VerificationPage />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/professional-profile/:professionalId" element={<ProfessionalPublicProfile />} />
-            <Route path="/search" element={<AdvancedSearch />} />
-            
-            {/* New optimized features */}
-            <Route path="/loyalty" element={<LoyaltySystem />} />
-            <Route path="/fluxo-demo" element={<FluxoDemo />} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route
+              path="/professional/:id"
+              element={
+                <ProtectedRoute>
+                  <ProfessionalPublicProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/new-request"
+              element={
+                <ProtectedRoute>
+                  <NewRequest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-requests"
+              element={
+                <ProtectedRoute>
+                  <MyRequestsNew />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/service-request/:id"
+              element={
+                <ProtectedRoute>
+                  <SimpleRequestDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/conversations"
+              element={
+                <ProtectedRoute>
+                  <Conversations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat/:requestId"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/verification"
+              element={
+                <ProtectedRoute>
+                  <VerificationPage />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Suspense>
       </BrowserRouter>
+      
+      {/* AI Agent Widget - disponível para usuários autenticados */}
+      {user && <AIAgentWidget />}
     </>
   );
 }
