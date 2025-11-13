@@ -86,6 +86,7 @@ function AppInitializer() {
       <Sonner />
       <PWAManager />
       <BrowserRouter>
+        <AIAgentWidget />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />

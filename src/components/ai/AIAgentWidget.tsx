@@ -47,22 +47,22 @@ export function AIAgentWidget() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .select('messages')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      // Temporariamente desabilitado até a migração ser aplicada
+      // const { data, error } = await supabase
+      //   .from('ai_conversations')
+      //   .select('messages')
+      //   .eq('user_id', user.id)
+      //   .maybeSingle();
       
-      if (data?.messages) {
-        // Cast messages from Json[] to AIMessage[]
-        setMessages((data.messages as any[]).slice(-20).map(msg => ({
-          role: msg.role,
-          content: msg.content,
-          timestamp: msg.timestamp,
-          image_url: msg.image_url,
-          suggested_actions: msg.suggested_actions
-        })));
-      } else if (!error) {
+      // if (data?.messages) {
+      //   setMessages((data.messages as any[]).slice(-20).map(msg => ({
+      //     role: msg.role,
+      //     content: msg.content,
+      //     timestamp: msg.timestamp,
+      //     image_url: msg.image_url,
+      //     suggested_actions: msg.suggested_actions
+      //   })));
+      // } else if (!error) {
         // Primeira vez do usuário - mensagem de boas-vindas
         const welcomeMessage: AIMessage = {
           role: 'assistant',
@@ -83,7 +83,7 @@ Como posso te ajudar hoje?`,
           timestamp: new Date().toISOString()
         };
         setMessages([welcomeMessage]);
-      }
+      // }
     } catch (error) {
       console.error('Error loading conversation:', error);
     }
