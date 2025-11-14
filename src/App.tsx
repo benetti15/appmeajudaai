@@ -43,6 +43,7 @@ const MapView = lazy(() => import("./pages/MapView"));
 const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const ProfessionalPublicProfile = lazy(() => import("./pages/ProfessionalPublicProfile"));
+const ToninhoHistory = lazy(() => import("./pages/ToninhoHistory"));
 
 const FluxoDemo = lazy(() => import("./pages/FluxoDemo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -161,6 +162,23 @@ function AppInitializer() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/fluxo-demo"
+              element={
+                <ProtectedRoute>
+                  <FluxoDemo />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/toninho-history"
+              element={
+                <ProtectedRoute>
+                  <ToninhoHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

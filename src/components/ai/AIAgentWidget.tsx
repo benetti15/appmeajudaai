@@ -51,22 +51,23 @@ export function AIAgentWidget() {
     if (!user) return;
     
     try {
-      // Temporariamente desabilitado até a migração ser aplicada
-      // const { data, error } = await supabase
-      //   .from('ai_conversations')
-      //   .select('messages')
-      //   .eq('user_id', user.id)
-      //   .maybeSingle();
+      const { data, error } = await supabase
+        .from('ai_conversations')
+        .select('messages')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
-      // if (data?.messages) {
-      //   setMessages((data.messages as any[]).slice(-20).map(msg => ({
-      //     role: msg.role,
-      //     content: msg.content,
-      //     timestamp: msg.timestamp,
-      //     image_url: msg.image_url,
-      //     suggested_actions: msg.suggested_actions
-      //   })));
-      // } else if (!error) {
+      if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+        setMessages((data.messages as any[]).slice(-20).map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp,
+          image_url: msg.image_url,
+          suggested_actions: msg.suggested_actions
+        })));
+      } else {
         // Primeira vez do usuário - mensagem de boas-vindas
         const welcomeMessage: AIMessage = {
           role: 'assistant',
@@ -87,7 +88,7 @@ Como posso te ajudar hoje?`,
           timestamp: new Date().toISOString()
         };
         setMessages([welcomeMessage]);
-      // }
+      }
     } catch (error) {
       console.error('Error loading conversation:', error);
     }
@@ -106,6 +107,52 @@ Como posso te ajudar hoje?`,
       category_filter: params.get('category'),
       timestamp: new Date().toISOString()
     };
+  };
+  
+  const saveConversation = async (messagesToSave: AIMessage[]) => {
+    if (!user) return;
+    
+    try {
+      const context = getContext();
+      
+      // Verificar se já existe uma conversa para este usuário
+      const { data: existing } = await supabase
+        .from('ai_conversations')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      const conversationData = {
+        user_id: user.id,
+        messages: messagesToSave as any[],
+        context: context as any,
+        metadata: {
+          message_count: messagesToSave.length,
+          last_topic: messagesToSave[messagesToSave.length - 1]?.content.slice(0, 50)
+        } as any,
+        updated_at: new Date().toISOString()
+      };
+      
+      if (existing) {
+        // Atualizar conversa existente
+        await supabase
+          .from('ai_conversations')
+          .update(conversationData)
+          .eq('id', existing.id);
+      } else {
+        // Criar nova conversa
+        await supabase
+          .from('ai_conversations')
+          .insert([{
+            ...conversationData,
+            created_at: new Date().toISOString()
+          }]);
+      }
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+    }
   };
   
   const handleVoiceTranscript = (transcript: string) => {
@@ -154,6 +201,9 @@ Como posso te ajudar hoje?`,
       };
       
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Salvar conversa no banco
+      await saveConversation([...messages, userMessage, assistantMessage]);
       
       if (data.tool_calls_executed) {
         toast({
@@ -239,10 +289,16 @@ Como posso te ajudar hoje?`,
                              flex items-center justify-center">
                 <Bot className="w-6 h-6 text-white" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-white font-semibold">Toninho IA 💚</h3>
                 <p className="text-white/80 text-xs">Seu assistente Me Ajuda ai</p>
               </div>
+              <button
+                onClick={() => navigate('/toninho-history')}
+                className="text-white/80 hover:text-white text-xs underline transition-colors"
+              >
+                Ver Histórico
+              </button>
             </div>
             <button 
               onClick={() => setIsOpen(false)}
