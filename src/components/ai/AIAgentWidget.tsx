@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Loader2 } from 'lucide-react';
+import { Bot, X, Send, Loader2, Sparkles } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { VoiceInput } from './VoiceInput';
+import { Badge } from '@/components/ui/badge';
 
 interface AIMessage {
   role: 'user' | 'assistant';
@@ -21,10 +23,12 @@ export function AIAgentWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mode, setMode] = useState<'chat' | 'assisted'>('chat');
   
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -104,6 +108,16 @@ Como posso te ajudar hoje?`,
     };
   };
   
+  const handleVoiceTranscript = (transcript: string) => {
+    setInput(transcript);
+    // Auto-send after voice input
+    setTimeout(() => {
+      if (transcript) {
+        handleSend();
+      }
+    }, 500);
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
@@ -114,6 +128,7 @@ Como posso te ajudar hoje?`,
     };
     
     setMessages(prev => [...prev, userMessage]);
+    const messageText = input.trim();
     setInput('');
     setIsLoading(true);
     setIsTyping(true);
@@ -199,18 +214,16 @@ Como posso te ajudar hoje?`,
         className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full 
                    bg-gradient-to-r from-primary to-accent shadow-2xl
                    hover:scale-110 transition-transform duration-300
-                   flex items-center justify-center group"
+                   flex items-center justify-center group animate-pulse-slow"
         aria-label="Abrir assistente IA"
       >
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 
-                         rounded-full flex items-center justify-center
-                         text-white text-xs font-bold animate-bounce">
+          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce">
             {unreadCount}
           </span>
         )}
-        
-        <Bot className="w-8 h-8 text-white group-hover:rotate-12 transition-transform" />
+        <Bot className="w-8 h-8 text-white" />
+        <Sparkles className="w-4 h-4 text-white/80 absolute top-0 right-0 animate-pulse" />
       </button>
       
       {/* Chat Window */}

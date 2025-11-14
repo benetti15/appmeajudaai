@@ -11,6 +11,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useNotificationService } from "@/hooks/useNotificationService";
 import { initializeStorageBuckets } from "@/lib/storage";
 import { AIAgentWidget } from "@/components/ai/AIAgentWidget";
+import { ProactiveNotifications } from "@/components/ai/ProactiveNotifications";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Lazy load pages for better performance
