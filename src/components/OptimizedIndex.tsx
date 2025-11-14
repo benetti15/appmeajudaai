@@ -13,6 +13,9 @@ import { LazyImage } from "@/components/PerformanceOptimizations";
 import { DebugInfo } from "@/components/DebugInfo";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { HeroSection } from "@/components/HeroSection";
+import { ToninhoBanner } from "@/components/ToninhoBanner";
+import { QuickActionCards } from "@/components/QuickActionCards";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Wrench, 
@@ -31,7 +34,9 @@ import {
   Award,
   Clock,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Zap,
+  FileText
 } from "lucide-react";
 
 // Memoized components for better performance
@@ -138,94 +143,6 @@ const QuickMenuItems = memo(({ profile, unreadCount, unreadQuotes }: any) => {
         {userType === 'client' ? 'Nova Solicitação' : 'Oportunidades'}
       </DropdownMenuItem>
     </>
-  );
-});
-
-const HeroSection = memo(({ profile }: any) => {
-  const navigate = useNavigate();
-  
-  // Garantir que sempre tenhamos um user_type válido, defaultando para 'client'
-  const userType = profile?.user_type || 'client';
-  
-  return (
-    <section className="relative overflow-hidden py-20 px-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/10">
-        <div className="absolute inset-0 opacity-20" 
-             style={{
-               backgroundImage: `
-                 linear-gradient(to right, hsl(var(--primary)) 1px, transparent 1px),
-                 linear-gradient(to bottom, hsl(var(--primary)) 1px, transparent 1px)
-               `,
-               backgroundSize: '40px 40px'
-             }}>
-        </div>
-      </div>
-      
-      {/* Elementos decorativos flutuantes */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-primary/20 to-accent/20 
-                      rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-accent/20 to-primary/20 
-                      rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-      
-      {/* Badge animado de estatística */}
-      <div className="absolute top-10 right-4 md:right-20 bg-white/90 backdrop-blur-xl rounded-full px-4 md:px-6 py-3 
-                      shadow-2xl animate-slide-in-right flex items-center gap-2 border border-primary/20">
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-        <span className="font-semibold text-xs md:text-sm">1000+ Profissionais Online</span>
-      </div>
-      
-      <div className="container mx-auto max-w-6xl relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-800 leading-tight">
-              {userType === 'client' 
-                ? 'Encontre o profissional perfeito' 
-                : 'Conecte-se com novos clientes'
-              }
-              <span className="block text-transparent bg-gradient-to-r from-primary to-accent bg-clip-text">
-                {userType === 'client' ? 'para seus projetos ✨' : 'e cresça seu negócio 🚀'}
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              {userType === 'client' 
-                ? 'Receba orçamentos de profissionais qualificados em minutos. Simples, seguro e eficiente.'
-                : 'Ofereça seus serviços para clientes que realmente precisam. Aumente sua visibilidade e renda.'
-              }
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white px-8 py-4 text-lg font-medium shadow-lg hover:shadow-xl transition-all"
-                onClick={() => {
-                  const targetPath = userType === 'client' ? '/categories' : '/available-requests';
-                  setTimeout(() => navigate(targetPath), 100);
-                }}
-              >
-                {userType === 'client' ? 'Solicitar Serviço' : 'Ver Oportunidades'}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="px-8 py-4 text-lg border-2 hover:bg-white/50"
-                onClick={() => navigate(userType === 'client' ? '/client-profile' : '/professional-profile')}
-              >
-                Meu Perfil
-              </Button>
-            </div>
-          </div>
-          <div className="relative animate-slide-up">
-            <LazyImage 
-                src="/lovable-uploads/bcdf9267-23f4-43c5-9f60-203b73298aa4.png" 
-                alt="Professional Services Interface" 
-                className="w-full max-w-sm mx-auto rounded-2xl shadow-2xl"
-            />
-            <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center shadow-lg animate-float">
-              <Star className="w-8 h-8 text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
   );
 });
 
@@ -363,9 +280,46 @@ export const OptimizedIndex = () => {
   const unreadCount = useUnreadMessages();
   const unreadQuotes = useQuoteNotifications();
 
+  const userType = profile?.user_type || 'client';
+  
+  const quickActions = useMemo(() => {
+    const baseActions = [
+      {
+        icon: Plus,
+        title: userType === 'client' ? 'Nova Solicitação' : 'Ver Solicitações',
+        description: userType === 'client' ? 'Criar pedido com Toninho' : 'Encontrar trabalhos',
+        onClick: () => navigate(userType === 'client' ? '/categories' : '/available-requests'),
+        variant: 'primary' as const
+      },
+      {
+        icon: MessageCircle,
+        title: 'Conversas',
+        description: 'Suas mensagens',
+        onClick: () => navigate('/conversations'),
+        badge: unreadCount > 0 ? unreadCount.toString() : undefined
+      },
+      {
+        icon: User,
+        title: 'Meu Perfil',
+        description: 'Configurações',
+        onClick: () => navigate(userType === 'client' ? '/client-profile' : '/professional-profile')
+      }
+    ];
+
+    if (userType === 'client') {
+      baseActions.splice(2, 0, {
+        icon: FileText,
+        title: 'Meus Pedidos',
+        description: 'Acompanhar status',
+        onClick: () => navigate('/my-requests'),
+        badge: unreadQuotes > 0 ? unreadQuotes.toString() : undefined
+      });
+    }
+
+    return baseActions;
+  }, [userType, unreadCount, unreadQuotes, navigate]);
+
   const bottomNavItems = useMemo(() => {
-    const userType = profile?.user_type || 'client';
-    
     return [
       {
         icon: Home,
@@ -410,22 +364,40 @@ export const OptimizedIndex = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/10 pb-20 md:pb-0">
+    <div className="min-h-screen bg-gradient-subtle">
+      <MemoizedHeader 
+        profile={profile} 
+        unreadCount={unreadCount}
+        unreadQuotes={unreadQuotes}
+        signOut={signOut}
+      />
+      
       <OnboardingTour />
-      <MemoizedHeader profile={profile} unreadCount={unreadCount} unreadQuotes={unreadQuotes} signOut={signOut} />
       
-      <HeroSection profile={profile} />
+      {/* Hero Section */}
+      <HeroSection />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto space-y-12">
-          {/* Dashboard de Ações Rápidas */}
-          <div className="space-y-8">
+          {/* Toninho Banner */}
+          <ToninhoBanner
+            message="💡 Dica do Toninho: Clique no botão 'Nova Solicitação' e eu vou te ajudar a criar seu pedido de forma rápida e fácil!"
+            variant="tip"
+            dismissible
+          />
+
+          {/* Quick Actions */}
+          <div className="space-y-6">
             <div className="text-center">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2">Ações Rápidas</h3>
-              <p className="text-gray-600">Acesse suas funcionalidades principais</p>
+              <h2 className="text-3xl font-bold text-foreground mb-2">
+                O que você precisa fazer hoje?
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Acesse suas funcionalidades principais
+              </p>
             </div>
             
-            <QuickActionsGrid profile={profile} unreadCount={unreadCount} unreadQuotes={unreadQuotes} />
+            <QuickActionCards actions={quickActions} columns={4} />
           </div>
 
           <StatsSection profile={profile} />
