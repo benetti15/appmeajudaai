@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { VoiceInput } from './VoiceInput';
 import { Badge } from '@/components/ui/badge';
+import { ImageUploadArea } from './ImageUploadArea';
+import { UploadedImage } from '@/hooks/useImageUpload';
 
 interface AIMessage {
   role: 'user' | 'assistant';
@@ -24,6 +26,7 @@ export function AIAgentWidget() {
   const [isTyping, setIsTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [mode, setMode] = useState<'chat' | 'assisted'>('chat');
+  const [attachedImages, setAttachedImages] = useState<UploadedImage[]>([]);
   
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -166,17 +169,20 @@ Como posso te ajudar hoje?`,
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && attachedImages.length === 0) || isLoading) return;
     
     const userMessage: AIMessage = {
       role: 'user',
       content: input.trim(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      image_url: attachedImages.length > 0 ? attachedImages[0].url : undefined
     };
     
     setMessages(prev => [...prev, userMessage]);
     const messageText = input.trim();
+    const imageUrls = attachedImages.map(img => img.url);
     setInput('');
+    setAttachedImages([]);
     setIsLoading(true);
     setIsTyping(true);
     
@@ -187,7 +193,7 @@ Como posso te ajudar hoje?`,
         body: {
           message: userMessage.content,
           context,
-          attachments: []
+          image_urls: imageUrls
         }
       });
       

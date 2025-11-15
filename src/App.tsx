@@ -44,6 +44,7 @@ const VerificationPage = lazy(() => import("./pages/VerificationPage"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const ProfessionalPublicProfile = lazy(() => import("./pages/ProfessionalPublicProfile"));
 const ToninhoHistory = lazy(() => import("./pages/ToninhoHistory"));
+const ToninhoAnalytics = lazy(() => import("./pages/ToninhoAnalytics"));
 
 const FluxoDemo = lazy(() => import("./pages/FluxoDemo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -175,6 +176,14 @@ function AppInitializer() {
               element={
                 <ProtectedRoute>
                   <ToninhoHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/toninho-analytics"
+              element={
+                <ProtectedRoute>
+                  <ToninhoAnalytics />
                 </ProtectedRoute>
               }
             />
