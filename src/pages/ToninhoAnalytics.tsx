@@ -5,6 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { MessageSquare, TrendingUp, Users, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { FeedbackMetrics } from '@/components/analytics/FeedbackMetrics';
+import { FeedbackChart } from '@/components/analytics/FeedbackChart';
+import { RecentFeedback } from '@/components/analytics/RecentFeedback';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 interface AnalyticsData {
   totalConversations: number;
@@ -14,6 +19,14 @@ interface AnalyticsData {
   conversationsOverTime: any[];
   topCategories: any[];
   userSegmentation: any[];
+  feedback: {
+    satisfactionRate: number;
+    totalFeedbacks: number;
+    positiveFeedbacks: number;
+    negativeFeedbacks: number;
+    feedbackOverTime: any[];
+    recentNegativeFeedback: any[];
+  };
 }
 
 export default function ToninhoAnalytics() {
@@ -21,6 +34,7 @@ export default function ToninhoAnalytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7d' | '30d'>('7d');
+  const [hasLowSatisfaction, setHasLowSatisfaction] = useState(false);
 
   // Only allow admin access (you can adjust this logic)
   if (!user || profile?.user_type !== 'professional') {
@@ -93,14 +107,89 @@ export default function ToninhoAnalytics() {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
 
+      // Feedback metrics
+      const { data: feedbackData } = await supabase
+        .from('ai_feedback')
+        .select('rating, created_at, comment, user_id')
+        .gte('created_at', startDate.toISOString());
+
+      const positiveFeedbacks = feedbackData?.filter(f => f.rating === 'positive').length || 0;
+      const negativeFeedbacks = feedbackData?.filter(f => f.rating === 'negative').length || 0;
+      const totalFeedbacks = feedbackData?.length || 0;
+      const satisfactionRate = totalFeedbacks > 0 
+        ? (positiveFeedbacks / totalFeedbacks) * 100 
+        : 100;
+
+      // Feedback over time
+      const feedbackByDay: Record<string, { positive: number; negative: number }> = {};
+      
+      for (let i = 0; i < daysAgo; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - (daysAgo - i - 1));
+        const key = date.toISOString().split('T')[0];
+        feedbackByDay[key] = { positive: 0, negative: 0 };
+      }
+
+      feedbackData?.forEach(feedback => {
+        const key = feedback.created_at.split('T')[0];
+        if (feedbackByDay[key]) {
+          if (feedback.rating === 'positive') {
+            feedbackByDay[key].positive++;
+          } else {
+            feedbackByDay[key].negative++;
+          }
+        }
+      });
+
+      const feedbackOverTime = Object.entries(feedbackByDay).map(([date, counts]) => ({
+        date: new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        positive: counts.positive,
+        negative: counts.negative,
+      }));
+
+      // Recent negative feedback
+      const recentNegativeFeedback = feedbackData
+        ?.filter(f => f.rating === 'negative' && f.comment)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 10) || [];
+
+      // Check for alerts
+      const lowSatisfaction = satisfactionRate < 70;
+      const recentNegativeCount = feedbackData?.filter(f => {
+        const feedbackDate = new Date(f.created_at);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return f.rating === 'negative' && feedbackDate >= yesterday;
+      }).length || 0;
+
+      const shouldAlert = lowSatisfaction || recentNegativeCount >= 5;
+      setHasLowSatisfaction(shouldAlert);
+
+      if (shouldAlert) {
+        toast.error('Atenção: Taxa de satisfação baixa detectada!', {
+          description: lowSatisfaction 
+            ? `A taxa de satisfação está em ${satisfactionRate.toFixed(1)}% (abaixo de 70%)`
+            : `${recentNegativeCount} feedbacks negativos nas últimas 24 horas`,
+          duration: 10000,
+        });
+      }
+
       setAnalytics({
         totalConversations: totalConversations || 0,
         activeUsers,
-        avgResponseTime: 1.2, // Mock data - would need to track in edge function
+        avgResponseTime: 1.2,
         conversionRate,
         conversationsOverTime,
         topCategories,
-        userSegmentation: [], // Could be expanded
+        userSegmentation: [],
+        feedback: {
+          satisfactionRate,
+          totalFeedbacks,
+          positiveFeedbacks,
+          negativeFeedbacks,
+          feedbackOverTime,
+          recentNegativeFeedback,
+        }
       });
     } catch (error) {
       console.error('Error loading analytics:', error);
@@ -155,7 +244,14 @@ export default function ToninhoAnalytics() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">📊 Analytics do Toninho</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold">📊 Analytics do Toninho</h1>
+          {hasLowSatisfaction && (
+            <Badge variant="destructive" className="animate-pulse">
+              Atenção Necessária
+            </Badge>
+          )}
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => setTimeRange('7d')}
@@ -180,7 +276,7 @@ export default function ToninhoAnalytics() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Main KPI Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -235,7 +331,23 @@ export default function ToninhoAnalytics() {
         </Card>
       </div>
 
-      {/* Charts */}
+      {/* Feedback Metrics */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <FeedbackMetrics
+          satisfactionRate={analytics.feedback.satisfactionRate}
+          totalFeedbacks={analytics.feedback.totalFeedbacks}
+          positiveFeedbacks={analytics.feedback.positiveFeedbacks}
+          negativeFeedbacks={analytics.feedback.negativeFeedbacks}
+        />
+      </div>
+
+      {/* Feedback Chart */}
+      <FeedbackChart data={analytics.feedback.feedbackOverTime} />
+
+      {/* Recent Negative Feedback */}
+      <RecentFeedback feedbacks={analytics.feedback.recentNegativeFeedback} />
+
+      {/* Conversation Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
