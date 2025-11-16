@@ -44,6 +44,47 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_feedback: {
+        Row: {
+          comment: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          message_index: number
+          rating: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          message_index: number
+          rating: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          message_index?: number
+          rating?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_feedback_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_user_memory: {
         Row: {
           created_at: string | null
