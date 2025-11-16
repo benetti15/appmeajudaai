@@ -50,7 +50,44 @@ export function AIAgentWidget() {
     }
   }, [isOpen, user]);
   
-  const loadConversation = async () => {
+  // Usar React Query para carregar conversação
+  const { data: conversation, isLoading: isLoadingConversation } = useQuery({
+    queryKey: ['ai-conversation', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('ai_conversations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && isOpen,
+    staleTime: 1000 * 60 * 5, // Cache por 5 minutos
+  });
+
+  useEffect(() => {
+    if (conversation) {
+      setConversationId(conversation.id);
+      setMessages((conversation.messages as AIMessage[]) || []);
+    }
+  }, [conversation]);
+
+  // Processar fila offline quando voltar online
+  useEffect(() => {
+    if (isOnline && conversationId) {
+      processQueue(async (queuedMsg) => {
+        await sendMessageToAPI(queuedMsg.content, queuedMsg.attachments);
+      });
+    }
+  }, [isOnline, conversationId]);
+
+  const loadConversation_OLD = async () => {
     if (!user) return;
     
     try {
