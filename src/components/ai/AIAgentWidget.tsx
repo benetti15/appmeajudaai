@@ -5,10 +5,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { VoiceInput } from './VoiceInput';
 import { Badge } from '@/components/ui/badge';
 import { ImageUploadArea } from './ImageUploadArea';
 import { UploadedImage } from '@/hooks/useImageUpload';
+import { FeedbackButtons } from './FeedbackButtons';
 
 interface AIMessage {
   role: 'user' | 'assistant';
@@ -27,13 +29,16 @@ export function AIAgentWidget() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [mode, setMode] = useState<'chat' | 'assisted'>('chat');
   const [attachedImages, setAttachedImages] = useState<UploadedImage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,14 +48,7 @@ export function AIAgentWidget() {
     scrollToBottom();
   }, [messages]);
   
-  useEffect(() => {
-    if (isOpen && user) {
-      loadConversation();
-      setUnreadCount(0);
-    }
-  }, [isOpen, user]);
-  
-  // Usar React Query para carregar conversação
+  // Usar React Query para carregar conversação com cache
   const { data: conversation, isLoading: isLoadingConversation } = useQuery({
     queryKey: ['ai-conversation', user?.id],
     queryFn: async () => {
@@ -74,44 +72,21 @@ export function AIAgentWidget() {
   useEffect(() => {
     if (conversation) {
       setConversationId(conversation.id);
-      setMessages((conversation.messages as AIMessage[]) || []);
-    }
-  }, [conversation]);
-
-  // Processar fila offline quando voltar online
-  useEffect(() => {
-    if (isOnline && conversationId) {
-      processQueue(async (queuedMsg) => {
-        await sendMessageToAPI(queuedMsg.content, queuedMsg.attachments);
-      });
-    }
-  }, [isOnline, conversationId]);
-
-  const loadConversation_OLD = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .select('messages')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
-        setMessages((data.messages as any[]).slice(-20).map(msg => ({
+      const msgs = conversation.messages as any[];
+      if (Array.isArray(msgs)) {
+        setMessages(msgs.map(msg => ({
           role: msg.role,
           content: msg.content,
           timestamp: msg.timestamp,
           image_url: msg.image_url,
           suggested_actions: msg.suggested_actions
         })));
-      } else {
-        // Primeira vez do usuário - mensagem de boas-vindas
-        const welcomeMessage: AIMessage = {
-          role: 'assistant',
-          content: `Olá! 👋 Sou o Toninho, seu assistente inteligente do Me Ajuda ai! 💚
+      }
+    } else if (isOpen && user && !isLoadingConversation) {
+      // Primeira vez - mensagem de boas-vindas
+      const welcomeMessage: AIMessage = {
+        role: 'assistant',
+        content: `Olá! 👋 Sou o Toninho, seu assistente inteligente do Me Ajuda ai! 💚
 
 Posso te ajudar a:
 ${profile?.user_type === 'client' 
@@ -125,14 +100,12 @@ ${profile?.user_type === 'client'
 • Otimizar sua rotina de trabalho`}
 
 Como posso te ajudar hoje?`,
-          timestamp: new Date().toISOString()
-        };
-        setMessages([welcomeMessage]);
-      }
-    } catch (error) {
-      console.error('Error loading conversation:', error);
+        timestamp: new Date().toISOString()
+      };
+      setMessages([welcomeMessage]);
+      setUnreadCount(0);
     }
-  };
+  }, [conversation, isOpen, user, isLoadingConversation, profile?.user_type]);
   
   const getContext = () => {
     const path = location.pathname;
@@ -354,7 +327,13 @@ Como posso te ajudar hoje?`,
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-4 space-y-4">
             {messages.map((msg, idx) => (
-              <MessageBubble key={idx} message={msg} onAction={handleQuickAction} />
+              <MessageBubble 
+                key={idx} 
+                message={msg} 
+                onAction={handleQuickAction}
+                messageIndex={idx}
+                conversationId={conversationId}
+              />
             ))}
             
             {isTyping && <TypingIndicator />}
@@ -406,10 +385,14 @@ Como posso te ajudar hoje?`,
 
 function MessageBubble({ 
   message, 
-  onAction 
+  onAction,
+  messageIndex,
+  conversationId
 }: { 
   message: AIMessage; 
   onAction: (action: string) => void;
+  messageIndex: number;
+  conversationId: string | null;
 }) {
   const isUser = message.role === 'user';
   
@@ -453,9 +436,19 @@ function MessageBubble({
           </div>
         )}
         
-        <span className="text-xs opacity-70 mt-1 block">
-          {formatTime(message.timestamp)}
-        </span>
+        <div className="flex items-center justify-between gap-2 mt-2">
+          <span className="text-xs opacity-70">
+            {formatTime(message.timestamp)}
+          </span>
+          
+          {/* Feedback buttons apenas para mensagens do assistente */}
+          {!isUser && conversationId && (
+            <FeedbackButtons 
+              conversationId={conversationId}
+              messageIndex={messageIndex}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
