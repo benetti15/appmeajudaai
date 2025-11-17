@@ -49,6 +49,7 @@ const ToninhoAnalytics = lazy(() => import("./pages/ToninhoAnalytics"));
 const FluxoDemo = lazy(() => import("./pages/FluxoDemo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdvancedSearch = lazy(() => import("./pages/AdvancedSearch"));
+const AboutToninho = lazy(() => import("./pages/AboutToninho"));
 
 // New optimized pages
 const LoyaltySystem = lazy(() => import("@/components/LoyaltySystem").then(module => ({ default: module.LoyaltyDashboard })));
@@ -107,6 +108,7 @@ function AppInitializer() {
             />
             <Route path="/categories" element={<ServiceCategories />} />
             <Route path="/nearby-professionals" element={<NearbyProfessionals />} />
+            <Route path="/about-toninho" element={<AboutToninho />} />
             <Route
               path="/professional/:id"
               element={
