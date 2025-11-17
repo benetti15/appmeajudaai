@@ -142,6 +142,13 @@ const QuickMenuItems = memo(({ profile, unreadCount, unreadQuotes }: any) => {
         <Plus className="w-4 h-4 mr-2" />
         {userType === 'client' ? 'Nova Solicitação' : 'Oportunidades'}
       </DropdownMenuItem>
+      
+      <DropdownMenuSeparator />
+      
+      <DropdownMenuItem onClick={() => navigate('/about-toninho')} className="cursor-pointer">
+        <Sparkles className="w-4 h-4 mr-2 text-primary" />
+        Sobre o Toninho
+      </DropdownMenuItem>
     </>
   );
 });
