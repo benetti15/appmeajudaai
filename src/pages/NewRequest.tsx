@@ -7,6 +7,8 @@ import { SimpleRequestCreation } from "@/components/SimpleRequestCreation";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AssistedRequestMode } from "@/components/ai/AssistedRequestMode";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface ServiceCategory {
   id: string;
@@ -55,6 +57,7 @@ export default function NewRequest() {
   const [existingRequest, setExistingRequest] = useState<ServiceRequest | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assistedMode, setAssistedMode] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -183,32 +186,60 @@ export default function NewRequest() {
           {/* Card de Header com Ícone da Categoria */}
           <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 
                         rounded-2xl p-6 border-2 border-primary/20 shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 
-                            shadow-lg animate-scale-in">
-                <IconComponent className="h-10 w-10 text-primary" />
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 
+                              shadow-lg animate-scale-in">
+                  <IconComponent className="h-10 w-10 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground mb-1">
+                    Novo Pedido
+                  </h1>
+                  <p className="text-lg text-muted-foreground flex items-center gap-2">
+                    {category ? (
+                      <>
+                        <span className="font-semibold text-primary">{category.name}</span>
+                        <span className="text-sm">• {category.description}</span>
+                      </>
+                    ) : (
+                      "Criar solicitação de serviço"
+                    )}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground mb-1">
-                  Novo Pedido
-                </h1>
-                <p className="text-lg text-muted-foreground flex items-center gap-2">
-                  {category ? (
-                    <>
-                      <span className="font-semibold text-primary">{category.name}</span>
-                      <span className="text-sm">• {category.description}</span>
-                    </>
-                  ) : (
-                    "Criar solicitação de serviço"
-                  )}
-                </p>
-              </div>
+              <Button 
+                onClick={() => setAssistedMode(true)}
+                className="gap-2 shrink-0"
+              >
+                <Sparkles className="w-4 h-4" />
+                Criar com Toninho
+              </Button>
             </div>
           </div>
         </div>
 
-        <SimpleRequestCreation categoryId={categoryId} />
+        <SimpleRequestCreation categoryId={categoryId || ''} />
       </div>
+
+      <Dialog open={assistedMode} onOpenChange={setAssistedMode}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle>Criar Pedido com Toninho</DialogTitle>
+          <AssistedRequestMode
+            onComplete={(data) => {
+              console.log('Assisted request completed:', data);
+              setAssistedMode(false);
+              toast({
+                title: "Pedido criado com sucesso!",
+                description: "Seu pedido foi enviado para os profissionais.",
+              });
+              navigate('/my-requests');
+            }}
+            onCancel={() => setAssistedMode(false)}
+            categoryName={category?.name}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

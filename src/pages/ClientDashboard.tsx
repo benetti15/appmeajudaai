@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { ProactiveDashboard } from "@/components/ai/ProactiveDashboard";
+import { GamificationSystem } from "@/components/ai/GamificationSystem";
+import { PersonalCoach } from "@/components/ai/PersonalCoach";
 
 export default function ClientDashboard() {
   const { user } = useAuth();
@@ -41,16 +44,26 @@ export default function ClientDashboard() {
 
       <div className="container mx-auto p-6 space-y-6">
         <PushNotificationManager />
+        
+        <ProactiveDashboard userType="client" />
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="achievements">Conquistas</TabsTrigger>
             <TabsTrigger value="reviews">Minhas Avaliações</TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
             <Dashboard userType="client" />
+          </TabsContent>
+
+          <TabsContent value="achievements">
+            <GamificationSystem userType="client" />
+            <div className="mt-6">
+              <PersonalCoach userType="client" />
+            </div>
           </TabsContent>
 
           <TabsContent value="reviews">

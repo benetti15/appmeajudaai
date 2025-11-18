@@ -142,6 +142,97 @@ function AppInitializer() {
               }
             />
             <Route
+              path="/simple-request-details/:id"
+              element={
+                <ProtectedRoute>
+                  <SimpleRequestDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/service-request-details/:id"
+              element={
+                <ProtectedRoute>
+                  <ServiceRequestDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/available-requests"
+              element={
+                <ProtectedRoute>
+                  <AvailableRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-services"
+              element={
+                <ProtectedRoute>
+                  <MyServicesNew />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/professional-profile"
+              element={
+                <ProtectedRoute>
+                  <ProfessionalProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/professional-dashboard"
+              element={
+                <ProtectedRoute>
+                  <ProfessionalDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client-profile"
+              element={
+                <ProtectedRoute>
+                  <ClientProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client-dashboard"
+              element={
+                <ProtectedRoute>
+                  <ClientDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute>
+                  <Favorites />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/track-requests"
+              element={
+                <ProtectedRoute>
+                  <TrackRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/track-request/:id"
+              element={
+                <ProtectedRoute>
+                  <TrackRequestDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/map-view" element={<MapView />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/advanced-search" element={<AdvancedSearch />} />
+            <Route
               path="/conversations"
               element={
                 <ProtectedRoute>

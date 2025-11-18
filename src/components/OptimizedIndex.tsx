@@ -16,6 +16,7 @@ import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { HeroSection } from "@/components/HeroSection";
 import { ToninhoBanner } from "@/components/ToninhoBanner";
 import { QuickActionCards } from "@/components/QuickActionCards";
+import { HelpCenter } from "@/components/ai/HelpCenter";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Wrench, 
@@ -36,7 +37,10 @@ import {
   BarChart3,
   Sparkles,
   Zap,
-  FileText
+  FileText,
+  MapPin,
+  DollarSign,
+  Briefcase
 } from "lucide-react";
 
 // Memoized components for better performance

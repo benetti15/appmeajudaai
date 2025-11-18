@@ -9,6 +9,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { EnhancedVerificationSystem } from "@/components/EnhancedVerificationSystem";
+import { ProactiveDashboard } from "@/components/ai/ProactiveDashboard";
+import { GamificationSystem } from "@/components/ai/GamificationSystem";
+import { PersonalCoach } from "@/components/ai/PersonalCoach";
 
 export default function ProfessionalDashboard() {
   const { user } = useAuth();
@@ -43,10 +46,13 @@ export default function ProfessionalDashboard() {
 
       <div className="container mx-auto p-6 space-y-6">
         <PushNotificationManager />
+        
+        <ProactiveDashboard userType="professional" />
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="achievements">Conquistas</TabsTrigger>
             <TabsTrigger value="verification">Verificação</TabsTrigger>
             <TabsTrigger value="reviews">Avaliações</TabsTrigger>
             <TabsTrigger value="settings">Configurações</TabsTrigger>
@@ -54,6 +60,13 @@ export default function ProfessionalDashboard() {
 
           <TabsContent value="overview">
             <Dashboard userType="professional" />
+          </TabsContent>
+
+          <TabsContent value="achievements">
+            <GamificationSystem userType="professional" />
+            <div className="mt-6">
+              <PersonalCoach userType="professional" />
+            </div>
           </TabsContent>
 
           <TabsContent value="verification">
