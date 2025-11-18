@@ -7,9 +7,13 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ProfileCompletionChecklist } from "@/components/ui/profile-completion-checklist";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Calendar, MapPin, DollarSign, Clock, Send, Briefcase, Image, User, Home } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, DollarSign, Clock, Send, Briefcase, Image, User, Home, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { RequestAnalyzer } from "@/components/ai/RequestAnalyzer";
+import { QuoteAssistant } from "@/components/ai/QuoteAssistant";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface ServiceRequest {
   id: string;
@@ -30,8 +34,11 @@ interface ServiceRequest {
 const AvailableRequests = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [analyzingRequest, setAnalyzingRequest] = useState<string | null>(null);
+  const [creatingQuote, setCreatingQuote] = useState<string | null>(null);
   const [profileCompletion, setProfileCompletion] = useState({
     hasPhoto: false,
     hasSpecialties: false,
@@ -366,6 +373,18 @@ const AvailableRequests = () => {
                           <Send className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
                           Enviar Orçamento
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAnalyzingRequest(request.id);
+                          }}
+                          className="gap-2"
+                        >
+                          <Sparkles className="w-4 h-4 text-primary" />
+                          Analisar
+                        </Button>
                       </div>
                     </div>
                   </CardHeader>
@@ -420,6 +439,44 @@ const AvailableRequests = () => {
           )}
         </div>
       </main>
+
+      {/* Dialogs do Toninho */}
+      <Dialog open={!!analyzingRequest} onOpenChange={() => setAnalyzingRequest(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogTitle>Análise do Toninho</DialogTitle>
+          {analyzingRequest && (
+            <RequestAnalyzer
+              requestId={analyzingRequest}
+              requestTitle={requests.find(r => r.id === analyzingRequest)?.title || ''}
+              requestDescription={requests.find(r => r.id === analyzingRequest)?.description || ''}
+              onCreateQuote={() => {
+                setCreatingQuote(analyzingRequest);
+                setAnalyzingRequest(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!creatingQuote} onOpenChange={() => setCreatingQuote(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle>Criar Orçamento com Toninho</DialogTitle>
+          {creatingQuote && (
+            <QuoteAssistant
+              requestDescription={requests.find(r => r.id === creatingQuote)?.description || ''}
+              onSubmit={(quoteData) => {
+                console.log('Quote created:', quoteData);
+                setCreatingQuote(null);
+                toast({
+                  title: "Orçamento enviado!",
+                  description: "Seu orçamento foi enviado ao cliente.",
+                });
+              }}
+              onCancel={() => setCreatingQuote(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

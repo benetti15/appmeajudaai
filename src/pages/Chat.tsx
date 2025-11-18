@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, ArrowLeft, Camera, Image } from "lucide-react";
+import { Send, ArrowLeft, Camera, Image, Sparkles } from "lucide-react";
 import { PhotoUpload } from "@/components/ui/photo-upload";
 import { VoiceMessage } from "@/components/VoiceMessage";
+import { MessageSuggester } from "@/components/ai/MessageSuggester";
 
 interface ChatMessage {
   id: string;
@@ -400,6 +401,11 @@ export default function Chat() {
             </ScrollArea>
 
             <div className="border-t border-border/50 p-4 space-y-3">
+              <MessageSuggester
+                context="greeting"
+                onSelectMessage={(message) => setNewMessage(message)}
+              />
+              
               {imageUrls.length > 0 && (
                 <div className="flex gap-2">
                   <Image className="h-4 w-4 text-muted-foreground mt-1" />
