@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Loader2, Sparkles } from 'lucide-react';
+import { Bot, X, Send, Loader2, Sparkles, Camera, Image as ImageIcon } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ImageUploadArea } from './ImageUploadArea';
 import { UploadedImage } from '@/hooks/useImageUpload';
 import { FeedbackButtons } from './FeedbackButtons';
+import { Button } from '@/components/ui/button';
 
 interface AIMessage {
   role: 'user' | 'assistant';
@@ -18,6 +19,14 @@ interface AIMessage {
   timestamp: string;
   image_url?: string;
   suggested_actions?: Array<{ label: string; action: string }>;
+  metadata?: {
+    photo_analysis?: any;
+    step?: number;
+    total_steps?: number;
+    answers?: any[];
+    request_created?: boolean;
+    request_id?: string;
+  };
 }
 
 export function AIAgentWidget() {
@@ -30,6 +39,9 @@ export function AIAgentWidget() {
   const [mode, setMode] = useState<'chat' | 'assisted'>('chat');
   const [attachedImages, setAttachedImages] = useState<UploadedImage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
+  const [photoFlowStep, setPhotoFlowStep] = useState(0);
   
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -88,16 +100,20 @@ export function AIAgentWidget() {
         role: 'assistant',
         content: `Olá! 👋 Sou o Toninho, seu assistente inteligente do Me Ajuda ai! 💚
 
+✨ **NOVO:** Agora você pode criar pedidos por foto! 📸
+Basta clicar no ícone 📷 e enviar uma foto do problema.
+
 Posso te ajudar a:
 ${profile?.user_type === 'client' 
-  ? `• Criar solicitações de serviço rapidamente
-• Comparar e entender orçamentos
-• Acompanhar o status dos seus pedidos
-• Tirar dúvidas sobre o processo`
-  : `• Criar orçamentos profissionais
-• Sugerir preços justos para serviços
-• Gerenciar seus atendimentos
-• Otimizar sua rotina de trabalho`}
+  ? `• 📸 Criar solicitações por foto em 30 segundos
+• 📝 Criar solicitações de serviço rapidamente
+• 💰 Comparar e entender orçamentos
+• 📊 Acompanhar o status dos seus pedidos
+• ❓ Tirar dúvidas sobre o processo`
+  : `• 💼 Criar orçamentos profissionais
+• 💵 Sugerir preços justos para serviços
+• 📈 Gerenciar seus atendimentos
+• 🎯 Otimizar sua rotina de trabalho`}
 
 Como posso te ajudar hoje?`,
         timestamp: new Date().toISOString()
@@ -247,6 +263,7 @@ Como posso te ajudar hoje?`,
     } finally {
       setIsLoading(false);
       setIsTyping(false);
+      setIsAnalyzingPhoto(false);
     }
   };
   
@@ -342,14 +359,69 @@ Como posso te ajudar hoje?`,
           </ScrollArea>
           
           {/* Input Area */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border space-y-3">
+            {/* Progress indicator durante fluxo de foto */}
+            {photoFlowStep > 0 && photoFlowStep < 5 && (
+              <div className="px-4 py-2 rounded-lg bg-primary/10">
+                <div className="flex items-center justify-between text-xs text-primary font-medium mb-1">
+                  <span>Pergunta {photoFlowStep} de 4</span>
+                  <span>{Math.round((photoFlowStep / 4) * 100)}%</span>
+                </div>
+                <div className="w-full bg-secondary rounded-full h-1.5">
+                  <div 
+                    className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                    style={{ width: `${(photoFlowStep / 4) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Indicador de análise de foto */}
+            {isAnalyzingPhoto && (
+              <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg animate-pulse">
+                <Camera className="w-4 h-4 text-primary animate-bounce" />
+                <span className="text-sm text-primary font-medium">
+                  Analisando sua foto...
+                </span>
+              </div>
+            )}
+
+            {/* Preview de imagens anexadas */}
+            {attachedImages.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {attachedImages.map((img, idx) => (
+                  <div key={idx} className="relative group">
+                    <img
+                      src={img.preview}
+                      alt={`Anexo ${idx + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg border border-border"
+                    />
+                    <button
+                      onClick={() => setAttachedImages(prev => prev.filter((_, i) => i !== idx))}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Image upload area (toggle) */}
+            {showImageUpload && (
+              <ImageUploadArea
+                onImagesChange={setAttachedImages}
+                className="border-t border-border pt-3"
+              />
+            )}
+
             <div className="flex items-end gap-2">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Digite sua mensagem..."
+                placeholder={attachedImages.length > 0 ? "Adicione uma mensagem (opcional)..." : "Digite sua mensagem..."}
                 className="flex-1 min-h-[40px] max-h-[120px] p-2 
                          border border-border rounded-lg resize-none
                          focus:outline-none focus:ring-2 focus:ring-primary/20
@@ -358,9 +430,25 @@ Como posso te ajudar hoje?`,
                 disabled={isLoading}
               />
               
+              {/* Botão de câmera/foto */}
+              <Button
+                type="button"
+                variant={attachedImages.length > 0 ? "default" : "outline"}
+                size="icon"
+                onClick={() => setShowImageUpload(!showImageUpload)}
+                disabled={isLoading}
+                className="shrink-0"
+              >
+                {attachedImages.length > 0 ? (
+                  <ImageIcon className="w-5 h-5" />
+                ) : (
+                  <Camera className="w-5 h-5" />
+                )}
+              </Button>
+
               <button
                 onClick={handleSend}
-                disabled={!input.trim() || isLoading}
+                disabled={(!input.trim() && attachedImages.length === 0) || isLoading}
                 className="p-2 bg-primary hover:bg-primary/90 
                          rounded-lg disabled:opacity-50 transition-colors
                          flex items-center justify-center"
@@ -373,8 +461,8 @@ Como posso te ajudar hoje?`,
               </button>
             </div>
             
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Pressione Enter para enviar • Shift+Enter para nova linha
+            <p className="text-xs text-muted-foreground text-center">
+              Pressione Enter para enviar • 📷 Enviar foto
             </p>
           </div>
         </div>

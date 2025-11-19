@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, context, attachments } = await req.json();
+    const { message, context, attachments, image_urls = [] } = await req.json();
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -26,6 +26,22 @@ serve(async (req) => {
     if (!user) throw new Error('Unauthorized');
     
     console.log('AI Agent request from user:', user.id, 'message:', message);
+    
+    // FLUXO ESPECIAL: Detectar se é foto de solicitação de serviço
+    if (image_urls && image_urls.length > 0 && !context.current_request_id && !context.step) {
+      const isServiceRequest = await detectIfServiceRequestPhoto(image_urls[0], message);
+      
+      if (isServiceRequest) {
+        console.log('Service request photo detected, starting photo flow');
+        return await handlePhotoRequestCreation(image_urls[0], message, context, user, supabaseClient);
+      }
+    }
+    
+    // FLUXO ESPECIAL: Continuar fluxo de criação por foto
+    if (context.photo_analysis && context.step) {
+      console.log('Continuing photo request flow, step:', context.step);
+      return await continuePhotoRequestFlow(message, context, user, supabaseClient);
+    }
     
     // 1. Buscar conversas anteriores e memória
     const { data: conversations } = await supabaseClient
@@ -713,6 +729,323 @@ async function getUserRequests(args: any, supabaseClient: any, user: any) {
     };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// ============ FUNÇÕES PARA CRIAÇÃO POR FOTO ============
+
+async function detectIfServiceRequestPhoto(imageUrl: string, userMessage: string): Promise<boolean> {
+  try {
+    const quickCheck = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: 'Você é um detector especializado. Retorne apenas "SIM" ou "NAO".\nA imagem mostra um problema doméstico que requer serviço profissional (elétrica, encanamento, construção, reparo, limpeza, etc)?'
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: `Mensagem do usuário: "${userMessage}"` },
+              { type: 'image_url', image_url: { url: imageUrl } }
+            ]
+          }
+        ],
+        max_completion_tokens: 10
+      })
+    });
+
+    const data = await quickCheck.json();
+    const response = data.choices[0].message.content.toUpperCase();
+    return response.includes('SIM');
+  } catch (error) {
+    console.error('Error detecting service request photo:', error);
+    return false;
+  }
+}
+
+async function handlePhotoRequestCreation(imageUrl: string, userMessage: string, context: any, user: any, supabaseClient: any) {
+  try {
+    const analysisResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `Você é o Toninho, assistente do Me Ajuda ai.
+Analise esta imagem de um problema doméstico e retorne JSON:
+{
+  "problem": "descrição clara do problema em português",
+  "category": "eletrica|encanamento|construcao|limpeza|pintura|marcenaria|jardinagem|refrigeracao",
+  "severity": "urgente|moderado|baixo",
+  "confidence": 0-100,
+  "estimated_cost": "R$ X - R$ Y",
+  "materials": ["material1", "material2"],
+  "first_question": "pergunta específica e direta sobre o problema"
+}`
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: `${userMessage}\n\nAnalise esta imagem e me ajude a criar uma solicitação de serviço.` },
+              { type: 'image_url', image_url: { url: imageUrl } }
+            ]
+          }
+        ],
+        max_completion_tokens: 800
+      })
+    });
+
+    const analysisData = await analysisResponse.json();
+    const content = analysisData.choices[0].message.content;
+    
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/\{[\s\S]*\}/);
+    const analysis = JSON.parse(jsonMatch ? jsonMatch[1] || jsonMatch[0] : content);
+
+    // Mapear categoria para ID do banco
+    const { data: categories } = await supabaseClient
+      .from('service_categories')
+      .select('id, name');
+    
+    const categoryMap: any = {};
+    if (categories) {
+      categories.forEach((cat: any) => {
+        const normalized = cat.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        categoryMap[normalized] = cat.id;
+      });
+    }
+
+    const categoryId = categoryMap[analysis.category] || categoryMap['eletrica'] || null;
+
+    const responseMessage = `📸 Entendi! Analisei sua foto e identifiquei:
+
+🔍 **Problema detectado:** ${analysis.problem}
+📁 **Categoria:** ${analysis.category.charAt(0).toUpperCase() + analysis.category.slice(1)}
+⚠️ **Urgência:** ${analysis.severity === 'urgente' ? '🔴 Alta' : analysis.severity === 'moderado' ? '🟡 Média' : '🟢 Baixa'}
+💰 **Custo estimado:** ${analysis.estimated_cost}
+${analysis.confidence > 70 ? `✅ Confiança: ${analysis.confidence}%` : ''}
+
+Vou fazer algumas perguntas para criar a melhor solicitação possível:
+
+**Pergunta 1/4:** ${analysis.first_question}`;
+
+    return new Response(
+      JSON.stringify({
+        message: responseMessage,
+        suggested_actions: [],
+        metadata: {
+          photo_analysis: analysis,
+          category_id: categoryId,
+          image_url: imageUrl,
+          step: 1,
+          total_steps: 4,
+          answers: []
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+    
+  } catch (error) {
+    console.error('Error analyzing photo:', error);
+    return new Response(
+      JSON.stringify({ 
+        message: '❌ Ops! Tive dificuldade em analisar a foto. Pode tentar tirar outra foto com melhor iluminação?',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+async function continuePhotoRequestFlow(userAnswer: string, context: any, user: any, supabaseClient: any) {
+  const { photo_analysis, step, answers = [], category_id, image_url } = context;
+  
+  // Armazenar resposta atual
+  const newAnswers = [...answers, {
+    step: step,
+    answer: userAnswer
+  }];
+
+  // Se completou todas as perguntas, criar solicitação
+  if (step >= 4) {
+    return await createServiceRequestFromPhoto(photo_analysis, newAnswers, category_id, image_url, user, supabaseClient);
+  }
+
+  // Gerar próxima pergunta
+  const nextQuestionPrompt = getNextQuestionPrompt(step + 1);
+  
+  try {
+    const questionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `Você é o Toninho. ${nextQuestionPrompt}`
+          },
+          {
+            role: 'user',
+            content: `Problema: ${photo_analysis.problem}
+Resposta anterior: ${userAnswer}
+Todas respostas: ${JSON.stringify(newAnswers)}
+
+Faça a próxima pergunta necessária para completar a solicitação.`
+          }
+        ],
+        max_completion_tokens: 200
+      })
+    });
+
+    const data = await questionResponse.json();
+    const nextQuestion = data.choices[0].message.content;
+
+    return new Response(
+      JSON.stringify({
+        message: `✅ Anotado!\n\n**Pergunta ${step + 1}/4:** ${nextQuestion}`,
+        metadata: {
+          photo_analysis,
+          category_id,
+          image_url,
+          step: step + 1,
+          total_steps: 4,
+          answers: newAnswers
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Error generating next question:', error);
+    return new Response(
+      JSON.stringify({ error: 'Error generating question' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
+function getNextQuestionPrompt(step: number): string {
+  const prompts = {
+    2: 'Pergunte sobre QUANDO o cliente precisa do serviço (hoje, amanhã, esta semana, sem pressa). Seja breve e objetivo.',
+    3: 'Pergunte se há ALGUM DETALHE ADICIONAL importante que o profissional deve saber antes de fazer o orçamento. Seja direto.',
+    4: 'Confirme o ENDEREÇO onde será feito o serviço. Pergunte se o endereço cadastrado está correto ou se é outro local.'
+  };
+  return prompts[step as keyof typeof prompts] || 'Faça uma pergunta relevante sobre o serviço.';
+}
+
+async function createServiceRequestFromPhoto(
+  analysis: any, 
+  answers: any[], 
+  categoryId: string,
+  imageUrl: string,
+  user: any, 
+  supabaseClient: any
+) {
+  try {
+    // Construir descrição detalhada
+    const description = `${analysis.problem}
+
+**Detalhes fornecidos pelo cliente:**
+${answers.map((a, i) => `${i + 1}. ${a.answer}`).join('\n')}
+
+**Análise técnica (IA):**
+- Urgência: ${analysis.severity}
+- Materiais necessários: ${analysis.materials.join(', ')}
+- Custo estimado: ${analysis.estimated_cost}`;
+
+    // Buscar perfil do usuário para pegar endereço
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('city, state, formatted_address')
+      .eq('id', user.id)
+      .single();
+
+    // Mapear urgência
+    const urgencyMap: any = {
+      'urgente': 3,
+      'moderado': 2,
+      'baixo': 1
+    };
+
+    const { data: request, error } = await supabaseClient
+      .from('service_requests')
+      .insert({
+        client_id: user.id,
+        category_id: categoryId,
+        title: `${analysis.category.charAt(0).toUpperCase() + analysis.category.slice(1)} - ${analysis.problem.substring(0, 50)}`,
+        description: description,
+        urgency_level: urgencyMap[analysis.severity] || 2,
+        status: 'pending',
+        images_urls: [imageUrl],
+        city: profile?.city || '',
+        state: profile?.state || '',
+        address: profile?.formatted_address || 'Endereço a confirmar'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating service request:', error);
+      return new Response(
+        JSON.stringify({
+          message: '❌ Ops! Tive um problema ao criar sua solicitação. Pode tentar novamente?',
+          error: error.message
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        message: `🎉 **Solicitação criada com sucesso!**
+
+📋 **Pedido #${request.id.substring(0, 8)}**
+
+${description}
+
+Profissionais da região já podem ver seu pedido e enviar orçamentos!`,
+        
+        suggested_actions: [
+          {
+            label: '👀 Ver Solicitação',
+            action: `navigate:/service-request/${request.id}`
+          },
+          {
+            label: '📨 Ver Meus Pedidos',
+            action: 'navigate:/my-requests'
+          }
+        ],
+        
+        metadata: {
+          request_created: true,
+          request_id: request.id
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Error creating service request:', error);
+    return new Response(
+      JSON.stringify({ 
+        message: '❌ Erro ao criar solicitação. Tente novamente.',
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 }
 
