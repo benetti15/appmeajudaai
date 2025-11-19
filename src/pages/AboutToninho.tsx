@@ -10,8 +10,10 @@ import {
   Brain,
   Heart,
   Users,
-  CheckCircle2
+  CheckCircle2,
+  Camera
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/layout/AppHeader";
 
@@ -55,8 +57,8 @@ export default function AboutToninho() {
     {
       title: "Para Clientes",
       items: [
+        "📸 Criação de pedidos por foto em 30 segundos",
         "Criação assistida de pedidos de serviço",
-        "Análise automática de fotos do problema",
         "Comparação inteligente de orçamentos",
         "Negociação automática com profissionais",
         "Sugestões de mensagens no chat",
