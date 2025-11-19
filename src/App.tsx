@@ -126,6 +126,14 @@ function AppInitializer() {
               }
             />
             <Route
+              path="/new-request/:categoryId"
+              element={
+                <ProtectedRoute>
+                  <NewRequest />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/my-requests"
               element={
                 <ProtectedRoute>
