@@ -197,11 +197,14 @@ Como posso te ajudar hoje?`,
   const handleSend = async () => {
     if ((!input.trim() && attachedImages.length === 0) || isLoading) return;
     
+    // Preparar URLs de imagens anexadas
+    const image_urls = attachedImages.map(img => img.url);
+    
     const userMessage: AIMessage = {
       role: 'user',
-      content: input.trim(),
+      content: input.trim() || (image_urls.length > 0 ? '📸 [Foto enviada]' : ''),
       timestamp: new Date().toISOString(),
-      image_url: attachedImages.length > 0 ? attachedImages[0].url : undefined
+      image_url: image_urls[0] // Mostrar primeira imagem no chat
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -209,15 +212,26 @@ Como posso te ajudar hoje?`,
     const imageUrls = attachedImages.map(img => img.url);
     setInput('');
     setAttachedImages([]);
+    setShowImageUpload(false);
     setIsLoading(true);
     setIsTyping(true);
     
+    // Se enviou foto, marcar como analisando
+    if (image_urls.length > 0) {
+      setIsAnalyzingPhoto(true);
+    }
+    
     try {
-      const context = getContext();
+      // Incluir metadata do último assistant message se existir
+      const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+      const context = {
+        ...getContext(),
+        ...(lastAssistantMsg?.metadata || {})
+      };
       
       const { data, error } = await supabase.functions.invoke('ai-agent', {
         body: {
-          message: userMessage.content,
+          message: userMessage.content || 'Analisar imagem',
           context,
           image_urls: imageUrls
         }
@@ -229,8 +243,19 @@ Como posso te ajudar hoje?`,
         role: 'assistant',
         content: data.message,
         timestamp: new Date().toISOString(),
-        suggested_actions: data.suggested_actions
+        suggested_actions: data.suggested_actions,
+        metadata: data.metadata
       };
+      
+      // Atualizar step do fluxo de foto se existir
+      if (data.metadata?.step) {
+        setPhotoFlowStep(data.metadata.step);
+      }
+      
+      // Se request foi criado, resetar fluxo
+      if (data.metadata?.request_created) {
+        setPhotoFlowStep(0);
+      }
       
       setMessages(prev => [...prev, assistantMessage]);
       
