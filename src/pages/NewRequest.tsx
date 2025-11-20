@@ -7,8 +7,6 @@ import { SimpleRequestCreation } from "@/components/SimpleRequestCreation";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { AssistedRequestMode } from "@/components/ai/AssistedRequestMode";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface ServiceCategory {
   id: string;
@@ -57,7 +55,6 @@ export default function NewRequest() {
   const [existingRequest, setExistingRequest] = useState<ServiceRequest | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
-  const [assistedMode, setAssistedMode] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -209,7 +206,13 @@ export default function NewRequest() {
                 </div>
               </div>
               <Button 
-                onClick={() => setAssistedMode(true)}
+                onClick={() => {
+                  navigate('/');
+                  setTimeout(() => {
+                    const toninhoButton = document.querySelector('[aria-label="Abrir assistente IA"]') as HTMLElement;
+                    toninhoButton?.click();
+                  }, 500);
+                }}
                 className="gap-2 shrink-0"
               >
                 <Sparkles className="w-4 h-4" />
@@ -221,25 +224,6 @@ export default function NewRequest() {
 
         <SimpleRequestCreation categoryId={categoryId || ''} />
       </div>
-
-      <Dialog open={assistedMode} onOpenChange={setAssistedMode}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogTitle>Criar Pedido com Toninho</DialogTitle>
-          <AssistedRequestMode
-            onComplete={(data) => {
-              console.log('Assisted request completed:', data);
-              setAssistedMode(false);
-              toast({
-                title: "Pedido criado com sucesso!",
-                description: "Seu pedido foi enviado para os profissionais.",
-              });
-              navigate('/my-requests');
-            }}
-            onCancel={() => setAssistedMode(false)}
-            categoryName={category?.name}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
