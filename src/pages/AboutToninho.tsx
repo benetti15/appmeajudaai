@@ -121,6 +121,123 @@ export default function AboutToninho() {
           </div>
         </Card>
 
+        {/* DESTAQUE: Criação por Foto */}
+        <Card className="p-8 border-4 border-primary/30 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-br from-accent/20 to-primary/20 rounded-full blur-3xl" />
+          
+          <div className="relative space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-xl">
+                <Camera className="w-10 h-10 text-white" />
+              </div>
+              <div>
+                <Badge className="mb-2 bg-gradient-to-r from-primary to-accent text-white">
+                  🔥 Novidade!
+                </Badge>
+                <h2 className="text-3xl font-bold">Crie Pedidos por Foto</h2>
+              </div>
+            </div>
+
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              A maneira mais rápida e fácil de pedir um serviço! Tire uma foto do problema e o Toninho 
+              faz todo o trabalho para você.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 rounded-full bg-primary/20 mx-auto flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">1</span>
+                </div>
+                <h3 className="font-semibold">📸 Tire a Foto</h3>
+                <p className="text-sm text-muted-foreground">
+                  Abra o chat do Toninho e envie uma foto do problema
+                </p>
+              </div>
+
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 rounded-full bg-primary/20 mx-auto flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">2</span>
+                </div>
+                <h3 className="font-semibold">🤖 IA Analisa</h3>
+                <p className="text-sm text-muted-foreground">
+                  Detecta problema, categoria e urgência automaticamente
+                </p>
+              </div>
+
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 rounded-full bg-primary/20 mx-auto flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">3</span>
+                </div>
+                <h3 className="font-semibold">💬 Responda</h3>
+                <p className="text-sm text-muted-foreground">
+                  Toninho faz 3-4 perguntas rápidas para entender melhor
+                </p>
+              </div>
+
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 rounded-full bg-primary/20 mx-auto flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">4</span>
+                </div>
+                <h3 className="font-semibold">✅ Pronto!</h3>
+                <p className="text-sm text-muted-foreground">
+                  Pedido criado e profissionais já podem enviar orçamentos
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-secondary/50 rounded-xl p-6 space-y-3">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                O que o Toninho detecta automaticamente:
+              </h3>
+              <ul className="grid grid-cols-2 gap-2">
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Tipo de problema
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Categoria do serviço
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Nível de urgência
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Estimativa de custo
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Materiais necessários
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Perguntas contextuais
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex justify-center">
+              <Button 
+                size="lg"
+                onClick={() => {
+                  navigate('/');
+                  setTimeout(() => {
+                    const toninhoButton = document.querySelector('[aria-label="Abrir assistente IA"]') as HTMLElement;
+                    toninhoButton?.click();
+                  }, 500);
+                }}
+                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-lg px-8"
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                Experimentar Agora
+              </Button>
+            </div>
+          </div>
+        </Card>
+
         {/* Features Grid */}
         <div>
           <h2 className="text-3xl font-bold text-center mb-8">
