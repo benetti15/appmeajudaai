@@ -237,52 +237,6 @@ const QuickActionsGrid = memo(({ profile, unreadCount, unreadQuotes }: any) => {
   );
 });
 
-const StatsSection = memo(({ profile }: any) => {
-  const statsData = useMemo(() => [
-    {
-      icon: Users,
-      value: 1000,
-      label: 'Profissionais Ativos',
-      color: 'from-primary to-accent'
-    },
-    {
-      icon: Shield,
-      value: profile.is_verified ? '✓' : '⏳',
-      label: profile.is_verified ? 'Conta Verificada' : 'Verificação Pendente',
-      color: 'from-accent to-primary',
-      isText: true
-    },
-    {
-      icon: Star,
-      value: 5,
-      label: 'Avaliação Média',
-      color: 'from-primary/80 to-accent/80',
-      suffix: '.0'
-    }
-  ], [profile.is_verified]);
-
-  return (
-    <ResponsiveGrid cols={{ xs: 1, md: 3 }} className="animate-scale-in">
-      {statsData.map((stat, index) => (
-        <Card key={index} className="text-center p-6 glass border-white/20 shadow-lg hover:shadow-xl 
-                                     transition-all hover:-translate-y-1 duration-300">
-          <div className={`w-16 h-16 bg-gradient-to-r ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg animate-bounce-in`}
-               style={{ animationDelay: `${index * 0.1}s` }}>
-            <stat.icon className="w-8 h-8 text-white" />
-          </div>
-          <div className="space-y-2">
-            {stat.isText || typeof stat.value === 'string' ? (
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-            ) : (
-              <AnimatedCounter value={stat.value as number} suffix={stat.suffix} />
-            )}
-            <div className="text-sm text-muted-foreground">{stat.label}</div>
-          </div>
-        </Card>
-      ))}
-    </ResponsiveGrid>
-  );
-});
 
 // Main optimized Index component
 export const OptimizedIndex = () => {
@@ -408,10 +362,8 @@ export const OptimizedIndex = () => {
               </p>
             </div>
             
-            <QuickActionCards actions={quickActions} columns={4} />
+          <QuickActionCards actions={quickActions} columns={4} />
           </div>
-
-          <StatsSection profile={profile} />
         </div>
       </main>
 
