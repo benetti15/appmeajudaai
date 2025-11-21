@@ -252,9 +252,14 @@ Como posso te ajudar hoje?`,
         setPhotoFlowStep(data.metadata.step);
       }
       
-      // Se request foi criado, resetar fluxo
+      // Se request foi criado, resetar fluxo e mostrar toast
       if (data.metadata?.request_created) {
         setPhotoFlowStep(0);
+        toast({
+          title: '✅ Solicitação Criada!',
+          description: `Pedido #${data.metadata.request_id.substring(0, 8)} criado com sucesso!`,
+          duration: 5000
+        });
       }
       
       setMessages(prev => [...prev, assistantMessage]);
@@ -293,6 +298,15 @@ Como posso te ajudar hoje?`,
   };
   
   const handleQuickAction = async (action: string) => {
+    // Verificar se é navegação
+    if (action.startsWith('navigate:')) {
+      const path = action.replace('navigate:', '');
+      navigate(path);
+      setIsOpen(false);
+      return;
+    }
+    
+    // Ações existentes
     const actionMessages: Record<string, string> = {
       'create_request': 'Quero criar uma nova solicitação',
       'list_budgets': 'Mostre meus orçamentos',

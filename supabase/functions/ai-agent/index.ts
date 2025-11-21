@@ -172,7 +172,7 @@ serve(async (req) => {
       JSON.stringify({
         message: finalResponse,
         tool_calls_executed: toolResults.length > 0,
-        suggested_actions: extractSuggestedActions(finalResponse, context)
+        suggested_actions: []
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -190,37 +190,43 @@ serve(async (req) => {
 function buildSystemPrompt(user: any, context: any, userMemory: any): string {
   const userType = user.user_metadata?.user_type || 'client';
   
-  let prompt = `Você é o Toninho, o Agente Oficial de Inteligência Artificial do aplicativo Me Ajuda ai! 💚🤖
+  let prompt = `Você é o Toninho, assistente IA do Me Ajuda ai - plataforma brasileira que conecta clientes a profissionais.
 
-O Me Ajuda ai é uma plataforma que conecta clientes a profissionais de serviços gerais (marido de aluguel, diaristas, eletricistas, encanadores, montadores, etc.).
+PERSONALIDADE:
+- Brasileiro, amigável e direto
+- Respostas CURTAS (máx 3-4 linhas)
+- Use emojis com moderação (1-2 por mensagem)
+- Tom: informal mas profissional
+- Evite textos longos e listas extensas
+
+ESTILO DE COMUNICAÇÃO:
+✅ "Entendi! Preciso de 3 infos: endereço, data preferida e descrição do problema."
+❌ "Olá! É um prazer te ajudar hoje! Para criar sua solicitação, vou precisar que você me forneça algumas informações importantes..."
 
 INFORMAÇÕES DO USUÁRIO:
 - Nome: ${user.user_metadata?.full_name || 'Usuário'}
 - Tipo: ${userType === 'client' ? 'Cliente' : 'Profissional'}
-- ID: ${user.id}
 
 `;
 
   if (userType === 'client') {
-    prompt += `SUAS FUNÇÕES PARA CLIENTES:
-1. Entender pedidos em linguagem natural (texto, voz ou imagem)
-2. Identificar categoria de serviço automaticamente
-3. Preencher solicitações de forma inteligente
-4. Solicitar apenas dados realmente faltantes
-5. SEMPRE confirmar antes de criar pedidos reais
-6. Acompanhar status de solicitações
-7. Explicar diferenças entre orçamentos de forma clara
-8. Sugerir o melhor orçamento baseado nas necessidades do cliente
+    prompt += `FUNÇÕES:
+- Criar solicitações por texto, voz ou foto
+- Identificar categoria automaticamente
+- Perguntas diretas: uma de cada vez
+- Não repetir informações já fornecidas
+- Ser proativo: sugerir próximos passos
+- Usar tools para executar ações
+- Após criar pedido, confirmar com ID
 
 `;
   } else {
-    prompt += `SUAS FUNÇÕES PARA PROFISSIONAIS:
-1. Ler solicitações e gerar orçamentos completos e profissionais
-2. Calcular preços sugeridos usando a ferramenta adequada
-3. Criar mensagens profissionais e claras para clientes
-4. Ajudar no chat com respostas rápidas e eficientes
-5. Otimizar rotas e horários do dia de trabalho
-6. Lembrar de atualizar status do serviço (a caminho, chegou, executando, concluído)
+    prompt += `FUNÇÕES:
+- Gerar orçamentos profissionais
+- Calcular preços usando ferramenta
+- Chat rápido e eficiente
+- Otimizar rotas e horários
+- Atualizar status do serviço
 
 `;
   }
@@ -241,18 +247,14 @@ ${JSON.stringify(userMemory.preferences, null, 2)}
 `;
   }
   
-  prompt += `REGRAS CRÍTICAS DE SEGURANÇA:
-1. NUNCA invente preços - use SEMPRE a ferramenta suggestPrice
-2. NUNCA execute ações sem confirmação explícita do usuário
-3. Peça dados somente quando realmente necessário
-4. Se estiver em dúvida sobre algo, PERGUNTE ao usuário
-5. Ofereça opções rápidas (chips) quando o usuário parecer perdido
-6. Mantenha tom amigável, humano, simples e brasileiro
-7. Toda ação que afeta o banco de dados PRECISA de confirmação primeiro
-8. Sempre explique O QUE você vai fazer ANTES de fazer
+  prompt += `REGRAS:
+1. NUNCA invente preços - use ferramenta suggestPrice
+2. SEMPRE confirme antes de executar ações
+3. Pergunte só o necessário
+4. Tom brasileiro amigável mas profissional
+5. Respostas curtas e objetivas
 
-FERRAMENTAS DISPONÍVEIS:
-Você tem acesso a ferramentas para executar ações reais no sistema. Use-as quando necessário, mas SEMPRE confirme com o usuário antes de executar ações críticas como criar pedidos, enviar orçamentos ou mudar status.`;
+CONTEXTO: ${context.user_type === 'client' ? 'Cliente buscando serviços' : 'Profissional oferecendo serviços'}`;
 
   return prompt;
 }
@@ -747,12 +749,12 @@ async function detectIfServiceRequestPhoto(imageUrl: string, userMessage: string
         messages: [
           {
             role: 'system',
-            content: 'Você é um detector especializado. Retorne apenas "SIM" ou "NAO".\nA imagem mostra um problema doméstico que requer serviço profissional (elétrica, encanamento, construção, reparo, limpeza, etc)?'
+            content: 'Você é um detector. Retorne APENAS "SIM" ou "NAO". A imagem mostra um problema doméstico?'
           },
           {
             role: 'user',
             content: [
-              { type: 'text', text: `Mensagem do usuário: "${userMessage}"` },
+              { type: 'text', text: `Mensagem: "${userMessage}"` },
               { type: 'image_url', image_url: { url: imageUrl } }
             ]
           }
@@ -783,16 +785,15 @@ async function handlePhotoRequestCreation(imageUrl: string, userMessage: string,
         messages: [
           {
             role: 'system',
-            content: `Você é o Toninho, assistente do Me Ajuda ai.
-Analise esta imagem de um problema doméstico e retorne JSON:
+            content: `Você é o Toninho. Analise a foto e retorne JSON conciso:
 {
-  "problem": "descrição clara do problema em português",
-  "category": "eletrica|encanamento|construcao|limpeza|pintura|marcenaria|jardinagem|refrigeracao",
+  "problem": "descrição em 1 frase",
+  "category": "eletrica|encanamento|construcao|limpeza|pintura",
   "severity": "urgente|moderado|baixo",
   "confidence": 0-100,
   "estimated_cost": "R$ X - R$ Y",
-  "materials": ["material1", "material2"],
-  "first_question": "pergunta específica e direta sobre o problema"
+  "materials": ["item1", "item2"],
+  "first_question": "pergunta direta e específica"
 }`
           },
           {
@@ -828,15 +829,14 @@ Analise esta imagem de um problema doméstico e retorne JSON:
 
     const categoryId = categoryMap[analysis.category] || categoryMap['eletrica'] || null;
 
-    const responseMessage = `📸 Entendi! Analisei sua foto e identifiquei:
+    const severityEmoji = analysis.severity === 'urgente' ? '🔴' : analysis.severity === 'moderado' ? '🟡' : '🟢';
+    const severityText = analysis.severity === 'urgente' ? 'Alta' : analysis.severity === 'moderado' ? 'Média' : 'Baixa';
 
-🔍 **Problema detectado:** ${analysis.problem}
-📁 **Categoria:** ${analysis.category.charAt(0).toUpperCase() + analysis.category.slice(1)}
-⚠️ **Urgência:** ${analysis.severity === 'urgente' ? '🔴 Alta' : analysis.severity === 'moderado' ? '🟡 Média' : '🟢 Baixa'}
-💰 **Custo estimado:** ${analysis.estimated_cost}
-${analysis.confidence > 70 ? `✅ Confiança: ${analysis.confidence}%` : ''}
+    const responseMessage = `📸 Analisei sua foto!
 
-Vou fazer algumas perguntas para criar a melhor solicitação possível:
+🔍 ${analysis.problem}
+📁 ${analysis.category} | ⚠️ ${severityEmoji} ${severityText}
+💰 ${analysis.estimated_cost}
 
 **Pergunta 1/4:** ${analysis.first_question}`;
 
@@ -1009,15 +1009,20 @@ ${answers.map((a, i) => `${i + 1}. ${a.answer}`).join('\n')}
       );
     }
 
+    console.log('✅ Service request created successfully:', {
+      request_id: request.id,
+      title: request.title,
+      client_id: user.id
+    });
+
     return new Response(
       JSON.stringify({
-        message: `🎉 **Solicitação criada com sucesso!**
+        message: `🎉 Pedido criado!
 
-📋 **Pedido #${request.id.substring(0, 8)}**
+📋 #${request.id.substring(0, 8)}
+${analysis.problem}
 
-${description}
-
-Profissionais da região já podem ver seu pedido e enviar orçamentos!`,
+Profissionais já podem ver e enviar orçamentos! 👷`,
         
         suggested_actions: [
           {

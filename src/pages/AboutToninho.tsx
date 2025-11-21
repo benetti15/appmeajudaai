@@ -92,8 +92,8 @@ export default function AboutToninho() {
             Conheça o Toninho
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Seu assistente pessoal com inteligência artificial, projetado para facilitar 
-            cada etapa da sua experiência no ServiçoJá
+            Seu assistente inteligente que resolve em segundos o que levaria minutos. 
+            Direto, eficiente e sempre disponível. É como ter um amigo expert em serviços no bolso! 💚
           </p>
         </div>
 
@@ -118,6 +118,35 @@ export default function AboutToninho() {
                 sugestões ao longo do tempo.
               </p>
             </div>
+          </div>
+        </Card>
+
+        {/* Jeito Toninho de Ser */}
+        <Card className="p-6 bg-gradient-to-br from-accent/10 to-primary/10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 rounded-full bg-primary/20">
+              <MessageSquare className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold">Jeito Toninho de Ser</h3>
+          </div>
+          
+          <div className="space-y-3 text-muted-foreground">
+            <p className="flex items-start gap-2">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <span><strong>Direto ao ponto:</strong> Respostas curtas e objetivas, sem enrolação</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <span><strong>Brasileiro raiz:</strong> Linguagem informal mas profissional</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <span><strong>Proativo:</strong> Antecipa suas necessidades e sugere próximos passos</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <span><strong>Eficiente:</strong> Resolve problemas rápido, sem precisar de 10 confirmações</span>
+            </p>
           </div>
         </Card>
 
