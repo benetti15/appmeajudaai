@@ -13,7 +13,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export function AppHeader() {
+interface AppHeaderProps {
+  title?: string;
+}
+
+export function AppHeader({ title = "ServiçoJá" }: AppHeaderProps = {}) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -49,7 +53,7 @@ export function AppHeader() {
             className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors"
             onClick={() => navigate("/")}
           >
-            ServiçoJá
+            {title}
           </h1>
         </div>
 
