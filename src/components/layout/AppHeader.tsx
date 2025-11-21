@@ -2,7 +2,7 @@ import { NotificationCenter } from "@/components/notification-system/Notificatio
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Menu, User, LogOut } from "lucide-react";
+import { ArrowLeft, User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,9 +45,8 @@ export function AppHeader({ title = "ServiçoJá" }: AppHeaderProps = {}) {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="md:hidden"
           >
-            <Menu className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 
             className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors"
