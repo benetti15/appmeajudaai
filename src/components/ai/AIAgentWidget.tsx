@@ -546,15 +546,15 @@ function MessageBubble({
         )}
         
         {message.suggested_actions && message.suggested_actions.length > 0 && (
-          <div className="mt-2 space-y-1">
+          <div className="mt-3 space-y-2">
             {message.suggested_actions.map((action, idx) => (
               <button
                 key={idx}
                 onClick={() => onAction(action.action)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all hover:scale-[1.02] ${
                   isUser 
                     ? 'bg-white/10 hover:bg-white/20' 
-                    : 'bg-primary/10 hover:bg-primary/20'
+                    : 'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground shadow-md'
                 }`}
               >
                 {action.label}
