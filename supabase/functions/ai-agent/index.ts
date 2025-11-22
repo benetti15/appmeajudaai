@@ -269,7 +269,10 @@ function defineTools() {
         parameters: {
           type: 'object',
           properties: {
-            category_id: { type: 'string', description: 'ID da categoria do serviço' },
+            category_id: { 
+              type: 'string', 
+              description: 'Nome ou ID da categoria do serviço. Categorias disponíveis: Elétrica, Hidráulica, Pintura, Limpeza, Jardinagem, Marcenaria, Eletrodomésticos, Montagem e Instalações. Use o nome (ex: "eletrica", "hidraulica") e a função converterá automaticamente para o ID correto.' 
+            },
             title: { type: 'string', description: 'Título curto e claro da solicitação' },
             description: { type: 'string', description: 'Descrição detalhada do problema/serviço' },
             urgency_level: { 
@@ -459,11 +462,35 @@ async function createRequest(args: any, supabaseClient: any, user: any) {
     
     console.log('User profile:', profile);
     
+    // Mapear nome da categoria para UUID se necessário
+    let categoryId = args.category_id;
+    
+    // Se category_id não é um UUID válido, tentar buscar pelo nome
+    if (categoryId && !categoryId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.log('Category is not UUID, searching by name:', categoryId);
+      const categoryName = categoryId.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      
+      const { data: categoryData } = await supabaseClient
+        .from('service_categories')
+        .select('id')
+        .ilike('name', `%${args.category_id}%`)
+        .limit(1)
+        .maybeSingle();
+      
+      if (categoryData) {
+        categoryId = categoryData.id;
+        console.log('Found category ID:', categoryId);
+      } else {
+        console.log('Category not found, using null');
+        categoryId = null;
+      }
+    }
+    
     const { data, error } = await supabaseClient
       .from('service_requests')
       .insert({
         client_id: user.id,
-        category_id: args.category_id || null,
+        category_id: categoryId,
         title: args.title,
         description: args.description,
         urgency_level: args.urgency_level || 1,
