@@ -448,23 +448,43 @@ async function executeToolCalls(
 
 async function createRequest(args: any, supabaseClient: any, user: any) {
   try {
+    console.log('Creating request with args:', args);
+    
+    // Buscar perfil do usuário para preencher cidade e estado padrão
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('city, state, street, number, neighborhood, postal_code')
+      .eq('id', user.id)
+      .single();
+    
+    console.log('User profile:', profile);
+    
     const { data, error } = await supabaseClient
       .from('service_requests')
       .insert({
         client_id: user.id,
-        category_id: args.category_id,
+        category_id: args.category_id || null,
         title: args.title,
         description: args.description,
-        urgency_level: args.urgency_level,
-        address: args.address,
-        city: args.city,
-        state: args.state,
+        urgency_level: args.urgency_level || 1,
+        address: args.address || profile?.street || 'Não especificado',
+        city: args.city || profile?.city || 'Não especificado',
+        state: args.state || profile?.state || 'MG',
+        street: args.street || profile?.street || null,
+        number: args.number || profile?.number || null,
+        neighborhood: args.neighborhood || profile?.neighborhood || null,
+        postal_code: args.postal_code || profile?.postal_code || null,
         status: 'pending'
       })
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating request:', error);
+      throw error;
+    }
+    
+    console.log('Request created successfully:', data.id);
     
     return { 
       success: true, 
@@ -472,7 +492,11 @@ async function createRequest(args: any, supabaseClient: any, user: any) {
       message: 'Solicitação criada com sucesso! Profissionais da região serão notificados.' 
     };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    console.error('Error in createRequest:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
   }
 }
 
