@@ -516,7 +516,17 @@ async function createRequest(args: any, supabaseClient: any, user: any) {
     return { 
       success: true, 
       request_id: data.id, 
-      message: 'Solicitação criada com sucesso! Profissionais da região serão notificados.' 
+      message: 'Solicitação criada com sucesso! Profissionais da região serão notificados.',
+      suggested_actions: [
+        {
+          label: '👀 Ver Solicitação',
+          action: `navigate:/service-request/${data.id}`
+        },
+        {
+          label: '📨 Ver Meus Pedidos',
+          action: 'navigate:/my-requests'
+        }
+      ]
     };
   } catch (error) {
     console.error('Error in createRequest:', error);

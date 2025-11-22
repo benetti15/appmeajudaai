@@ -56,7 +56,7 @@ interface Quote {
 }
 
 export default function SimpleRequestDetails() {
-  const { requestId } = useParams();
+  const { id: requestId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
