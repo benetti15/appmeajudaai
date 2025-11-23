@@ -68,22 +68,49 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             />
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
           </div>
-          <h1 className="flex items-center gap-1 text-2xl font-display font-bold">
-            <span className={`bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] transition-all duration-700 ${
+          <h1 className="flex items-center gap-2 text-3xl font-display font-black tracking-tight">
+            {/* ME AJUDA com múltiplas camadas de efeitos */}
+            <span className={`relative transition-all duration-700 ${
               showLogo ? 'opacity-100 translate-x-0 animate-gradient' : 'opacity-0 -translate-x-4'
             }`}
             style={{ animationDelay: '0ms' }}>
-              ME AJUDA
+              {/* Sombra de fundo */}
+              <span className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-2xl"></span>
+              {/* Borda externa */}
+              <span className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-sm opacity-50"></span>
+              {/* Texto principal */}
+              <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] drop-shadow-lg">
+                ME AJUDA
+              </span>
             </span>
-            <span className={`relative inline-flex items-center transition-all duration-700 ${
+            
+            {/* AI com efeitos especiais de IA */}
+            <span className={`relative inline-flex items-center ml-1 transition-all duration-700 ${
               showLogo ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
             }`}
             style={{ animationDelay: '400ms', transitionDelay: '400ms' }}>
-              <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-lg opacity-75 animate-pulse"></span>
-              <span className="relative bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent font-extrabold animate-gradient bg-[length:200%_auto] scale-110">
+              {/* Camada de brilho externa pulsante */}
+              <span className="absolute -inset-4 bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-purple-600/20 rounded-lg blur-2xl animate-pulse"></span>
+              {/* Camada de brilho média */}
+              <span className="absolute -inset-2 bg-gradient-to-r from-cyan-400/40 via-blue-500/40 to-purple-600/40 rounded-lg blur-xl"></span>
+              {/* Camada de brilho interna */}
+              <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-md opacity-75 animate-pulse"></span>
+              
+              {/* Borda brilhante */}
+              <span className="absolute inset-0 bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-500 blur-sm"></span>
+              
+              {/* Texto AI principal */}
+              <span className="relative bg-gradient-to-br from-cyan-300 via-blue-400 to-purple-500 bg-clip-text text-transparent font-black text-4xl animate-gradient bg-[length:200%_auto] drop-shadow-2xl">
                 AI!
               </span>
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span>
+              
+              {/* Ponto de luz no canto */}
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-300 rounded-full animate-ping shadow-lg shadow-cyan-400"></span>
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full shadow-lg shadow-cyan-500"></span>
+              
+              {/* Pequenos pontos decorativos */}
+              <span className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span>
+              <span className="absolute top-0 left-1/2 w-1 h-1 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '200ms' }}></span>
             </span>
           </h1>
         </button>
