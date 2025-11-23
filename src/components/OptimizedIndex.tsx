@@ -46,6 +46,11 @@ import {
 // Memoized components for better performance
 const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: any) => {
   const navigate = useNavigate();
+  const [showLogo, setShowLogo] = React.useState(false);
+  
+  React.useEffect(() => {
+    setShowLogo(true);
+  }, []);
   
   return (
     <header className="bg-white/70 backdrop-blur-2xl border-b border-white/30 shadow-xl sticky top-0 z-40 animate-slide-down">
@@ -64,10 +69,16 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
           </div>
           <h1 className="flex items-center gap-1 text-2xl font-display font-bold">
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto] animate-float">
+            <span className={`bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] transition-all duration-700 ${
+              showLogo ? 'opacity-100 translate-x-0 animate-gradient' : 'opacity-0 -translate-x-4'
+            }`}
+            style={{ animationDelay: '0ms' }}>
               ME AJUDA
             </span>
-            <span className="relative inline-flex items-center">
+            <span className={`relative inline-flex items-center transition-all duration-700 ${
+              showLogo ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+            }`}
+            style={{ animationDelay: '400ms', transitionDelay: '400ms' }}>
               <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-lg opacity-75 animate-pulse"></span>
               <span className="relative bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent font-extrabold animate-gradient bg-[length:200%_auto] scale-110">
                 AI!
