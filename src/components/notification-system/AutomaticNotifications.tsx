@@ -228,19 +228,21 @@ async function handleQuoteNotification(quote: any) {
 
     if (!request) return;
 
-    // Enviar notificação
+    const message = `Novo orçamento para "${request.title}". Valor: R$ ${quote.amount?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'N/A'}`;
+
+    // Enviar notificação no banco de dados
     const { error } = await supabase
       .from('notifications')
       .insert({
         user_id: request.client_id,
         title: template.title,
-        message: `Novo orçamento para "${request.title}". Valor: R$ ${quote.price}`,
+        message,
         type: template.type,
         related_id: quote.request_id,
         metadata: {
           action_url: template.actionUrl,
           quote_id: quote.id,
-          quote_price: quote.price
+          quote_price: quote.amount
         }
       });
 
@@ -251,8 +253,21 @@ async function handleQuoteNotification(quote: any) {
 
     // Mostrar toast para feedback imediato
     toast.success(template.title, {
-      description: template.message,
+      description: message,
       duration: 5000
+    });
+
+    // Enviar push notification
+    await sendPushNotification({
+      userId: request.client_id,
+      title: template.title,
+      body: message,
+      icon: template.icon,
+      data: {
+        url: `/service-request/${quote.request_id}`,
+        requestId: quote.request_id,
+        quoteId: quote.id
+      }
     });
 
     console.log('✅ Quote notification sent successfully');
@@ -262,7 +277,7 @@ async function handleQuoteNotification(quote: any) {
   }
 }
 
-// Função placeholder para push notifications
+// Função para enviar push notifications através do service worker
 async function sendPushNotification(data: {
   userId: string;
   title: string;
@@ -270,26 +285,46 @@ async function sendPushNotification(data: {
   icon?: string;
   data?: any;
 }) {
-  console.log('📱 Push notification would be sent:', data);
+  console.log('📱 Sending push notification:', data);
   
-  // TODO: Implementar integração com serviço de push (Firebase, OneSignal, etc.)
-  // Por enquanto, apenas simula o envio
-  
-  if ('serviceWorker' in navigator && 'Notification' in window) {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        new Notification(data.title, {
-          body: data.body,
-          icon: '/favicon.ico',
-          badge: '/favicon.ico',
-          tag: `service-${data.data?.requestId}`,
-          data: data.data
-        });
-      }
-    } catch (error) {
-      console.log('Push notification not supported:', error);
+  if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+    console.log('Push notifications not supported');
+    return;
+  }
+
+  try {
+    // Verificar permissão
+    let permission = Notification.permission;
+    
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
     }
+    
+    if (permission !== 'granted') {
+      console.log('Notification permission not granted');
+      return;
+    }
+
+    // Obter o service worker registration
+    const registration = await navigator.serviceWorker.ready;
+    
+    if (!registration) {
+      console.log('Service worker not registered');
+      return;
+    }
+
+    // Enviar notificação através do service worker
+    await registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      tag: `quote-${data.data?.quoteId || Date.now()}`,
+      data: data.data
+    });
+
+    console.log('✅ Push notification sent successfully');
+  } catch (error) {
+    console.error('❌ Error sending push notification:', error);
   }
 }
 
