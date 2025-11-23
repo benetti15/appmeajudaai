@@ -63,8 +63,17 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             />
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
           </div>
-          <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-            Me Ajuda ai!
+          <h1 className="flex items-center gap-1 text-2xl font-display font-bold">
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto] animate-float">
+              ME AJUDA
+            </span>
+            <span className="relative inline-flex items-center">
+              <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-lg opacity-75 animate-pulse"></span>
+              <span className="relative bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent font-extrabold animate-gradient bg-[length:200%_auto] scale-110">
+                AI!
+              </span>
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span>
+            </span>
           </h1>
         </button>
         <div className="flex items-center gap-4">
