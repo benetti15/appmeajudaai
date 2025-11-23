@@ -12,6 +12,7 @@ import { useNotificationService } from "@/hooks/useNotificationService";
 import { initializeStorageBuckets } from "@/lib/storage";
 import { AIAgentWidget } from "@/components/ai/AIAgentWidget";
 import { ProactiveNotifications } from "@/components/ai/ProactiveNotifications";
+import { AutomaticNotifications } from "@/components/notification-system/AutomaticNotifications";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Lazy load pages for better performance
@@ -75,7 +76,7 @@ function App() {
 
 // Component to handle initialization after providers are available
 function AppInitializer() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   
   // Initialize notification service and storage
   useNotificationService();
@@ -89,6 +90,12 @@ function AppInitializer() {
       <Toaster />
       <Sonner />
       <PWAManager />
+      {user && profile && (
+        <AutomaticNotifications 
+          userId={user.id} 
+          userRole={profile.user_type as 'client' | 'professional'} 
+        />
+      )}
       <BrowserRouter>
         <AIAgentWidget />
         <Suspense fallback={<LoadingFallback />}>
