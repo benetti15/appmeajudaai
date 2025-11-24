@@ -353,8 +353,31 @@ const Auth = () => {
           <img src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
                alt="Me Ajuda ai" 
                className="w-20 h-20 mb-8 animate-bounce-in" />
-          <h1 className="text-5xl font-display font-bold mb-6 text-center">
-            Me Ajuda ai!
+          <h1 className="flex items-center justify-center gap-2 text-5xl font-display font-black mb-6 text-center">
+            {/* ME AJUDA com scan effect */}
+            <span className="relative">
+              <span className="relative bg-gradient-to-r from-white via-white to-white bg-clip-text text-transparent bg-[length:200%_auto]">
+                ME AJUDA
+              </span>
+              {/* Scan overlay branco */}
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent bg-clip-text text-transparent animate-scan-laser bg-[length:20%_100%] opacity-80"></span>
+            </span>
+            
+            {/* AI com efeitos especiais de IA */}
+            <span className="relative inline-flex items-center ml-1">
+              {/* Texto AI principal */}
+              <span className="relative bg-gradient-to-br from-cyan-300 via-blue-400 to-purple-500 bg-clip-text text-transparent font-black text-6xl animate-gradient bg-[length:200%_auto]">
+                AI!
+              </span>
+              
+              {/* Ponto de luz no canto */}
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full animate-ping"></span>
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full"></span>
+              
+              {/* Pequenos pontos decorativos */}
+              <span className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></span>
+              <span className="absolute top-0 left-1/2 w-1 h-1 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '200ms' }}></span>
+            </span>
           </h1>
           <p className="text-xl text-center opacity-90 max-w-md">
             Conectando você aos melhores profissionais da sua região. 
@@ -402,8 +425,30 @@ const Auth = () => {
             <div className="lg:hidden flex justify-center mb-4">
               <img src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" alt="Me Ajuda ai" className="w-16 h-16 animate-bounce-in" />
             </div>
-            <CardTitle className="text-3xl font-display font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-              Me Ajuda ai
+            <CardTitle className="flex items-center justify-center gap-2 text-3xl font-display font-black">
+              {/* ME AJUDA com scan effect */}
+              <span className="relative">
+                <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto]">
+                  ME AJUDA
+                </span>
+                {/* Scan overlay branco */}
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent bg-clip-text text-transparent animate-scan-laser bg-[length:20%_100%] opacity-80"></span>
+              </span>
+              
+              {/* AI com efeitos especiais de IA */}
+              <span className="relative inline-flex items-center ml-1">
+                {/* Texto AI principal */}
+                <span className="relative bg-gradient-to-br from-cyan-300 via-blue-400 to-purple-500 bg-clip-text text-transparent font-black text-4xl animate-gradient bg-[length:200%_auto]">
+                  AI!
+                </span>
+                
+                {/* Ponto de luz no canto */}
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span>
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full"></span>
+                
+                {/* Pequenos pontos decorativos */}
+                <span className="absolute -bottom-1 -left-1 w-1 h-1 bg-purple-400 rounded-full animate-pulse"></span>
+              </span>
             </CardTitle>
             <CardDescription className="text-base text-muted-foreground">
               Conecte-se com profissionais qualificados

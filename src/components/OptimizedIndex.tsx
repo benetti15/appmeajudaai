@@ -90,10 +90,6 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
               <span className="relative bg-gradient-to-br from-cyan-300 via-blue-400 to-purple-500 bg-clip-text text-transparent font-black text-4xl animate-gradient bg-[length:200%_auto]">
                 AI!
               </span>
-              {/* Scan overlay branco para AI */}
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent bg-clip-text text-transparent animate-scan-laser bg-[length:30%_100%] opacity-80 font-black text-4xl">
-                AI!
-              </span>
               
               {/* Ponto de luz no canto */}
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full animate-ping"></span>
