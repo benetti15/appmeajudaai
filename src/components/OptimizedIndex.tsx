@@ -75,11 +75,11 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             }`}
             style={{ animationDelay: '0ms' }}>
               {/* Sombra de fundo */}
-              <span className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-2xl"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 blur-xl"></span>
               {/* Borda externa */}
-              <span className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-sm opacity-50"></span>
+              <span className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary blur-sm opacity-30"></span>
               {/* Texto principal */}
-              <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] drop-shadow-lg">
+              <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] drop-shadow-md">
                 ME AJUDA
               </span>
             </span>
@@ -90,9 +90,9 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             }`}
             style={{ animationDelay: '400ms', transitionDelay: '400ms' }}>
               {/* Camada de brilho externa pulsante */}
-              <span className="absolute -inset-4 bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-purple-600/20 rounded-lg blur-2xl animate-pulse"></span>
+              <span className="absolute -inset-4 bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-purple-600/20 rounded-lg blur-xl animate-pulse"></span>
               {/* Camada de brilho média */}
-              <span className="absolute -inset-2 bg-gradient-to-r from-cyan-400/40 via-blue-500/40 to-purple-600/40 rounded-lg blur-xl"></span>
+              <span className="absolute -inset-2 bg-gradient-to-r from-cyan-400/40 via-blue-500/40 to-purple-600/40 rounded-lg blur-md"></span>
               {/* Camada de brilho interna */}
               <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 blur-md opacity-75 animate-pulse"></span>
               
