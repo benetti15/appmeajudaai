@@ -107,10 +107,12 @@ export default {
 					'50%': { transform: 'translateY(-10px)' }
 				},
 				'scan-laser': {
-					'0%': { left: '-10%', opacity: '0' },
-					'10%': { opacity: '1' },
-					'90%': { opacity: '1' },
-					'100%': { left: '110%', opacity: '0' }
+					'0%': { 
+						backgroundPosition: '-200% 0',
+					},
+					'100%': { 
+						backgroundPosition: '200% 0',
+					}
 				}
 			},
 			animation: {
@@ -120,7 +122,7 @@ export default {
 				'slide-up': 'slide-up 0.5s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
 				'float': 'float 3s ease-in-out infinite',
-				'scan-laser': 'scan-laser 4s ease-in-out infinite'
+				'scan-laser': 'scan-laser 3s ease-in-out infinite'
 			}
 		}
 	},

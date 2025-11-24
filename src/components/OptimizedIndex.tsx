@@ -69,12 +69,7 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
           </div>
           <h1 className="flex items-center gap-2 text-3xl font-display font-black tracking-tight relative">
-            {/* Laser Scanner - linha vertical que percorre o texto */}
-            <span className="absolute inset-0 overflow-hidden pointer-events-none">
-              <span className="absolute top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-cyan-400 to-transparent animate-scan-laser opacity-80"></span>
-            </span>
-            
-            {/* ME AJUDA */}
+            {/* ME AJUDA com scan effect */}
             <span className={`relative transition-all duration-700 ${
               showLogo ? 'opacity-100 translate-x-0 animate-gradient' : 'opacity-0 -translate-x-4'
             }`}
@@ -82,6 +77,8 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
               <span className="relative bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto]">
                 ME AJUDA
               </span>
+              {/* Scan overlay branco */}
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent bg-clip-text text-transparent animate-scan-laser bg-[length:20%_100%] opacity-80"></span>
             </span>
             
             {/* AI com efeitos especiais de IA */}
@@ -91,6 +88,10 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             style={{ animationDelay: '400ms', transitionDelay: '400ms' }}>
               {/* Texto AI principal */}
               <span className="relative bg-gradient-to-br from-cyan-300 via-blue-400 to-purple-500 bg-clip-text text-transparent font-black text-4xl animate-gradient bg-[length:200%_auto]">
+                AI!
+              </span>
+              {/* Scan overlay branco para AI */}
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent bg-clip-text text-transparent animate-scan-laser bg-[length:30%_100%] opacity-80 font-black text-4xl">
                 AI!
               </span>
               
