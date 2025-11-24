@@ -68,7 +68,12 @@ const MemoizedHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: an
             />
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
           </div>
-          <h1 className="flex items-center gap-2 text-3xl font-display font-black tracking-tight">
+          <h1 className="flex items-center gap-2 text-3xl font-display font-black tracking-tight relative">
+            {/* Laser Scanner - linha vertical que percorre o texto */}
+            <span className="absolute inset-0 overflow-hidden pointer-events-none">
+              <span className="absolute top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-cyan-400 to-transparent animate-scan-laser opacity-80"></span>
+            </span>
+            
             {/* ME AJUDA */}
             <span className={`relative transition-all duration-700 ${
               showLogo ? 'opacity-100 translate-x-0 animate-gradient' : 'opacity-0 -translate-x-4'
