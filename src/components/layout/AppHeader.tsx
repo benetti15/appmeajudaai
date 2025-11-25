@@ -17,7 +17,7 @@ interface AppHeaderProps {
   title?: string;
 }
 
-export function AppHeader({ title = "ServiçoJá" }: AppHeaderProps = {}) {
+export function AppHeader({ title = "ME AJUDA AI!" }: AppHeaderProps = {}) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
 
