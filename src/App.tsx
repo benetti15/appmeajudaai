@@ -189,6 +189,14 @@ function AppInitializer() {
               }
             />
             <Route
+              path="/my-services-new"
+              element={
+                <ProtectedRoute>
+                  <MyServicesNew />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/professional-profile"
               element={
                 <ProtectedRoute>
