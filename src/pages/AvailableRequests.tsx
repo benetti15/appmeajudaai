@@ -366,7 +366,7 @@ const AvailableRequests = () => {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/request-details/${request.id}`);
+                            navigate(`/service-request-details/${request.id}`);
                           }}
                           className="gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group/btn"
                         >
