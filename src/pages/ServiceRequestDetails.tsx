@@ -261,14 +261,14 @@ export default function ServiceRequestDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5">
       {/* Header */}
-      <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-10">
+      <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3">
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3 relative z-10 pointer-events-auto">
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline ml-2">Voltar</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3">
+            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3 relative z-10 pointer-events-auto">
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline ml-2">Início</span>
             </Button>
