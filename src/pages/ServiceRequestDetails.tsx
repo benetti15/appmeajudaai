@@ -73,7 +73,7 @@ interface Professional {
 }
 
 export default function ServiceRequestDetails() {
-  const { requestId } = useParams();
+  const { id: requestId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   
