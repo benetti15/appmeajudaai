@@ -21,9 +21,9 @@ interface ServiceRequest {
   description: string;
   status: string;
   budget_estimate: number | null;
-  address: string;
   city: string;
   state: string;
+  neighborhood?: string;
   created_at: string;
   preferred_date: string | null;
   urgency_level: number;
@@ -101,10 +101,22 @@ const AvailableRequests = () => {
       if (!specialties || specialties.length === 0) {
         console.log("Nenhuma especialidade encontrada. Buscando todos os pedidos...");
         // Se não tem especialidades cadastradas, mostrar todos os pedidos
+        // IMPORTANTE: Não incluir address, street, number, complement, postal_code
         const { data: allRequests, error: allRequestsError } = await supabase
           .from("service_requests")
           .select(`
-            *,
+            id,
+            title,
+            description,
+            status,
+            budget_estimate,
+            city,
+            state,
+            neighborhood,
+            created_at,
+            preferred_date,
+            urgency_level,
+            images_urls,
             service_categories!service_requests_category_id_fkey (name)
           `)
           .eq("status", "pending")
@@ -125,10 +137,23 @@ const AvailableRequests = () => {
       console.log("Categorias do profissional:", categoryIds);
 
       // Buscar pedidos apenas das categorias do profissional
+      // IMPORTANTE: Não incluir address, street, number, complement, postal_code
+      // pois profissionais só devem ver endereço completo APÓS enviar orçamento
       const { data, error } = await supabase
         .from("service_requests")
         .select(`
-          *,
+          id,
+          title,
+          description,
+          status,
+          budget_estimate,
+          city,
+          state,
+          neighborhood,
+          created_at,
+          preferred_date,
+          urgency_level,
+          images_urls,
           service_categories!service_requests_category_id_fkey (name)
         `)
         .eq("status", "pending")

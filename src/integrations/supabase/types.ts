@@ -166,6 +166,13 @@ export type Database = {
             foreignKeyName: "chat_messages_request_id_fkey"
             columns: ["request_id"]
             isOneToOne: false
+            referencedRelation: "pending_requests_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
             referencedRelation: "service_requests"
             referencedColumns: ["id"]
           },
@@ -306,6 +313,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "professional_live_location_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "pending_requests_summary"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "professional_live_location_request_id_fkey"
             columns: ["request_id"]
@@ -512,6 +526,13 @@ export type Database = {
             foreignKeyName: "quotes_request_id_fkey"
             columns: ["request_id"]
             isOneToOne: false
+            referencedRelation: "pending_requests_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
             referencedRelation: "service_requests"
             referencedColumns: ["id"]
           },
@@ -583,6 +604,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "pending_requests_summary"
             referencedColumns: ["id"]
           },
           {
@@ -795,6 +823,13 @@ export type Database = {
             foreignKeyName: "service_status_history_request_id_fkey"
             columns: ["request_id"]
             isOneToOne: false
+            referencedRelation: "pending_requests_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_status_history_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
             referencedRelation: "service_requests"
             referencedColumns: ["id"]
           },
@@ -802,6 +837,86 @@ export type Database = {
       }
     }
     Views: {
+      pending_requests_summary: {
+        Row: {
+          budget_estimate: number | null
+          category_id: string | null
+          city: string | null
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          images_urls: string[] | null
+          neighborhood: string | null
+          preferred_date: string | null
+          state: string | null
+          status: string | null
+          title: string | null
+          urgency_level: number | null
+        }
+        Insert: {
+          budget_estimate?: number | null
+          category_id?: string | null
+          city?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          images_urls?: string[] | null
+          neighborhood?: string | null
+          preferred_date?: string | null
+          state?: string | null
+          status?: string | null
+          title?: string | null
+          urgency_level?: number | null
+        }
+        Update: {
+          budget_estimate?: number | null
+          category_id?: string | null
+          city?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          images_urls?: string[] | null
+          neighborhood?: string | null
+          preferred_date?: string | null
+          state?: string | null
+          status?: string | null
+          title?: string | null
+          urgency_level?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "professional_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_with_location"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_public_view: {
         Row: {
           avatar_url: string | null
