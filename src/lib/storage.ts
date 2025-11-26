@@ -46,7 +46,24 @@ export async function uploadFile(file: File, path: string, bucket: string = 'upl
       });
     }
 
-    // Get public URL
+    // Check if bucket is private (chat-attachments, request-images)
+    const privateBuckets = ['chat-attachments', 'request-images'];
+    
+    if (privateBuckets.includes(bucket)) {
+      // Use signed URL for private buckets (1 hour expiry)
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, 3600);
+      
+      if (signedError) throw signedError;
+      
+      return {
+        success: true,
+        url: signedData.signedUrl
+      };
+    }
+    
+    // Get public URL for public buckets
     const { data } = supabase.storage
       .from(bucket)
       .getPublicUrl(path);

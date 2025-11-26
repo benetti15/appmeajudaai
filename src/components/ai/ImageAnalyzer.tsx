@@ -45,10 +45,12 @@ export function ImageAnalyzer({ onAnalysisComplete }: ImageAnalyzerProps) {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get signed URL for private bucket (1 hour expiry)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('request-images')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 3600);
+
+      if (signedUrlError) throw signedUrlError;
 
       // Call AI agent to analyze image
       const { data: { session } } = await supabase.auth.getSession();
@@ -60,7 +62,7 @@ export function ImageAnalyzer({ onAnalysisComplete }: ImageAnalyzerProps) {
         },
         body: JSON.stringify({
           message: 'Analise esta imagem e identifique o problema',
-          context: { imageUrl: publicUrl, action: 'analyzeImage' }
+          context: { imageUrl: signedUrlData.signedUrl, action: 'analyzeImage' }
         }),
       });
 

@@ -27,11 +27,14 @@ export const useImageUpload = () => {
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use signed URL for private bucket (1 hour expiry)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('chat-attachments')
-        .getPublicUrl(data.path);
+        .createSignedUrl(data.path, 3600);
 
-      return publicUrl;
+      if (signedUrlError) throw signedUrlError;
+
+      return signedUrlData.signedUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
