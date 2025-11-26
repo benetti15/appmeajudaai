@@ -83,6 +83,7 @@ export default function ServiceRequestDetails() {
   const [error, setError] = useState<string | null>(null);
   const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(null);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -264,12 +265,38 @@ export default function ServiceRequestDetails() {
       <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3 relative z-10 pointer-events-auto">
-              <ArrowLeft className="w-4 h-4" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setIsNavigating(true);
+                navigate(-1);
+              }} 
+              disabled={isNavigating}
+              className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3 relative z-10 pointer-events-auto transition-all"
+            >
+              {isNavigating ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary/20 border-t-primary" />
+              ) : (
+                <ArrowLeft className="w-4 h-4" />
+              )}
               <span className="hidden sm:inline ml-2">Voltar</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3 relative z-10 pointer-events-auto">
-              <Home className="w-4 h-4" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setIsNavigating(true);
+                navigate("/");
+              }} 
+              disabled={isNavigating}
+              className="h-8 w-8 p-0 sm:h-10 sm:w-auto sm:px-3 relative z-10 pointer-events-auto transition-all"
+            >
+              {isNavigating ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary/20 border-t-primary" />
+              ) : (
+                <Home className="w-4 h-4" />
+              )}
               <span className="hidden sm:inline ml-2">Início</span>
             </Button>
             <div className="flex-1 min-w-0">
