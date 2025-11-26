@@ -145,6 +145,13 @@ export type Database = {
             foreignKeyName: "chat_messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
+            referencedRelation: "professional_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
             referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
@@ -160,6 +167,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "professional_public_view"
             referencedColumns: ["id"]
           },
           {
@@ -234,6 +248,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "professional_public_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
@@ -334,6 +355,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_specialties_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professional_public_view"
             referencedColumns: ["id"]
           },
           {
@@ -463,6 +491,13 @@ export type Database = {
             foreignKeyName: "quotes_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "professional_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
@@ -533,6 +568,13 @@ export type Database = {
             foreignKeyName: "reviews_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "professional_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
@@ -548,6 +590,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "professional_public_view"
             referencedColumns: ["id"]
           },
           {
@@ -697,6 +746,13 @@ export type Database = {
             foreignKeyName: "service_requests_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "professional_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "professionals_with_location"
             referencedColumns: ["id"]
           },
@@ -746,6 +802,20 @@ export type Database = {
       }
     }
     Views: {
+      professional_public_view: {
+        Row: {
+          avatar_url: string | null
+          average_rating: number | null
+          city: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          service_radius_km: number | null
+          state: string | null
+          total_reviews: number | null
+        }
+        Relationships: []
+      }
       professionals_with_location: {
         Row: {
           avatar_url: string | null
