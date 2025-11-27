@@ -70,7 +70,7 @@ export function DocumentUploadDialog({ isOpen, onClose, onUploadSuccess }: Docum
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Simulate upload progress
+    // Progress animation
     const interval = setInterval(() => {
       setUploadProgress(prev => {
         if (prev >= 90) {
@@ -82,18 +82,26 @@ export function DocumentUploadDialog({ isOpen, onClose, onUploadSuccess }: Docum
     }, 200);
 
     try {
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { useVerificationDocuments } = await import('@/hooks/useVerificationDocuments');
+      const { uploadDocument } = useVerificationDocuments();
       
-      setUploadProgress(100);
-      toast.success("Documento enviado para análise!");
+      const result = await uploadDocument(selectedFile, selectedType);
       
-      setTimeout(() => {
-        onUploadSuccess();
-        handleReset();
-        onClose();
-      }, 500);
+      if (result) {
+        clearInterval(interval);
+        setUploadProgress(100);
+        toast.success("Documento enviado para análise!");
+        
+        setTimeout(() => {
+          onUploadSuccess();
+          handleReset();
+          onClose();
+        }, 500);
+      } else {
+        throw new Error('Upload failed');
+      }
     } catch (error) {
+      console.error('Upload error:', error);
       toast.error("Erro ao enviar documento");
     } finally {
       clearInterval(interval);

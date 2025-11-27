@@ -394,6 +394,33 @@ export type Database = {
           },
         ]
       }
+      professional_verification_status: {
+        Row: {
+          created_at: string | null
+          is_verified: boolean | null
+          professional_id: string
+          updated_at: string | null
+          verification_level: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          is_verified?: boolean | null
+          professional_id: string
+          updated_at?: string | null
+          verification_level?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          is_verified?: boolean | null
+          professional_id?: string
+          updated_at?: string | null
+          verification_level?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -834,6 +861,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      verification_documents: {
+        Row: {
+          created_at: string | null
+          document_type: string
+          file_url: string
+          id: string
+          professional_id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_type: string
+          file_url: string
+          id?: string
+          professional_id: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_type?: string
+          file_url?: string
+          id?: string
+          professional_id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

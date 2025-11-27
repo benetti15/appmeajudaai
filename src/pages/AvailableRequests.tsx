@@ -14,6 +14,7 @@ import { RequestAnalyzer } from "@/components/ai/RequestAnalyzer";
 import { QuoteAssistant } from "@/components/ai/QuoteAssistant";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { VerificationRequiredAlert } from "@/components/VerificationRequiredAlert";
 
 interface ServiceRequest {
   id: string;
@@ -230,6 +231,11 @@ const AvailableRequests = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          <VerificationRequiredAlert 
+            feature="pedidos de clientes e enviar propostas"
+            className="mb-6"
+          />
+
           {requests.length === 0 ? (
             <div className="space-y-6">
               <Card className="text-center py-12 border-2 border-dashed">
