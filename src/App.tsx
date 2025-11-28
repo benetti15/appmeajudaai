@@ -14,6 +14,7 @@ import { AIAgentWidget } from "@/components/ai/AIAgentWidget";
 import { ProactiveNotifications } from "@/components/ai/ProactiveNotifications";
 import { AutomaticNotifications } from "@/components/notification-system/AutomaticNotifications";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -46,6 +47,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const ProfessionalPublicProfile = lazy(() => import("./pages/ProfessionalPublicProfile"));
 const ToninhoHistory = lazy(() => import("./pages/ToninhoHistory"));
 const ToninhoAnalytics = lazy(() => import("./pages/ToninhoAnalytics"));
+const AdminVerificationPanel = lazy(() => import("./pages/AdminVerificationPanel"));
 
 const FluxoDemo = lazy(() => import("./pages/FluxoDemo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -300,6 +302,16 @@ function AppInitializer() {
               element={
                 <ProtectedRoute>
                   <ToninhoAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/verificacao"
+              element={
+                <ProtectedRoute>
+                  <AdminRoute>
+                    <AdminVerificationPanel />
+                  </AdminRoute>
                 </ProtectedRoute>
               }
             />
