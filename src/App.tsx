@@ -22,6 +22,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
+const ProfileSetupWizard = lazy(() => import("./components/wizard/ProfileSetupWizard"));
 const ServiceCategories = lazy(() => import("./pages/ServiceCategories"));
 const NewRequest = lazy(() => import("./pages/NewRequest"));
 const MyRequests = lazy(() => import("./pages/MyRequests"));
@@ -112,6 +113,14 @@ function AppInitializer() {
               element={
                 <ProtectedRoute>
                   <CompleteProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/setup-wizard"
+              element={
+                <ProtectedRoute>
+                  <ProfileSetupWizard />
                 </ProtectedRoute>
               }
             />
