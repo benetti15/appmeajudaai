@@ -9,29 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, MapPin, Award, User, Plus, Loader2, Save } from "lucide-react";
+import { ArrowLeft, MapPin, Award, User, Sparkles } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { EnhancedVerificationSystem } from "@/components/EnhancedVerificationSystem";
-import { SpecialtiesReorder } from "@/components/professional/SpecialtiesReorder";
+import { ModernSpecialtiesGrid } from "@/components/professional/ModernSpecialtiesGrid";
 import { ProgressStepper } from "@/components/ui/progress-stepper";
-
-interface ServiceCategory {
-  id: string;
-  name: string;
-}
-
-interface Specialty {
-  id: string;
-  category_id: string;
-  category_name: string;
-  experience_years: number | null;
-  description: string | null;
-  certifications: string | null;
-  display_order: number;
-}
-
 
 export default function ProfessionalProfile() {
   const { user, profile } = useAuth();
@@ -41,16 +23,6 @@ export default function ProfessionalProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSpecialty, setEditingSpecialty] = useState<Specialty | null>(null);
-  const [formData, setFormData] = useState({
-    category_id: "",
-    experience_years: "",
-    description: "",
-    certifications: "",
-  });
   
   // Form states para perfil pessoal
   const [profileData, setProfileData] = useState({
@@ -88,54 +60,8 @@ export default function ProfessionalProfile() {
       setProfilePhoto(profile.avatar_url || null);
     }
 
-    fetchData();
+    setLoading(false);
   }, [user, profile]);
-
-  const fetchData = async () => {
-    try {
-      // Fetch categories
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from("service_categories")
-        .select("*")
-        .order("name");
-
-      if (categoriesError) throw categoriesError;
-      setCategories(categoriesData || []);
-
-      // Fetch specialties with display_order
-      const { data: specialtiesData, error: specialtiesError } = await supabase
-        .from("professional_specialties")
-        .select(`
-          id,
-          category_id,
-          experience_years,
-          description,
-          certifications,
-          display_order,
-          service_categories!professional_specialties_category_id_fkey(name)
-        `)
-        .eq("professional_id", user?.id)
-        .order("display_order");
-
-      if (specialtiesError) throw specialtiesError;
-      
-      const formattedSpecialties = specialtiesData?.map((item: any) => ({
-        id: item.id,
-        category_id: item.category_id,
-        category_name: item.service_categories?.name || "",
-        experience_years: item.experience_years,
-        description: item.description,
-        certifications: item.certifications,
-        display_order: item.display_order || 0,
-      })) || [];
-      
-      setSpecialties(formattedSpecialties);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -170,108 +96,6 @@ export default function ProfessionalProfile() {
     }
   };
 
-  const handleReorder = (reorderedSpecialties: Specialty[]) => {
-    setSpecialties(reorderedSpecialties);
-  };
-
-  const openEditDialog = (specialty: Specialty) => {
-    setEditingSpecialty(specialty);
-    setFormData({
-      category_id: specialty.category_id,
-      experience_years: specialty.experience_years?.toString() || "",
-      description: specialty.description || "",
-      certifications: specialty.certifications || "",
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteSpecialty = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("professional_specialties")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: "Especialidade removida com sucesso!",
-      });
-      await fetchData();
-    } catch (error) {
-      console.error("Error deleting specialty:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao remover especialidade",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSaveSpecialty = async () => {
-    if (!formData.category_id || !formData.experience_years || !formData.description) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const specialtyData = {
-        professional_id: user?.id,
-        category_id: formData.category_id,
-        experience_years: parseInt(formData.experience_years),
-        description: formData.description,
-        certifications: formData.certifications || null,
-      };
-
-      if (editingSpecialty) {
-        const { error } = await supabase
-          .from("professional_specialties")
-          .update(specialtyData)
-          .eq("id", editingSpecialty.id);
-
-        if (error) throw error;
-        toast({
-          title: "Sucesso",
-          description: "Especialidade atualizada!",
-        });
-      } else {
-        const { error } = await supabase
-          .from("professional_specialties")
-          .insert(specialtyData);
-
-        if (error) throw error;
-        toast({
-          title: "Sucesso",
-          description: "Especialidade adicionada!",
-        });
-      }
-
-      setIsDialogOpen(false);
-      setEditingSpecialty(null);
-      setFormData({
-        category_id: "",
-        experience_years: "",
-        description: "",
-        certifications: "",
-      });
-      await fetchData();
-    } catch (error) {
-      console.error("Error saving specialty:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar especialidade",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
 
   if (loading) {
@@ -465,151 +289,7 @@ export default function ProfessionalProfile() {
           </TabsContent>
 
           <TabsContent value="specialties" className="space-y-6">
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Minhas Especialidades</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Adicione e organize suas especialidades
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setEditingSpecialty(null);
-                      setFormData({
-                        category_id: "",
-                        experience_years: "",
-                        description: "",
-                        certifications: "",
-                      });
-                      setIsDialogOpen(true);
-                    }}
-                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {specialties.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                    <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Nenhuma especialidade cadastrada</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Adicione suas especialidades para que os clientes conheçam sua experiência
-                    </p>
-                  </div>
-                ) : (
-                  <SpecialtiesReorder
-                    specialties={specialties}
-                    onReorder={handleReorder}
-                    onEdit={openEditDialog}
-                    onDelete={handleDeleteSpecialty}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Dialog for Add/Edit Specialty */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingSpecialty ? "Editar Especialidade" : "Nova Especialidade"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    Preencha os detalhes sobre sua experiência nesta área
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Categoria *</Label>
-                    <select
-                      id="category"
-                      value={formData.category_id}
-                      onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                      className="w-full p-2 border border-input rounded-md bg-background text-foreground"
-                      disabled={!!editingSpecialty}
-                    >
-                      <option value="">Selecione uma categoria</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">Anos de Experiência *</Label>
-                    <Input
-                      id="experience"
-                      type="number"
-                      min="1"
-                      placeholder="Ex: 5"
-                      value={formData.experience_years}
-                      onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Descrição da Experiência *</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Descreva sua experiência, tipos de serviços que realiza..."
-                      rows={4}
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="certifications">Certificações</Label>
-                    <Textarea
-                      id="certifications"
-                      placeholder="Liste suas certificações, cursos..."
-                      rows={3}
-                      value={formData.certifications}
-                      onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsDialogOpen(false);
-                      setEditingSpecialty(null);
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleSaveSpecialty}
-                    disabled={saving || !formData.category_id || !formData.experience_years || !formData.description}
-                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Salvar
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <ModernSpecialtiesGrid />
           </TabsContent>
 
           <TabsContent value="areas" className="space-y-6">
