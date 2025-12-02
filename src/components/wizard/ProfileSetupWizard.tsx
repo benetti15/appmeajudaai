@@ -11,6 +11,7 @@ import { ProgressRing } from "@/components/ui/progress-ring";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useCelebration } from "@/hooks/useCelebration";
 import { Phone, FileText, MapPin, User, CheckCircle2, XCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { validateCPF, formatCPF } from "@/lib/cpf-validator";
 
@@ -39,6 +40,7 @@ export default function ProfileSetupWizard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, refreshProfile } = useAuth();
+  const { celebrate } = useCelebration();
 
   useEffect(() => {
     if (!user) {
@@ -112,6 +114,14 @@ export default function ProfileSetupWizard() {
   const handleNext = () => {
     if (!canProceed()) return;
     
+    // Celebrate step completion
+    if (currentStep === 1 && cpfValid) {
+      celebrate("cpf_verified");
+    }
+    if (currentStep === 2 && formData.street && formData.number) {
+      celebrate("address_complete");
+    }
+    
     // Skip address step for clients
     if (currentStep === 1 && formData.userType === "client") {
       setCurrentStep(3);
@@ -157,6 +167,9 @@ export default function ProfileSetupWizard() {
         .eq("id", user?.id);
 
       if (error) throw error;
+
+      // Celebrate profile completion
+      celebrate("profile_complete");
 
       toast({
         title: "🎉 Perfil completado!",

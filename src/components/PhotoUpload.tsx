@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCelebration } from "@/hooks/useCelebration";
 
 interface PhotoUploadProps {
   currentPhoto?: string | null;
@@ -16,6 +17,7 @@ export const PhotoUpload = ({ currentPhoto, onPhotoChange, required = false, cla
   const [previewUrl, setPreviewUrl] = useState(currentPhoto);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { celebrate } = useCelebration();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -70,6 +72,12 @@ export const PhotoUpload = ({ currentPhoto, onPhotoChange, required = false, cla
               .getPublicUrl(filePath);
             
             onPhotoChange(data.publicUrl);
+            
+            // Celebrate photo upload
+            if (!currentPhoto) {
+              celebrate("profile_photo");
+            }
+            
             toast({
               title: "Sucesso",
               description: "Foto enviada com sucesso!",
@@ -78,6 +86,11 @@ export const PhotoUpload = ({ currentPhoto, onPhotoChange, required = false, cla
             // Fallback: usar base64
             console.warn('Storage upload failed, using base64 fallback:', uploadError);
             onPhotoChange(base64);
+            
+            // Still celebrate even with fallback
+            if (!currentPhoto) {
+              celebrate("profile_photo");
+            }
             toast({
               title: "Foto atualizada",
               description: "Foto atualizada localmente (modo offline).",
