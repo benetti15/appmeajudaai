@@ -15,6 +15,7 @@ import { ProactiveNotifications } from "@/components/ai/ProactiveNotifications";
 import { AutomaticNotifications } from "@/components/notification-system/AutomaticNotifications";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { CelebrationProvider } from "@/hooks/useCelebration";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -68,9 +69,11 @@ function App() {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <TooltipProvider>
-            <AppInitializer />
-          </TooltipProvider>
+          <CelebrationProvider>
+            <TooltipProvider>
+              <AppInitializer />
+            </TooltipProvider>
+          </CelebrationProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>

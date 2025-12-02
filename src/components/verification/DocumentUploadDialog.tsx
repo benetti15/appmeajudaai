@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { IdCard, MapPin, Award, Shield, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useCelebration } from "@/hooks/useCelebration";
 
 interface DocumentUploadDialogProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export function DocumentUploadDialog({ isOpen, onClose, onUploadSuccess }: Docum
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const { celebrate } = useCelebration();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -90,6 +92,10 @@ export function DocumentUploadDialog({ isOpen, onClose, onUploadSuccess }: Docum
       if (result) {
         clearInterval(interval);
         setUploadProgress(100);
+        
+        // Celebrate document upload
+        celebrate("document_uploaded");
+        
         toast.success("Documento enviado para análise!");
         
         setTimeout(() => {

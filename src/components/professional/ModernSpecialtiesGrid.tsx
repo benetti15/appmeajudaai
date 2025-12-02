@@ -10,6 +10,7 @@ import { SpecialtySheet } from "./SpecialtySheet";
 import { toast } from "sonner";
 import { Loader2, Plus, Award, Sparkles, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCelebration } from "@/hooks/useCelebration";
 
 interface ServiceCategory {
   id: string;
@@ -20,6 +21,7 @@ interface ServiceCategory {
 
 export function ModernSpecialtiesGrid() {
   const { user } = useAuth();
+  const { celebrate } = useCelebration();
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -192,11 +194,20 @@ export function ModernSpecialtiesGrid() {
         if (error) throw error;
         toast.success("Especialidade atualizada!");
       } else {
+        const isFirstSpecialty = specialties.length === 0;
+        
         const { error } = await supabase
           .from("professional_specialties")
           .insert(specialtyData);
 
         if (error) throw error;
+        
+        // Celebrate new specialty
+        if (isFirstSpecialty) {
+          celebrate("first_specialty");
+        } else {
+          celebrate("specialty_added");
+        }
         toast.success("Especialidade adicionada!");
       }
 
