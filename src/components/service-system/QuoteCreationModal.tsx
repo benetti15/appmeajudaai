@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { DollarSign, Clock, CheckCircle, Send, Sparkles, Package, Zap, Trophy, Star } from "lucide-react";
+import { DollarSign, Clock, CheckCircle, Send, Sparkles, Package, Zap, Trophy, Star, Hourglass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -39,6 +39,8 @@ export function QuoteCreationModal({
   const [showSuccess, setShowSuccess] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [xpAnimating, setXpAnimating] = useState(false);
+  const [hasExistingQuote, setHasExistingQuote] = useState(false);
+  const [checkingQuote, setCheckingQuote] = useState(true);
   
   const [quoteForm, setQuoteForm] = useState<QuoteFormData>({
     amount: "",
@@ -46,6 +48,35 @@ export function QuoteCreationModal({
     estimated_duration_hours: "",
     materials_included: false
   });
+
+  // Check if professional already sent a quote for this request
+  useEffect(() => {
+    const checkExistingQuote = async () => {
+      if (!user?.id || !requestId) {
+        setCheckingQuote(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("quotes")
+          .select("id")
+          .eq("request_id", requestId)
+          .eq("professional_id", user.id)
+          .maybeSingle();
+
+        if (!error && data) {
+          setHasExistingQuote(true);
+        }
+      } catch (err) {
+        console.error("Error checking existing quote:", err);
+      } finally {
+        setCheckingQuote(false);
+      }
+    };
+
+    checkExistingQuote();
+  }, [user?.id, requestId]);
 
   const resetForm = () => {
     setQuoteForm({
@@ -114,6 +145,7 @@ export function QuoteCreationModal({
 
       setShowSuccess(true);
       setShowConfetti(true);
+      setHasExistingQuote(true);
       
       // Start XP animation after a brief delay
       setTimeout(() => setXpAnimating(true), 300);
@@ -135,6 +167,20 @@ export function QuoteCreationModal({
       setSubmitting(false);
     }
   };
+
+  // Show "Proposta enviada" button if already submitted
+  if (hasExistingQuote && !checkingQuote) {
+    return (
+      <Button 
+        size="lg" 
+        disabled 
+        className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-4 text-lg shadow-lg rounded-2xl cursor-default opacity-90"
+      >
+        <Hourglass className="w-5 h-5 animate-pulse" />
+        Proposta enviada, aguarde resposta
+      </Button>
+    );
+  }
 
   const defaultTrigger = (
     <Button size="lg" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl">
