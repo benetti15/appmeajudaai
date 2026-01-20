@@ -419,8 +419,8 @@ export default function ServiceRequestDetails() {
               </Card>
             )}
 
-            {/* Chat Button - Below details for both users */}
-            {(professional || userRole === 'professional') && (
+            {/* Chat Button - Only show after quote is accepted */}
+            {professional && ['accepted', 'in_progress', 'completed', 'paid'].includes(request.status) && (
               <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: '200ms' }}>
                 <CardContent className="p-3 sm:p-4">
                   <Button 
