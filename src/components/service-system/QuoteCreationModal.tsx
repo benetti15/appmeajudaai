@@ -178,17 +178,17 @@ export function QuoteCreationModal({
         <Button 
           size="lg" 
           disabled 
-          className="relative w-full gap-3 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-semibold py-4 text-lg shadow-xl rounded-2xl cursor-default border border-white/20 backdrop-blur-sm"
+          className="relative w-full h-auto min-h-14 py-3 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-semibold shadow-xl rounded-2xl cursor-default border border-white/20 backdrop-blur-sm flex flex-col sm:flex-row items-center justify-center gap-2"
         >
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-shrink-0">
               <CheckCircle className="w-5 h-5 text-white" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-ping" />
             </div>
-            <span>Proposta enviada</span>
+            <span className="text-base whitespace-nowrap">Proposta enviada</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-sm">
-            <Hourglass className="w-3.5 h-3.5 animate-[spin_3s_linear_infinite]" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-full text-xs sm:text-sm flex-shrink-0">
+            <Hourglass className="w-3 h-3 animate-[spin_3s_linear_infinite]" />
             <span>Aguardando</span>
           </div>
         </Button>
