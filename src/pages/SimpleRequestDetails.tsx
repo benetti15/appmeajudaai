@@ -274,25 +274,27 @@ export default function SimpleRequestDetails() {
       </header>
 
       <main className="pb-24">
-        {/* Status Banner */}
-        <div className={`mx-4 mt-4 p-4 rounded-2xl border ${statusConfig.bg}`}>
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full bg-background ${statusConfig.color}`}>
-              {statusConfig.icon}
-            </div>
-            <div className="flex-1">
-              <p className={`font-medium ${statusConfig.color}`}>{statusConfig.label}</p>
-              {request.status === 'pending' && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {quotes.length === 0 
-                    ? "Profissionais serão notificados" 
-                    : `${quotes.length} orçamento${quotes.length > 1 ? 's' : ''} recebido${quotes.length > 1 ? 's' : ''}`
-                  }
-                </p>
-              )}
+        {/* Status Banner - hide when quote is accepted */}
+        {!quotes.some(q => q.is_accepted) && (
+          <div className={`mx-4 mt-4 p-4 rounded-2xl border ${statusConfig.bg}`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full bg-background ${statusConfig.color}`}>
+                {statusConfig.icon}
+              </div>
+              <div className="flex-1">
+                <p className={`font-medium ${statusConfig.color}`}>{statusConfig.label}</p>
+                {request.status === 'pending' && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {quotes.length === 0 
+                      ? "Profissionais serão notificados" 
+                      : `${quotes.length} orçamento${quotes.length > 1 ? 's' : ''} recebido${quotes.length > 1 ? 's' : ''}`
+                    }
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Quick Info Pills */}
         <div className="flex gap-2 px-4 mt-4 overflow-x-auto pb-1 scrollbar-hide">
