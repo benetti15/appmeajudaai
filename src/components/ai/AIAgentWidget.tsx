@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Loader2, Sparkles, Camera, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Bot, X, Send, Loader2, Sparkles, Camera, Image as ImageIcon, ExternalLink } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -528,6 +528,25 @@ function MessageBubble({
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
   
+  // Detect if message contains a request creation success with ID
+  const requestIdMatch = useMemo(() => {
+    if (!isUser && message.content) {
+      // Match patterns like "ID da sua solicitação é `xxx`" or "ID: xxx" or request_id in content
+      const patterns = [
+        /ID da sua solicitação é [`']?([a-f0-9-]{36})[`']?/i,
+        /solicitação.*?([a-f0-9-]{36})/i,
+        /request.*?id.*?([a-f0-9-]{36})/i
+      ];
+      for (const pattern of patterns) {
+        const match = message.content.match(pattern);
+        if (match) return match[1];
+      }
+    }
+    return message.metadata?.request_id || null;
+  }, [message.content, message.metadata, isUser]);
+
+  const navigate = useNavigate();
+  
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
@@ -543,6 +562,18 @@ function MessageBubble({
             className="mt-2 rounded-lg max-w-full"
             alt="Anexo" 
           />
+        )}
+
+        {/* Button to track request if request ID is detected */}
+        {requestIdMatch && (
+          <Button
+            onClick={() => navigate(`/my-requests/${requestIdMatch}`)}
+            className="mt-3 w-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2"
+            size="sm"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Acompanhar Solicitação
+          </Button>
         )}
         
         {message.suggested_actions && message.suggested_actions.length > 0 && (
