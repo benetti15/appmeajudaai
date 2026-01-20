@@ -106,66 +106,104 @@ export default function NewRequest() {
 
   const categoryImage = category ? categoryImages[category.name] : null;
 
+  const openToninho = () => {
+    navigate('/');
+    setTimeout(() => {
+      const toninhoButton = document.querySelector('[aria-label="Abrir assistente IA"]') as HTMLElement;
+      toninhoButton?.click();
+    }, 500);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       {/* Compact Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b">
         <div className="container mx-auto px-4 py-3 max-w-2xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/categories")}
-                className="shrink-0"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              
-              {category && (
-                <div className="flex items-center gap-3">
-                  {categoryImage && (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
-                      <img 
-                        src={categoryImage} 
-                        alt={category.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h1 className="font-semibold text-foreground leading-tight">
-                      {category.name}
-                    </h1>
-                    <p className="text-xs text-muted-foreground">
-                      Nova solicitação
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
+          <div className="flex items-center gap-3">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                navigate('/');
-                setTimeout(() => {
-                  const toninhoButton = document.querySelector('[aria-label="Abrir assistente IA"]') as HTMLElement;
-                  toninhoButton?.click();
-                }, 500);
-              }}
-              className="gap-1.5 text-xs"
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/categories")}
+              className="shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Toninho IA
+              <ArrowLeft className="h-5 w-5" />
             </Button>
+            
+            {category && (
+              <div className="flex items-center gap-3">
+                {categoryImage && (
+                  <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
+                    <img 
+                      src={categoryImage} 
+                      alt={category.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div>
+                  <h1 className="font-semibold text-foreground leading-tight">
+                    {category.name}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    Nova solicitação
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Toninho CTA Banner */}
+      <div className="container mx-auto px-4 pt-6 max-w-2xl">
+        <button
+          onClick={openToninho}
+          className="w-full group relative overflow-hidden rounded-2xl p-4 
+                   bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%]
+                   animate-[shimmer_3s_ease-in-out_infinite] hover:scale-[1.02]
+                   transition-transform duration-300 shadow-lg hover:shadow-xl"
+        >
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-white/20 to-accent/20 
+                        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm 
+                            flex items-center justify-center shadow-inner
+                            group-hover:scale-110 transition-transform duration-300">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-white font-bold text-lg">
+                  Crie com o Toninho IA ✨
+                </h3>
+                <p className="text-white/80 text-sm">
+                  Deixe a IA preencher tudo pra você
+                </p>
+              </div>
+            </div>
+            
+            <div className="shrink-0 w-10 h-10 rounded-full bg-white/20 
+                          flex items-center justify-center
+                          group-hover:translate-x-1 transition-transform duration-300">
+              <ArrowLeft className="w-5 h-5 text-white rotate-180" />
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div className="container mx-auto px-4 py-4 max-w-2xl">
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">ou preencha manualmente</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+      </div>
+
       {/* Form Content */}
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
+      <div className="container mx-auto px-4 pb-6 max-w-2xl">
         <ModernRequestForm 
           categoryId={categoryId || ''} 
           categoryName={category?.name}
