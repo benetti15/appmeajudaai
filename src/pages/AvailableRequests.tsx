@@ -400,9 +400,9 @@ const AvailableRequests = () => {
                               e.stopPropagation();
                               navigate(`/service-request-details/${request.id}`);
                             }}
-                            className="gap-1 text-xs md:text-sm h-8 md:h-9"
+                            className="gap-1.5 text-xs md:text-sm h-9 md:h-10 px-3 md:px-4 font-semibold shadow-md hover:shadow-lg transition-all"
                           >
-                            <Send className="w-3 h-3" />
+                            <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
                             <span>Orçamento</span>
                           </Button>
                           <Button
@@ -412,9 +412,10 @@ const AvailableRequests = () => {
                               e.stopPropagation();
                               setAnalyzingRequest(request.id);
                             }}
-                            className="gap-1 h-8 md:h-9"
+                            className="gap-1.5 h-9 md:h-10 px-3 md:px-4 font-medium border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all"
                           >
-                            <Sparkles className="w-3 h-3 text-primary" />
+                            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+                            <span className="text-xs md:text-sm text-primary">Analisar</span>
                           </Button>
                         </div>
                       </div>
