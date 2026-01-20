@@ -58,17 +58,14 @@ const MyServicesNew = () => {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    // Guard de tipo removido - agora é controlado pelo ProfessionalRoute no App.tsx
     console.log("MyServicesNew - useEffect executado", { user: user?.id, profileType: profile?.user_type });
     
-    if (!user || profile?.user_type !== 'professional') {
-      console.log("MyServicesNew - Redirecionando: usuário não é profissional", { user: user?.id, profileType: profile?.user_type });
-      navigate("/");
-      return;
+    if (user) {
+      console.log("MyServicesNew - Iniciando fetchServices");
+      fetchServices();
     }
-    
-    console.log("MyServicesNew - Iniciando fetchServices");
-    fetchServices();
-  }, [user, profile, navigate]);
+  }, [user, profile]);
 
   const fetchServices = async () => {
     console.log("MyServicesNew - fetchServices iniciado");

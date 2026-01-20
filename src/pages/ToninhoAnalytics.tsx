@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
 import { MessageSquare, TrendingUp, Users, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { FeedbackMetrics } from '@/components/analytics/FeedbackMetrics';
@@ -36,10 +35,7 @@ export default function ToninhoAnalytics() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d'>('7d');
   const [hasLowSatisfaction, setHasLowSatisfaction] = useState(false);
 
-  // Only allow admin access (you can adjust this logic)
-  if (!user || profile?.user_type !== 'professional') {
-    return <Navigate to="/" replace />;
-  }
+  // Guard de tipo removido - agora é controlado pelo ProfessionalRoute no App.tsx
 
   useEffect(() => {
     loadAnalytics();

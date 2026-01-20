@@ -15,6 +15,7 @@ import { ProactiveNotifications } from "@/components/ai/ProactiveNotifications";
 import { AutomaticNotifications } from "@/components/notification-system/AutomaticNotifications";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ClientRoute, ProfessionalRoute } from "@/components/guards";
 import { CelebrationProvider } from "@/hooks/useCelebration";
 
 // Lazy load pages for better performance
@@ -127,6 +128,7 @@ function AppInitializer() {
                 </ProtectedRoute>
               }
             />
+            {/* Rotas públicas */}
             <Route path="/categories" element={<ServiceCategories />} />
             <Route path="/nearby-professionals" element={<NearbyProfessionals />} />
             <Route path="/about-toninho" element={<AboutToninho />} />
@@ -138,28 +140,62 @@ function AppInitializer() {
                 </ProtectedRoute>
               }
             />
+            
+            {/* ===== ROTAS EXCLUSIVAS DO CLIENTE ===== */}
             <Route
               path="/new-request"
               element={
-                <ProtectedRoute>
+                <ClientRoute>
                   <NewRequest />
-                </ProtectedRoute>
+                </ClientRoute>
               }
             />
             <Route
               path="/new-request/:categoryId"
               element={
-                <ProtectedRoute>
+                <ClientRoute>
                   <NewRequest />
-                </ProtectedRoute>
+                </ClientRoute>
               }
             />
             <Route
               path="/my-requests"
               element={
-                <ProtectedRoute>
+                <ClientRoute>
                   <MyRequestsNew />
-                </ProtectedRoute>
+                </ClientRoute>
+              }
+            />
+            <Route
+              path="/track-requests"
+              element={
+                <ClientRoute>
+                  <TrackRequests />
+                </ClientRoute>
+              }
+            />
+            <Route
+              path="/track-request/:id"
+              element={
+                <ClientRoute>
+                  <TrackRequestDetail />
+                </ClientRoute>
+              }
+            />
+            <Route
+              path="/client-profile"
+              element={
+                <ClientRoute>
+                  <ClientProfile />
+                </ClientRoute>
+              }
+            />
+            <Route
+              path="/client-dashboard"
+              element={
+                <ClientRoute>
+                  <ClientDashboard />
+                </ClientRoute>
               }
             />
             <Route
@@ -186,83 +222,69 @@ function AppInitializer() {
                 </ProtectedRoute>
               }
             />
+            {/* ===== ROTAS EXCLUSIVAS DO PROFISSIONAL ===== */}
             <Route
               path="/available-requests"
               element={
-                <ProtectedRoute>
+                <ProfessionalRoute>
                   <AvailableRequests />
-                </ProtectedRoute>
+                </ProfessionalRoute>
               }
             />
             <Route
               path="/my-services"
               element={
-                <ProtectedRoute>
+                <ProfessionalRoute>
                   <MyServicesNew />
-                </ProtectedRoute>
+                </ProfessionalRoute>
               }
             />
             <Route
               path="/my-services-new"
               element={
-                <ProtectedRoute>
+                <ProfessionalRoute>
                   <MyServicesNew />
-                </ProtectedRoute>
+                </ProfessionalRoute>
               }
             />
             <Route
               path="/professional-profile"
               element={
-                <ProtectedRoute>
+                <ProfessionalRoute>
                   <ProfessionalProfile />
-                </ProtectedRoute>
+                </ProfessionalRoute>
               }
             />
             <Route
               path="/professional-dashboard"
               element={
-                <ProtectedRoute>
+                <ProfessionalRoute>
                   <ProfessionalDashboard />
-                </ProtectedRoute>
+                </ProfessionalRoute>
               }
             />
             <Route
-              path="/client-profile"
+              path="/verification"
               element={
-                <ProtectedRoute>
-                  <ClientProfile />
-                </ProtectedRoute>
+                <ProfessionalRoute>
+                  <VerificationPage />
+                </ProfessionalRoute>
               }
             />
             <Route
-              path="/client-dashboard"
+              path="/toninho-analytics"
               element={
-                <ProtectedRoute>
-                  <ClientDashboard />
-                </ProtectedRoute>
+                <ProfessionalRoute>
+                  <ToninhoAnalytics />
+                </ProfessionalRoute>
               }
             />
+            {/* ===== ROTAS COMPARTILHADAS (autenticadas) ===== */}
             <Route
               path="/favorites"
               element={
                 <ProtectedRoute>
                   <Favorites />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/track-requests"
-              element={
-                <ProtectedRoute>
-                  <TrackRequests />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/track-request/:id"
-              element={
-                <ProtectedRoute>
-                  <TrackRequestDetail />
                 </ProtectedRoute>
               }
             />
@@ -286,14 +308,6 @@ function AppInitializer() {
               }
             />
             <Route
-              path="/verification"
-              element={
-                <ProtectedRoute>
-                  <VerificationPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/fluxo-demo"
               element={
                 <ProtectedRoute>
@@ -306,14 +320,6 @@ function AppInitializer() {
               element={
                 <ProtectedRoute>
                   <ToninhoHistory />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/toninho-analytics"
-              element={
-                <ProtectedRoute>
-                  <ToninhoAnalytics />
                 </ProtectedRoute>
               }
             />
