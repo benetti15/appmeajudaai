@@ -2,11 +2,24 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Zap, Wrench, Snowflake, Home, Paintbrush, HardHat, Sparkles, Leaf, Package, Refrigerator } from "lucide-react";
-import { SimpleRequestCreation } from "@/components/SimpleRequestCreation";
+import { ArrowLeft, Sparkles } from "lucide-react";
+import { ModernRequestForm } from "@/components/request/ModernRequestForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+// Category images
+import eletricaImg from "@/assets/categories/eletrica.jpg";
+import encanamentoImg from "@/assets/categories/encanamento.jpg";
+import arCondicionadoImg from "@/assets/categories/ar-condicionado.jpg";
+import pequenosReparosImg from "@/assets/categories/pequenos-reparos.jpg";
+import pinturaImg from "@/assets/categories/pintura.jpg";
+import marcenariaImg from "@/assets/categories/marcenaria.jpg";
+import limpezaImg from "@/assets/categories/limpeza.jpg";
+import jardinagemImg from "@/assets/categories/jardinagem.jpg";
+import montagemImg from "@/assets/categories/montagem.jpg";
+import eletrodomesticosImg from "@/assets/categories/eletrodomesticos.jpg";
+import hidraulicaImg from "@/assets/categories/hidraulica.jpg";
 
 interface ServiceCategory {
   id: string;
@@ -14,46 +27,23 @@ interface ServiceCategory {
   description: string;
 }
 
-interface ServiceRequest {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'disputed';
-  created_at: string;
-  preferred_date?: string;
-  address: string;
-  city: string;
-  client_id: string;
-}
-
-interface Quote {
-  id: string;
-  professional_id: string;
-  amount: number;
-  is_accepted: boolean;
-  profiles?: {
-    full_name: string;
-  };
-}
-
-const categoryIcons: Record<string, React.ComponentType<any>> = {
-  "Elétrica": Zap,
-  "Encanamento": Wrench,
-  "Ar Condicionado": Snowflake,
-  "Pequenos Reparos": Home,
-  "Pintura": Paintbrush,
-  "Marcenaria": HardHat,
-  "Limpeza": Sparkles,
-  "Jardinagem": Leaf,
-  "Montagem e Instalações": Package,
-  "Eletrodomésticos": Refrigerator,
+const categoryImages: Record<string, string> = {
+  "Elétrica": eletricaImg,
+  "Encanamento": encanamentoImg,
+  "Ar Condicionado": arCondicionadoImg,
+  "Pequenos Reparos": pequenosReparosImg,
+  "Pintura": pinturaImg,
+  "Marcenaria": marcenariaImg,
+  "Limpeza": limpezaImg,
+  "Jardinagem": jardinagemImg,
+  "Montagem e Instalações": montagemImg,
+  "Eletrodomésticos": eletrodomesticosImg,
+  "Hidráulica": hidraulicaImg,
 };
 
 export default function NewRequest() {
   const { categoryId } = useParams();
   const [category, setCategory] = useState<ServiceCategory | null>(null);
-  const [existingRequest, setExistingRequest] = useState<ServiceRequest | null>(null);
-  const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -65,35 +55,26 @@ export default function NewRequest() {
       return;
     }
     if (categoryId) {
-      checkExistingRequest();
       fetchCategory();
     }
   }, [user, categoryId, navigate]);
 
-  const checkExistingRequest = async () => {
+  const fetchCategory = async () => {
     try {
-      // Check if this is actually a request ID instead of category ID
-      const { data: requestData, error: requestError } = await supabase
+      // First check if it's a request ID (redirect to details)
+      const { data: requestData } = await supabase
         .from("service_requests")
-        .select("*")
+        .select("id")
         .eq("id", categoryId)
         .eq("client_id", user?.id)
         .single();
 
-      if (requestData && !requestError) {
-        setExistingRequest(requestData as any); // Type assertion
-        fetchQuotes(requestData.id);
+      if (requestData) {
+        navigate(`/simple-request-details/${requestData.id}`);
         return;
       }
-    } catch (error) {
-      // Not a request ID, continue with category logic
-    }
-  };
 
-  const fetchCategory = async () => {
-    if (existingRequest) return; // Skip if we found an existing request
-    
-    try {
+      // Otherwise fetch category
       const { data, error } = await supabase
         .from("service_categories")
         .select("id, name, description")
@@ -103,7 +84,7 @@ export default function NewRequest() {
       if (error) throw error;
       setCategory(data);
     } catch (error) {
-      console.error("Error fetching category:", error);
+      console.error("Error:", error);
       toast({
         title: "Erro",
         description: "Categoria não encontrada",
@@ -115,114 +96,80 @@ export default function NewRequest() {
     }
   };
 
-  const fetchQuotes = async (requestId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("quotes")
-        .select(`
-          *,
-          profiles (
-            full_name
-          )
-        `)
-        .eq("request_id", requestId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setQuotes(data || []);
-    } catch (error) {
-      console.error("Error fetching quotes:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="min-h-screen bg-background">
         <LoadingSpinner message="Carregando..." fullScreen />
       </div>
     );
   }
 
-  // If we found an existing request, redirect to details
-  if (existingRequest) {
-    navigate(`/simple-request-details/${existingRequest.id}`);
-    return null;
-  }
+  const categoryImage = category ? categoryImages[category.name] : null;
 
-  // Otherwise, show new request creation form
-  const IconComponent = category ? categoryIcons[category.name] || Home : Home;
-  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        {/* Header Visual Aprimorado */}
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center gap-4 mb-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      {/* Compact Header */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b">
+        <div className="container mx-auto px-4 py-3 max-w-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/categories")}
+                className="shrink-0"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              
+              {category && (
+                <div className="flex items-center gap-3">
+                  {categoryImage && (
+                    <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
+                      <img 
+                        src={categoryImage} 
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h1 className="font-semibold text-foreground leading-tight">
+                      {category.name}
+                    </h1>
+                    <p className="text-xs text-muted-foreground">
+                      Nova solicitação
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Button
               variant="outline"
-              size="icon"
-              onClick={() => navigate("/categories")}
-              className="hover:scale-110 transition-transform duration-200"
+              size="sm"
+              onClick={() => {
+                navigate('/');
+                setTimeout(() => {
+                  const toninhoButton = document.querySelector('[aria-label="Abrir assistente IA"]') as HTMLElement;
+                  toninhoButton?.click();
+                }, 500);
+              }}
+              className="gap-1.5 text-xs"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <Sparkles className="w-3.5 h-3.5" />
+              Toninho IA
             </Button>
-            
-            {/* Breadcrumb Visual */}
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="hover:text-primary transition-colors cursor-pointer" 
-                    onClick={() => navigate("/categories")}>
-                Categorias
-              </span>
-              <span>/</span>
-              <span className="text-foreground font-medium">Novo Pedido</span>
-            </div>
-          </div>
-
-          {/* Card de Header com Ícone da Categoria */}
-          <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 
-                        rounded-2xl p-6 border-2 border-primary/20 shadow-lg">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-4 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 
-                              shadow-lg animate-scale-in">
-                  <IconComponent className="h-10 w-10 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-1">
-                    Novo Pedido
-                  </h1>
-                  <p className="text-lg text-muted-foreground flex items-center gap-2">
-                    {category ? (
-                      <>
-                        <span className="font-semibold text-primary">{category.name}</span>
-                        <span className="text-sm">• {category.description}</span>
-                      </>
-                    ) : (
-                      "Criar solicitação de serviço"
-                    )}
-                  </p>
-                </div>
-              </div>
-              <Button 
-                onClick={() => {
-                  navigate('/');
-                  setTimeout(() => {
-                    const toninhoButton = document.querySelector('[aria-label="Abrir assistente IA"]') as HTMLElement;
-                    toninhoButton?.click();
-                  }, 500);
-                }}
-                className="gap-2 shrink-0"
-              >
-                <Sparkles className="w-4 h-4" />
-                Criar com Toninho
-              </Button>
-            </div>
           </div>
         </div>
+      </div>
 
-        <SimpleRequestCreation categoryId={categoryId || ''} />
+      {/* Form Content */}
+      <div className="container mx-auto px-4 py-6 max-w-2xl">
+        <ModernRequestForm 
+          categoryId={categoryId || ''} 
+          categoryName={category?.name}
+        />
       </div>
     </div>
   );
