@@ -168,27 +168,36 @@ export function QuoteCreationModal({
     }
   };
 
-  // Show "Editar Orçamento" button if already submitted
-  if (hasExistingQuote && !checkingQuote) {
-    return (
+  const defaultTrigger = hasExistingQuote ? (
+    <div className="relative w-full group">
+      {/* Glow effect */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse" />
+      
       <Button 
         size="lg" 
-        variant="outline"
-        className="w-full gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-50 hover:border-amber-500 font-semibold py-4 text-lg rounded-2xl transition-all duration-300"
-        onClick={() => setOpen(true)}
+        disabled 
+        className="relative w-full h-auto min-h-14 py-3 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-semibold shadow-xl rounded-2xl cursor-default border border-white/20 backdrop-blur-sm flex flex-col sm:flex-row items-center justify-center gap-2"
       >
-        <CheckCircle className="w-5 h-5" />
-        Editar Orçamento
+        <div className="flex items-center gap-2">
+          <div className="relative flex-shrink-0">
+            <CheckCircle className="w-5 h-5 text-white" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-ping" />
+          </div>
+          <span className="text-base whitespace-nowrap">Proposta enviada</span>
+        </div>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 rounded-full text-xs sm:text-sm flex-shrink-0">
+          <Hourglass className="w-3 h-3 animate-[spin_3s_linear_infinite]" />
+          <span>Aguardando</span>
+        </div>
       </Button>
-    );
-  }
-
-  const defaultTrigger = (
+    </div>
+  ) : (
     <Button size="lg" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl">
       <Zap className="w-5 h-5" />
       Enviar Proposta
     </Button>
   );
+
 
   const isFormValid = quoteForm.amount && quoteForm.description;
 
