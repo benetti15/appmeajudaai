@@ -259,7 +259,13 @@ export default function SimpleRequestDetails() {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/my-requests');
+              }
+            }}
             className="shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
