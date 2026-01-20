@@ -159,13 +159,12 @@ export default function NewRequest() {
         <button
           onClick={openToninho}
           className="w-full group relative overflow-hidden rounded-2xl p-4 
-                   bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%]
-                   animate-[shimmer_3s_ease-in-out_infinite] hover:scale-[1.02]
+                   bg-gradient-to-r from-primary to-accent hover:scale-[1.02]
                    transition-transform duration-300 shadow-lg hover:shadow-xl"
         >
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-white/20 to-accent/20 
-                        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* Shimmer overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+                        -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           
           <div className="relative flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
