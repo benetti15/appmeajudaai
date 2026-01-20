@@ -83,9 +83,9 @@ export function ModernHeroSection() {
           </div>
         ))}
         
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
+        {/* Dark overlay for readability - reduced opacity for better image visibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/30" />
       </div>
 
       {/* Image indicators */}
