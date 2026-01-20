@@ -403,7 +403,7 @@ const AvailableRequests = () => {
                             className="gap-1 text-xs md:text-sm h-8 md:h-9"
                           >
                             <Send className="w-3 h-3" />
-                            <span className="hidden xs:inline">Orçamento</span>
+                            <span>Orçamento</span>
                           </Button>
                           <Button
                             variant="outline"
