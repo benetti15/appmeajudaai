@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { DollarSign, Clock, CheckCircle, Send, Sparkles, Package, Zap } from "lucide-react";
+import { DollarSign, Clock, CheckCircle, Send, Sparkles, Package, Zap, Trophy, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Confetti } from "@/components/ui/confetti";
 
 interface QuoteCreationModalProps {
   requestId: string;
@@ -36,6 +37,8 @@ export function QuoteCreationModal({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [xpAnimating, setXpAnimating] = useState(false);
   
   const [quoteForm, setQuoteForm] = useState<QuoteFormData>({
     amount: "",
@@ -110,14 +113,20 @@ export function QuoteCreationModal({
         });
 
       setShowSuccess(true);
+      setShowConfetti(true);
+      
+      // Start XP animation after a brief delay
+      setTimeout(() => setXpAnimating(true), 300);
       
       setTimeout(() => {
         setShowSuccess(false);
+        setShowConfetti(false);
+        setXpAnimating(false);
         setOpen(false);
         resetForm();
         onQuoteSubmitted?.();
-        toast.success("Orçamento enviado!");
-      }, 1500);
+        toast.success("🎉 Proposta enviada com sucesso!");
+      }, 2500);
 
     } catch (error) {
       console.error("Error submitting quote:", error);
@@ -142,19 +151,48 @@ export function QuoteCreationModal({
         {trigger || defaultTrigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rounded-3xl border-0 bg-gradient-to-b from-background to-muted/30">
+        {/* Confetti overlay */}
+        <Confetti isActive={showConfetti} pieceCount={80} duration={2500} />
+        
         {showSuccess ? (
-          <div className="text-center py-12 px-6">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center animate-scale-in shadow-lg">
-              <CheckCircle className="w-10 h-10 text-white" />
+          <div className="text-center py-12 px-6 relative overflow-hidden">
+            {/* Background glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-yellow-500/10 animate-pulse" />
+            
+            {/* Success icon with bounce animation */}
+            <div className="relative">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500 flex items-center justify-center shadow-2xl animate-[scale-in_0.5s_ease-out] ring-4 ring-emerald-200/50">
+                <Trophy className="w-12 h-12 text-white drop-shadow-lg" />
+              </div>
+              
+              {/* Floating stars */}
+              <Star className="absolute top-0 left-1/4 w-5 h-5 text-yellow-400 animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <Star className="absolute top-4 right-1/4 w-4 h-4 text-yellow-500 animate-bounce" style={{ animationDelay: '0.4s' }} />
+              <Sparkles className="absolute bottom-0 right-1/3 w-5 h-5 text-emerald-400 animate-bounce" style={{ animationDelay: '0.6s' }} />
             </div>
-            <h3 className="text-2xl font-bold mb-2 text-foreground">Proposta Enviada!</h3>
-            <p className="text-muted-foreground text-sm">
+            
+            <h3 className="text-2xl font-bold mb-2 text-foreground animate-fade-in">
+              🎉 Proposta Enviada!
+            </h3>
+            <p className="text-muted-foreground text-sm animate-fade-in" style={{ animationDelay: '0.2s' }}>
               O cliente foi notificado e logo entrará em contato.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-2 text-emerald-600">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">+10 XP conquistados</span>
+            
+            {/* XP Badge with animation */}
+            <div 
+              className={cn(
+                "mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold shadow-lg transition-all duration-500",
+                xpAnimating ? "scale-110 animate-pulse" : "scale-100"
+              )}
+            >
+              <Sparkles className="w-5 h-5" />
+              <span className="text-lg">+10 XP</span>
             </div>
+            
+            {/* Progress hint */}
+            <p className="mt-4 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              Continue enviando propostas para subir de nível! 🚀
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
