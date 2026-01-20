@@ -1,13 +1,31 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Zap, Shield, Users, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, Sparkles, Users, Star, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
+
+// Import hero background images
+import professional1 from "@/assets/hero/professional-1.jpg";
+import professional2 from "@/assets/hero/professional-2.jpg";
+import professional3 from "@/assets/hero/professional-3.jpg";
+import professional4 from "@/assets/hero/professional-4.jpg";
+
+const heroImages = [professional1, professional2, professional3, professional4];
 
 export function ModernHeroSection() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [animatedStats, setAnimatedStats] = useState({ professionals: 0, services: 0, rating: 0 });
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Auto-rotate images every 20 seconds
+  useEffect(() => {
+    const imageTimer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 20000);
+    
+    return () => clearInterval(imageTimer);
+  }, []);
 
   useEffect(() => {
     // Animate stats on mount
@@ -48,27 +66,39 @@ export function ModernHeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-24">
-      {/* Modern gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-accent/10">
-        {/* Animated mesh gradient */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/30 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full blur-[100px] animate-spin-slow" />
-        </div>
-        
-        {/* Floating particles */}
-        {[...Array(15)].map((_, i) => (
+    <section className="relative overflow-hidden py-16 md:py-24 min-h-[90vh] flex items-center">
+      {/* Background Image Carousel */}
+      <div className="absolute inset-0">
+        {heroImages.map((image, index) => (
           <div
-            key={i}
-            className="absolute w-2 h-2 bg-primary/20 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 10}s`
-            }}
+            key={index}
+            className="absolute inset-0 transition-opacity duration-1000"
+            style={{ opacity: currentImageIndex === index ? 1 : 0 }}
+          >
+            <img
+              src={image}
+              alt={`Profissional Me Ajuda AI ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+        
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
+      </div>
+
+      {/* Image indicators */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {heroImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentImageIndex(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              currentImageIndex === index 
+                ? 'w-8 bg-primary' 
+                : 'bg-white/50 hover:bg-white/80'
+            }`}
           />
         ))}
       </div>
@@ -148,7 +178,7 @@ export function ModernHeroSection() {
               size="lg"
               variant="outline"
               onClick={() => navigate('/categories')}
-              className="px-8 py-6 text-lg rounded-2xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 backdrop-blur-sm transition-all duration-300"
+              className="px-8 py-6 text-lg rounded-2xl border-2 border-border bg-background/80 backdrop-blur-sm hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
             >
               Ver Categorias
             </Button>
@@ -158,7 +188,7 @@ export function ModernHeroSection() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="group relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/60 backdrop-blur-xl border border-border/50 hover:border-primary/30 transition-all hover:-translate-y-1">
+              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-primary/30 transition-all hover:-translate-y-1">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                   <Users className="w-7 h-7 text-white" />
                 </div>
@@ -173,7 +203,7 @@ export function ModernHeroSection() {
 
             <div className="group relative">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/60 backdrop-blur-xl border border-border/50 hover:border-accent/30 transition-all hover:-translate-y-1">
+              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-accent/30 transition-all hover:-translate-y-1">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                   <TrendingUp className="w-7 h-7 text-white" />
                 </div>
@@ -188,7 +218,7 @@ export function ModernHeroSection() {
 
             <div className="group relative">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/60 backdrop-blur-xl border border-border/50 hover:border-yellow-500/30 transition-all hover:-translate-y-1">
+              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-yellow-500/30 transition-all hover:-translate-y-1">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                   <Star className="w-7 h-7 text-white fill-white" />
                 </div>
