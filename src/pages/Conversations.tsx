@@ -180,23 +180,23 @@ export default function Conversations() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 pb-20 md:pb-0">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 max-w-4xl">
+        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="p-2"
+            className="p-2 h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Conversas
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Suas conversas ativas sobre solicitações de serviço
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Suas conversas ativas
             </p>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function Conversations() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2 md:space-y-4">
             {conversations.map((conversation) => {
               const statusBadge = getStatusBadge(conversation.status);
               
@@ -222,38 +222,38 @@ export default function Conversations() {
                   className="border-0 shadow-card hover:shadow-glow transition-all duration-300 cursor-pointer bg-card/50 backdrop-blur-sm hover:bg-card/80"
                   onClick={() => navigate(`/chat/${conversation.request_id}`)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12 border border-border/50">
+                  <CardContent className="p-3 md:p-4">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <Avatar className="h-10 w-10 md:h-12 md:w-12 border border-border/50 flex-shrink-0">
                         <AvatarImage src={conversation.other_user.avatar_url} />
-                        <AvatarFallback className="bg-primary/10">
+                        <AvatarFallback className="bg-primary/10 text-sm">
                           {conversation.other_user.full_name[0]}
                         </AvatarFallback>
                       </Avatar>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
                           <h3 className="font-semibold text-sm truncate">
                             {conversation.other_user.full_name}
                           </h3>
                           <Badge
                             variant={statusBadge.variant}
-                            className="text-xs shrink-0"
+                            className="text-[10px] md:text-xs shrink-0"
                           >
                             {statusBadge.label}
                           </Badge>
                         </div>
                         
-                        <p className="text-xs text-muted-foreground mb-2 font-medium">
+                        <p className="text-[10px] md:text-xs text-muted-foreground mb-1 font-medium truncate">
                           {conversation.request_title}
                         </p>
                         
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">
                           {conversation.last_message}
                         </p>
                       </div>
                       
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-end gap-1.5 md:gap-2 flex-shrink-0">
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {formatLastMessageTime(conversation.last_message_time)}
