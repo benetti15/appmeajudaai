@@ -407,6 +407,16 @@ Beautiful modern design with vibrant colors and animations.
   .animate-bounce-subtle {
     animation: bounce-subtle 2s ease-in-out infinite;
   }
+
+  /* Shimmer effect for cards */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
   
   /* Glassmorphism utilities */
   .glass {
