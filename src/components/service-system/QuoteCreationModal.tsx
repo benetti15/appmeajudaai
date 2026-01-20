@@ -171,14 +171,28 @@ export function QuoteCreationModal({
   // Show "Proposta enviada" button if already submitted
   if (hasExistingQuote && !checkingQuote) {
     return (
-      <Button 
-        size="lg" 
-        disabled 
-        className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-4 text-lg shadow-lg rounded-2xl cursor-default opacity-90"
-      >
-        <Hourglass className="w-5 h-5 animate-pulse" />
-        Proposta enviada, aguarde resposta
-      </Button>
+      <div className="relative w-full group">
+        {/* Glow effect */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse" />
+        
+        <Button 
+          size="lg" 
+          disabled 
+          className="relative w-full gap-3 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-semibold py-4 text-lg shadow-xl rounded-2xl cursor-default border border-white/20 backdrop-blur-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <CheckCircle className="w-5 h-5 text-white" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-ping" />
+            </div>
+            <span>Proposta enviada</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-sm">
+            <Hourglass className="w-3.5 h-3.5 animate-[spin_3s_linear_infinite]" />
+            <span>Aguardando</span>
+          </div>
+        </Button>
+      </div>
     );
   }
 
