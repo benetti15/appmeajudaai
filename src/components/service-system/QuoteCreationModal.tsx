@@ -211,22 +211,40 @@ export function QuoteCreationModal({
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    <Package className="w-3.5 h-3.5" />
-                    Material
-                  </Label>
+              </div>
+
+              {/* Material - Toggle visual */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5" />
+                  Material no orçamento
+                </Label>
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setQuoteForm(prev => ({ ...prev, materials_included: !prev.materials_included }))}
+                    onClick={() => setQuoteForm(prev => ({ ...prev, materials_included: true }))}
                     className={cn(
-                      "w-full h-11 rounded-xl text-sm font-medium transition-all duration-200 border-2",
+                      "flex-1 h-11 rounded-xl text-sm font-medium transition-all duration-200 border-2 flex items-center justify-center gap-1.5",
                       quoteForm.materials_included 
-                        ? "bg-emerald-50 border-emerald-500 text-emerald-700" 
-                        : "bg-muted/50 border-transparent text-muted-foreground hover:border-border"
+                        ? "bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm" 
+                        : "bg-muted/30 border-transparent text-muted-foreground hover:border-border hover:bg-muted/50"
                     )}
                   >
-                    {quoteForm.materials_included ? "✓ Incluído" : "Não incluso"}
+                    <CheckCircle className={cn("w-4 h-4", quoteForm.materials_included ? "text-emerald-500" : "text-muted-foreground/50")} />
+                    Incluído
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuoteForm(prev => ({ ...prev, materials_included: false }))}
+                    className={cn(
+                      "flex-1 h-11 rounded-xl text-sm font-medium transition-all duration-200 border-2 flex items-center justify-center gap-1.5",
+                      !quoteForm.materials_included 
+                        ? "bg-orange-50 border-orange-400 text-orange-700 shadow-sm" 
+                        : "bg-muted/30 border-transparent text-muted-foreground hover:border-border hover:bg-muted/50"
+                    )}
+                  >
+                    <Package className={cn("w-4 h-4", !quoteForm.materials_included ? "text-orange-500" : "text-muted-foreground/50")} />
+                    Não incluso
                   </button>
                 </div>
               </div>
