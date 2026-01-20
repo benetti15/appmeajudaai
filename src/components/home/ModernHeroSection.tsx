@@ -165,7 +165,7 @@ export function ModernHeroSection() {
               className="w-full sm:w-auto group relative overflow-hidden bg-gradient-to-r from-primary to-accent text-white border-0 shadow-[0_8px_30px_hsl(var(--primary)/0.4)] hover:shadow-[0_12px_40px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:-translate-y-1 px-6 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-2xl"
             >
               <span className="relative z-10 flex items-center justify-center gap-2 font-semibold">
-                Encontrar Serviços
+                {profile?.user_type === 'professional' ? 'Encontrar Serviços' : 'Solicitar Serviços'}
                 <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
