@@ -95,16 +95,6 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
         
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* User level badge - gamification */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/20">
-            <Award className="w-4 h-4 text-yellow-600" />
-            <span className="text-sm font-semibold text-yellow-700">Nível 3</span>
-            <div className="flex items-center">
-              {[...Array(3)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-              ))}
-            </div>
-          </div>
           
           {/* Greeting */}
           <span className="text-sm font-medium text-muted-foreground hidden md:block">
