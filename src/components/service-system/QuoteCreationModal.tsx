@@ -3,14 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { DollarSign, Clock, CheckCircle, AlertCircle, Calculator, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { DollarSign, Clock, CheckCircle, Send, Sparkles, Package, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface QuoteCreationModalProps {
   requestId: string;
@@ -25,7 +23,6 @@ interface QuoteFormData {
   description: string;
   estimated_duration_hours: string;
   materials_included: boolean;
-  notes: string;
 }
 
 export function QuoteCreationModal({ 
@@ -44,18 +41,15 @@ export function QuoteCreationModal({
     amount: "",
     description: "",
     estimated_duration_hours: "",
-    materials_included: false,
-    notes: ""
+    materials_included: false
   });
-
 
   const resetForm = () => {
     setQuoteForm({
       amount: "",
       description: "",
       estimated_duration_hours: "",
-      materials_included: false,
-      notes: ""
+      materials_included: false
     });
   };
 
@@ -63,7 +57,7 @@ export function QuoteCreationModal({
     e.preventDefault();
     
     if (!quoteForm.amount || !quoteForm.description) {
-      toast.error("Preencha pelo menos o valor e descrição do orçamento");
+      toast.error("Preencha o valor e descrição");
       return;
     }
 
@@ -76,7 +70,6 @@ export function QuoteCreationModal({
     setSubmitting(true);
 
     try {
-      // Converter estimated_duration_hours para número
       const durationHours = quoteForm.estimated_duration_hours ? parseFloat(quoteForm.estimated_duration_hours) : null;
       
       const { data: quoteData, error } = await supabase
@@ -86,210 +79,196 @@ export function QuoteCreationModal({
           professional_id: user?.id,
           amount: amount,
           description: quoteForm.description,
-          estimated_duration_hours: durationHours,
-          materials_included: quoteForm.materials_included,
-          notes: quoteForm.notes || null
+          estimated_time: durationHours ? `${durationHours}h` : null,
+          materials_included: quoteForm.materials_included
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Atualizar status do pedido para 'quoted' se necessário
       const { data: currentQuotes } = await supabase
         .from("quotes")
         .select("id")
         .eq("request_id", requestId);
 
-      if (currentQuotes?.length === 1) { // First quote
+      if (currentQuotes?.length === 1) {
         await supabase
           .from("service_requests")
           .update({ status: "quoted" })
           .eq("id", requestId);
       }
 
-      // Enviar notificação ao cliente
       await supabase
         .from("notifications")
         .insert({
           user_id: clientId,
           title: "Novo orçamento recebido! 💰",
-          message: `Você recebeu um orçamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para "${requestTitle}". Acesse sua solicitação para analisar.`,
+          message: `Você recebeu um orçamento de R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para "${requestTitle}".`,
           type: "quote_received",
           related_id: quoteData.id
         });
 
       setShowSuccess(true);
       
-      // Aguardar um momento antes de fechar
       setTimeout(() => {
         setShowSuccess(false);
         setOpen(false);
         resetForm();
         onQuoteSubmitted?.();
-        toast.success("Orçamento enviado com sucesso!");
-      }, 2000);
+        toast.success("Orçamento enviado!");
+      }, 1500);
 
     } catch (error) {
       console.error("Error submitting quote:", error);
-      toast.error("Erro ao enviar orçamento. Tente novamente.");
+      toast.error("Erro ao enviar. Tente novamente.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const defaultTrigger = (
-    <Button size="lg" className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-      <DollarSign className="w-6 h-6" />
-      Criar Orçamento
+    <Button size="lg" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] rounded-2xl">
+      <Zap className="w-5 h-5" />
+      Enviar Proposta
     </Button>
   );
+
+  const isFormValid = quoteForm.amount && quoteForm.description;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rounded-3xl border-0 bg-gradient-to-b from-background to-muted/30">
         {showSuccess ? (
-          <div className="text-center py-8">
-            <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-            <h3 className="text-xl font-semibold mb-2 text-green-700">Orçamento Enviado!</h3>
-            <p className="text-muted-foreground">
-              Seu orçamento foi enviado com sucesso. O cliente será notificado e poderá analisá-lo.
+          <div className="text-center py-12 px-6">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center animate-scale-in shadow-lg">
+              <CheckCircle className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-2 text-foreground">Proposta Enviada!</h3>
+            <p className="text-muted-foreground text-sm">
+              O cliente foi notificado e logo entrará em contato.
             </p>
-            <Badge className="mt-4 bg-green-100 text-green-800">
-              Status: Orçamento Enviado
-            </Badge>
+            <div className="mt-6 flex items-center justify-center gap-2 text-emerald-600">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-medium">+10 XP conquistados</span>
+            </div>
           </div>
         ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Calculator className="w-5 h-5" />
-                Criar Orçamento
-              </DialogTitle>
-              <DialogDescription>
-                Preencha os detalhes do seu orçamento para "{requestTitle}"
-              </DialogDescription>
-            </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-5 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                  <Send className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-lg">Nova Proposta</h2>
+                  <p className="text-white/80 text-xs truncate max-w-[280px]">{requestTitle}</p>
+                </div>
+              </div>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Valor e Prazo */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-6 space-y-5">
+              {/* Valor - Destaque */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                  Seu Valor
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">R$</span>
+                  <Input
+                    type="number"
+                    value={quoteForm.amount}
+                    onChange={(e) => setQuoteForm(prev => ({ ...prev, amount: e.target.value }))}
+                    placeholder="0,00"
+                    className="pl-16 h-14 text-2xl font-bold rounded-2xl border-2 focus:border-emerald-500 transition-colors"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Prazo e Material - Grid compacto */}
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="amount" className="text-sm font-medium">
-                    Valor Total (R$) *
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    Prazo (horas)
                   </Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="amount"
-                      type="number"
-                      value={quoteForm.amount}
-                      onChange={(e) => setQuoteForm(prev => ({ ...prev, amount: e.target.value }))}
-                      placeholder="0,00"
-                      className="pl-10"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
+                  <Input
+                    type="number"
+                    value={quoteForm.estimated_duration_hours}
+                    onChange={(e) => setQuoteForm(prev => ({ ...prev, estimated_duration_hours: e.target.value }))}
+                    placeholder="Ex: 2"
+                    className="h-11 rounded-xl text-sm"
+                    min="0"
+                    step="0.5"
+                  />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="estimated_duration_hours" className="text-sm font-medium">
-                    Prazo Estimado (horas)
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Package className="w-3.5 h-3.5" />
+                    Material
                   </Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="estimated_duration_hours"
-                      type="number"
-                      value={quoteForm.estimated_duration_hours}
-                      onChange={(e) => setQuoteForm(prev => ({ ...prev, estimated_duration_hours: e.target.value }))}
-                      placeholder="Ex: 2, 8, 24"
-                      className="pl-10"
-                      min="0"
-                      step="0.5"
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQuoteForm(prev => ({ ...prev, materials_included: !prev.materials_included }))}
+                    className={cn(
+                      "w-full h-11 rounded-xl text-sm font-medium transition-all duration-200 border-2",
+                      quoteForm.materials_included 
+                        ? "bg-emerald-50 border-emerald-500 text-emerald-700" 
+                        : "bg-muted/50 border-transparent text-muted-foreground hover:border-border"
+                    )}
+                  >
+                    {quoteForm.materials_included ? "✓ Incluído" : "Não incluso"}
+                  </button>
                 </div>
               </div>
 
               {/* Descrição */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-medium">
-                  Descrição do Orçamento *
-                </Label>
+                <Label className="text-sm font-medium">O que está incluso?</Label>
                 <Textarea
-                  id="description"
                   value={quoteForm.description}
                   onChange={(e) => setQuoteForm(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descreva detalhadamente o que será feito e o que está incluído no valor..."
+                  placeholder="Descreva brevemente o serviço..."
                   rows={3}
+                  className="rounded-xl resize-none text-sm"
                   required
                 />
               </div>
 
-
-              {/* Material incluído */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="materials"
-                  checked={quoteForm.materials_included}
-                  onCheckedChange={(checked) => 
-                    setQuoteForm(prev => ({ ...prev, materials_included: !!checked }))
-                  }
-                />
-                <Label htmlFor="materials" className="text-sm font-medium">
-                  Material incluído no valor
-                </Label>
-              </div>
-
-              {/* Observações */}
-              <div className="space-y-2">
-                <Label htmlFor="notes" className="text-sm font-medium">
-                  Observações Adicionais
-                </Label>
-                <Textarea
-                  id="notes"
-                  value={quoteForm.notes}
-                  onChange={(e) => setQuoteForm(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Informações extras sobre condições, garantia, forma de pagamento, etc..."
-                  rows={2}
-                />
-              </div>
-
-              <DialogFooter className="gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                  disabled={submitting}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="gap-2 bg-green-600 hover:bg-green-700"
-                >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4" />
-                      Enviar Orçamento
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={submitting || !isFormValid}
+                className={cn(
+                  "w-full h-14 rounded-2xl text-base font-bold transition-all duration-300",
+                  isFormValid 
+                    ? "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {submitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Enviando...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Send className="w-5 h-5" />
+                    Enviar Proposta
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
         )}
       </DialogContent>
     </Dialog>
