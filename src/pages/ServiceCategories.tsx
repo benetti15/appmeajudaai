@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Zap, Wrench, Snowflake, Home, Paintbrush, HardHat, Sparkles, Leaf, Package, Refrigerator } from "lucide-react";
+import { ArrowLeft, Zap, Wrench, Snowflake, Home, Paintbrush, HardHat, Sparkles, Leaf, Package, Refrigerator, Droplets } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
@@ -18,6 +18,7 @@ import limpezaImg from "@/assets/categories/limpeza.jpg";
 import jardinagemImg from "@/assets/categories/jardinagem.jpg";
 import montagemImg from "@/assets/categories/montagem.jpg";
 import eletrodomesticosImg from "@/assets/categories/eletrodomesticos.jpg";
+import hidraulicaImg from "@/assets/categories/hidraulica.jpg";
 
 interface ServiceCategory {
   id: string;
@@ -38,6 +39,7 @@ const categoryIcons: Record<string, React.ComponentType<any>> = {
   "Jardinagem": Leaf,
   "Montagem e Instalações": Package,
   "Eletrodomésticos": Refrigerator,
+  "Hidráulica": Droplets,
 };
 
 const categoryImages: Record<string, string> = {
@@ -51,6 +53,7 @@ const categoryImages: Record<string, string> = {
   "Jardinagem": jardinagemImg,
   "Montagem e Instalações": montagemImg,
   "Eletrodomésticos": eletrodomesticosImg,
+  "Hidráulica": hidraulicaImg,
 };
 
 export default function ServiceCategories() {
