@@ -567,7 +567,7 @@ function MessageBubble({
         {/* Button to track request if request ID is detected */}
         {requestIdMatch && (
           <Button
-            onClick={() => navigate(`/my-requests/${requestIdMatch}`)}
+            onClick={() => navigate(`/simple-request-details/${requestIdMatch}`)}
             className="mt-3 w-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 gap-2"
             size="sm"
           >
