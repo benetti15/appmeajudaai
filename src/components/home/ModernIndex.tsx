@@ -126,25 +126,25 @@ export const ModernIndex = () => {
       {/* Hero Section */}
       <ModernHeroSection />
       
-      <main className="container mx-auto px-4 py-12 pb-24 md:pb-12">
-        <div className="max-w-5xl mx-auto space-y-10">
-          {/* Toninho Banner */}
+      <main className="container mx-auto px-3 md:px-4 py-6 md:py-12 pb-28 md:pb-12">
+        <div className="max-w-5xl mx-auto space-y-6 md:space-y-10">
+          {/* Toninho Banner - more compact on mobile */}
           <ModernToninhoBanner
-            message="Clique em 'Nova Solicitação' e eu vou te ajudar a criar seu pedido de forma rápida e fácil!"
-            action="Começar agora"
+            message="Clique em 'Nova Solicitação' e eu vou te ajudar a criar seu pedido!"
+            action="Começar"
             actionPath="/categories"
             variant="tip"
             dismissible
           />
 
           {/* Quick Actions Section */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div className="text-center">
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-2">
-                O que você precisa fazer?
+              <h2 className="text-xl md:text-3xl font-display font-bold text-foreground mb-1 md:mb-2">
+                O que você precisa?
               </h2>
-              <p className="text-muted-foreground">
-                Acesse suas funcionalidades principais
+              <p className="text-sm md:text-base text-muted-foreground">
+                Acesse suas funcionalidades
               </p>
             </div>
             

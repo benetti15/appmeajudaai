@@ -25,9 +25,9 @@ export function ModernQuickActions({
   className 
 }: ModernQuickActionsProps) {
   const gridCols = {
-    2: "grid-cols-1 md:grid-cols-2",
-    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+    2: "grid-cols-2 md:grid-cols-2",
+    3: "grid-cols-2 md:grid-cols-2 lg:grid-cols-3",
+    4: "grid-cols-2 md:grid-cols-2 lg:grid-cols-4"
   };
 
   return (
@@ -56,7 +56,7 @@ function ModernActionCard({
 }: ModernActionCardProps) {
   const [isPressed, setIsPressed] = useState(false);
 
-  const baseStyles = "relative overflow-hidden cursor-pointer transition-all duration-300 rounded-2xl border-2 p-6 group";
+  const baseStyles = "relative overflow-hidden cursor-pointer transition-all duration-300 rounded-xl md:rounded-2xl border-2 p-4 md:p-6 group";
   
   const variantStyles = {
     default: "bg-background/60 backdrop-blur-xl border-border/50 hover:border-primary/40 hover:shadow-[0_8px_30px_hsl(var(--primary)/0.15)]",
@@ -99,10 +99,10 @@ function ModernActionCard({
         {/* Header with icon and badge */}
         <div className="flex items-start justify-between">
           <div className={cn(
-            "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3",
+            "w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3",
             iconVariantStyles[variant]
           )}>
-            <Icon className="w-7 h-7" />
+            <Icon className="w-5 h-5 md:w-7 md:h-7" />
           </div>
           
           <div className="flex flex-col items-end gap-1">
@@ -120,16 +120,16 @@ function ModernActionCard({
         </div>
 
         {/* Content */}
-        <div className="space-y-1.5">
+        <div className="space-y-0.5 md:space-y-1.5">
           <h3 className={cn(
-            "font-semibold text-lg leading-tight",
+            "font-semibold text-sm md:text-lg leading-tight",
             variant === "default" ? "text-foreground" : "text-white"
           )}>
             {title}
           </h3>
           {description && (
             <p className={cn(
-              "text-sm leading-relaxed",
+              "text-xs md:text-sm leading-relaxed hidden md:block",
               variant === "default" ? "text-muted-foreground" : "text-white/80"
             )}>
               {description}

@@ -58,24 +58,24 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
         ? "bg-background/80 backdrop-blur-2xl border-b border-border/50 shadow-sm" 
         : "bg-transparent"
     )}>
-      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Logo */}
+      <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center">
+        {/* Logo - compact on mobile */}
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-3 group cursor-pointer"
+          className="flex items-center gap-2 md:gap-3 group cursor-pointer"
         >
           <div className="relative">
             <LazyImage 
               src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
               alt="Me Ajuda ai" 
-              className="w-11 h-11 group-hover:scale-110 transition-transform duration-300" 
+              className="w-9 h-9 md:w-11 md:h-11 group-hover:scale-110 transition-transform duration-300" 
             />
             <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           
-          <h1 className="flex items-center gap-1.5 text-2xl font-display font-black tracking-tight">
+          <h1 className="flex items-center gap-1 md:gap-1.5 text-lg md:text-2xl font-display font-black tracking-tight">
             <span className={cn(
-              "bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient transition-all duration-500",
+              "bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient transition-all duration-500 hidden sm:inline",
               showLogo ? "opacity-100" : "opacity-0"
             )}>
               ME AJUDA
@@ -84,11 +84,11 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
               "relative inline-flex items-center transition-all duration-500",
               showLogo ? "opacity-100 scale-100" : "opacity-0 scale-50"
             )}>
-              <span className="bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent font-black text-3xl">
+              <span className="bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent font-black text-xl md:text-3xl">
                 AI!
               </span>
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-cyan-400 rounded-full animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-cyan-400 rounded-full" />
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full" />
             </span>
           </h1>
         </button>
