@@ -66,7 +66,7 @@ export function ModernHeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-24 min-h-[90vh] flex items-center">
+    <section className="relative overflow-hidden py-8 md:py-24 min-h-[60vh] md:min-h-[90vh] flex items-center">
       {/* Background Image Carousel */}
       <div className="absolute inset-0">
         {heroImages.map((image, index) => (
@@ -83,20 +83,20 @@ export function ModernHeroSection() {
           </div>
         ))}
         
-        {/* Dark overlay for readability - reduced opacity for better image visibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/60 to-background/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/30" />
+        {/* Dark overlay for readability - stronger on mobile */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50 md:from-background/80 md:via-background/60 md:to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40 md:from-background/70 md:to-background/30" />
       </div>
 
-      {/* Image indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      {/* Image indicators - smaller on mobile */}
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 md:gap-2">
         {heroImages.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentImageIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all duration-300 ${
               currentImageIndex === index 
-                ? 'w-8 bg-primary' 
+                ? 'w-6 md:w-8 bg-primary' 
                 : 'bg-white/50 hover:bg-white/80'
             }`}
           />
@@ -105,35 +105,35 @@ export function ModernHeroSection() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto">
-          {/* Top badge with gamification */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-background/80 backdrop-blur-xl border border-primary/20 shadow-lg animate-fade-in group hover:border-primary/40 transition-all cursor-default">
+          {/* Top badge - compact on mobile */}
+          <div className="flex justify-center mb-4 md:mb-8">
+            <div className="inline-flex items-center gap-2 md:gap-3 px-3 md:px-5 py-1.5 md:py-2.5 rounded-full bg-background/80 backdrop-blur-xl border border-primary/20 shadow-lg animate-fade-in group hover:border-primary/40 transition-all cursor-default">
               <div className="relative">
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary animate-pulse" />
                 <div className="absolute inset-0 bg-primary/50 rounded-full blur-md animate-ping" />
               </div>
-              <span className="text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Assistente Toninho IA • Disponível 24/7
+              <span className="text-xs md:text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Toninho IA • 24/7
               </span>
-              <div className="flex items-center gap-1 px-2 py-0.5 bg-green-500/10 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs font-medium text-green-600">Online</span>
+              <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 bg-green-500/10 rounded-full">
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[10px] md:text-xs font-medium text-green-600">Online</span>
               </div>
             </div>
           </div>
 
-          {/* Main heading with modern typography */}
-          <div className="text-center space-y-6 mb-12">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black tracking-tight animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <span className="block text-foreground mb-2">
+          {/* Main heading - responsive typography */}
+          <div className="text-center space-y-3 md:space-y-6 mb-6 md:mb-12">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-display font-black tracking-tight animate-fade-in leading-tight" style={{ animationDelay: '0.1s' }}>
+              <span className="block text-foreground mb-1 md:mb-2">
                 Encontre o profissional
               </span>
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
                   perfeito para você
                 </span>
-                {/* Underline decoration */}
-                <svg className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 12" preserveAspectRatio="none">
+                {/* Underline decoration - hidden on mobile for cleaner look */}
+                <svg className="hidden md:block absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 12" preserveAspectRatio="none">
                   <path 
                     d="M0 6 Q75 12, 150 6 T300 6" 
                     fill="none" 
@@ -152,25 +152,23 @@ export function ModernHeroSection() {
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Conectamos você com profissionais verificados de forma <span className="font-semibold text-foreground">rápida</span> e <span className="font-semibold text-foreground">segura</span>. 
-              Receba orçamentos, acompanhe em tempo real.
+            <p className="text-sm md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in px-2" style={{ animationDelay: '0.2s' }}>
+              Profissionais verificados de forma <span className="font-semibold text-foreground">rápida</span> e <span className="font-semibold text-foreground">segura</span>.
             </p>
           </div>
 
-          {/* CTA Buttons with modern styling */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          {/* CTA Buttons - stacked on mobile */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 mb-8 md:mb-16 animate-fade-in px-2" style={{ animationDelay: '0.3s' }}>
             <Button 
               size="lg"
               onClick={handleGetStarted}
-              className="group relative overflow-hidden bg-gradient-to-r from-primary to-accent text-white border-0 shadow-[0_8px_30px_hsl(var(--primary)/0.4)] hover:shadow-[0_12px_40px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:-translate-y-1 px-8 py-6 text-lg rounded-2xl"
+              className="w-full sm:w-auto group relative overflow-hidden bg-gradient-to-r from-primary to-accent text-white border-0 shadow-[0_8px_30px_hsl(var(--primary)/0.4)] hover:shadow-[0_12px_40px_hsl(var(--primary)/0.5)] transition-all duration-300 hover:-translate-y-1 px-6 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-2xl"
             >
-              <span className="relative z-10 flex items-center gap-2 font-semibold">
+              <span className="relative z-10 flex items-center justify-center gap-2 font-semibold">
                 Encontrar Serviços
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              {/* Shimmer effect */}
               <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </Button>
             
@@ -178,62 +176,95 @@ export function ModernHeroSection() {
               size="lg"
               variant="outline"
               onClick={() => navigate('/categories')}
-              className="px-8 py-6 text-lg rounded-2xl border-2 border-border bg-background/80 backdrop-blur-sm hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
+              className="w-full sm:w-auto px-6 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-2xl border-2 border-border bg-background/80 backdrop-blur-sm hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
             >
               Ver Categorias
             </Button>
           </div>
 
-          {/* Animated stats with gamification */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-primary/30 transition-all hover:-translate-y-1">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-foreground tabular-nums">
-                    {animatedStats.professionals.toLocaleString()}+
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">Profissionais</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-accent/30 transition-all hover:-translate-y-1">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-foreground tabular-nums">
-                    {animatedStats.services.toLocaleString()}+
-                  </p>
-                  <p className="text-sm text-muted-foreground font-medium">Serviços realizados</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-yellow-500/30 transition-all hover:-translate-y-1">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <Star className="w-7 h-7 text-white fill-white" />
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <p className="text-3xl font-bold text-foreground tabular-nums">
-                      {animatedStats.rating.toFixed(1)}
-                    </p>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      ))}
-                    </div>
+          {/* Stats - horizontal scroll on mobile, grid on desktop */}
+          <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            {/* Mobile: Horizontal compact stats */}
+            <div className="flex md:hidden gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide">
+              {[
+                { icon: Users, value: animatedStats.professionals, label: "Profissionais", color: "primary" },
+                { icon: TrendingUp, value: animatedStats.services, label: "Serviços", color: "accent" },
+                { icon: Star, value: animatedStats.rating, label: "Avaliação", color: "yellow", isRating: true }
+              ].map((stat, i) => (
+                <div 
+                  key={i}
+                  className="flex-shrink-0 flex items-center gap-2 p-3 rounded-xl bg-background/80 backdrop-blur-xl border border-border/50 min-w-[130px]"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                    stat.color === 'primary' ? 'bg-primary/20' :
+                    stat.color === 'accent' ? 'bg-accent/20' : 'bg-yellow-500/20'
+                  }`}>
+                    <stat.icon className={`w-4 h-4 ${
+                      stat.color === 'primary' ? 'text-primary' :
+                      stat.color === 'accent' ? 'text-accent' : 'text-yellow-500'
+                    }`} />
                   </div>
-                  <p className="text-sm text-muted-foreground font-medium">Avaliação média</p>
+                  <div>
+                    <p className="text-lg font-bold text-foreground tabular-nums leading-none">
+                      {stat.isRating ? stat.value.toFixed(1) : `${stat.value.toLocaleString()}+`}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Full stats grid */}
+            <div className="hidden md:grid grid-cols-3 gap-6 max-w-3xl mx-auto">
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-primary/30 transition-all hover:-translate-y-1">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Users className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-foreground tabular-nums">
+                      {animatedStats.professionals.toLocaleString()}+
+                    </p>
+                    <p className="text-sm text-muted-foreground font-medium">Profissionais</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-accent/30 transition-all hover:-translate-y-1">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-foreground tabular-nums">
+                      {animatedStats.services.toLocaleString()}+
+                    </p>
+                    <p className="text-sm text-muted-foreground font-medium">Serviços realizados</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex flex-col items-center gap-3 p-6 rounded-2xl bg-background/80 backdrop-blur-xl border border-border/50 hover:border-yellow-500/30 transition-all hover:-translate-y-1">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Star className="w-7 h-7 text-white fill-white" />
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <p className="text-3xl font-bold text-foreground tabular-nums">
+                        {animatedStats.rating.toFixed(1)}
+                      </p>
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium">Avaliação média</p>
+                  </div>
                 </div>
               </div>
             </div>
