@@ -48,13 +48,12 @@ const AvailableRequests = () => {
   });
 
   useEffect(() => {
-    if (!user || profile?.user_type !== 'professional') {
-      navigate("/");
-      return;
+    // Guard de tipo removido - agora é controlado pelo ProfessionalRoute no App.tsx
+    if (user) {
+      fetchAvailableRequests();
+      checkProfileCompletion();
     }
-    fetchAvailableRequests();
-    checkProfileCompletion();
-  }, [user, profile, navigate]);
+  }, [user, profile]);
 
   const checkProfileCompletion = async () => {
     if (!user) return;

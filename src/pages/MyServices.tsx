@@ -43,22 +43,10 @@ const MyServices = () => {
   const [selectedService, setSelectedService] = useState<AcceptedService | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
+    // Guard de tipo removido - agora é controlado pelo ProfessionalRoute no App.tsx
+    if (user) {
+      fetchAcceptedServices();
     }
-
-    if (profile?.user_type !== "professional") {
-      toast({
-        title: "Acesso negado",
-        description: "Esta página é apenas para profissionais.",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
-    fetchAcceptedServices();
   }, [user, profile]);
 
   const fetchAcceptedServices = async () => {

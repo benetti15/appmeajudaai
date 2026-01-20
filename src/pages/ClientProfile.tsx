@@ -43,21 +43,7 @@ export default function ClientProfile() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(profile?.avatar_url || null);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    if (profile?.user_type !== "client") {
-      toast({
-        title: "Acesso negado",
-        description: "Esta página é apenas para clientes.",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
+    // Guard de tipo removido - agora é controlado pelo ClientRoute no App.tsx
     if (profile) {
       setFormData({
         full_name: profile.full_name || "",
@@ -78,7 +64,7 @@ export default function ClientProfile() {
       });
       setProfilePhoto(profile.avatar_url || null);
     }
-  }, [user, profile, navigate, toast]);
+  }, [profile]);
 
   const handleSave = async () => {
     setSaving(true);
