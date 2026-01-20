@@ -315,83 +315,8 @@ export default function ServiceRequestDetails() {
           {/* Left Column - Request Details */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             
-            {/* Quote Creation Button - Highlighted at top for Professionals */}
-            {userRole === 'professional' && request.status === 'pending' && (
-              <Card className="border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in">
-                <CardHeader className="pb-3 sm:pb-6">
-                  <CardTitle className="text-green-800 flex items-center gap-2 text-sm sm:text-base">
-                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 animate-pulse" />
-                    <span className="truncate">Oportunidade de Negócio</span>
-                  </CardTitle>
-                  <p className="text-green-700 text-xs sm:text-sm">
-                    Este cliente está procurando um profissional. Envie seu orçamento agora!
-                  </p>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <QuoteCreationModal
-                    requestId={request.id}
-                    clientId={request.client_id}
-                    requestTitle={request.title}
-                    onQuoteSubmitted={handleStatusUpdate}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Chat Button - Prominently displayed for both users */}
-            {(professional || userRole === 'professional') && (
-              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
-                <CardContent className="p-3 sm:p-4">
-                  <Button 
-                    className="w-full gap-2 sm:gap-3 h-10 sm:h-12 text-sm sm:text-base font-medium hover:scale-105 transition-transform"
-                    onClick={() => navigate(`/chat/${request.id}`)}
-                  >
-                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <span className="truncate">Conversar com {userRole === 'client' ? 'Profissional' : 'Cliente'}</span>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Quote Manager */}
-            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-              <QuoteManager
-                requestId={request.id}
-                clientId={request.client_id}
-                currentStatus={request.status}
-                userRole={userRole}
-                onQuoteAccepted={handleStatusUpdate}
-              />
-            </div>
-
-            {/* Professional Location Card - Show client location */}
-            {userRole === 'professional' && request.latitude && request.longitude && (
-              <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
-                <EnhancedLocationCard
-                  address={request.address}
-                  city={request.city}
-                  state={request.state}
-                  latitude={Number(request.latitude)}
-                  longitude={Number(request.longitude)}
-                  showDistance={true}
-                  title="Localização do Cliente"
-                  variant="professional"
-                />
-              </div>
-            )}
-
-            {/* Client Tracking Mini Map - Show when professional is sharing location */}
-            {userRole === 'client' && request.latitude && request.longitude && (
-              <ClientTrackingMiniMap
-                requestId={request.id}
-                clientLatitude={Number(request.latitude)}
-                clientLongitude={Number(request.longitude)}
-                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
-              />
-            )}
-
-            {/* Enhanced Service Details with Attachments */}
-            <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+            {/* Enhanced Service Details with Attachments - First! */}
+            <div className="animate-fade-in">
               <ServiceAttachments
                 title={request.title}
                 description={request.description}
@@ -405,14 +330,11 @@ export default function ServiceRequestDetails() {
                 budgetEstimate={request.budget_estimate}
                 urgencyLevel={request.urgency_level}
                 attachments={
-                  // Process real attachments from database
                   request.attachments 
                     ? (Array.isArray(request.attachments) ? request.attachments : []).map((attachment: any, index: number) => {
-                        // Detect file type from name or type field
                         const isImage = attachment.type === 'image' || 
                                        /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.name);
                         
-                        // Format file size
                         const formatSize = (bytes: number) => {
                           if (!bytes) return 'Tamanho desconhecido';
                           const k = 1024;
@@ -421,7 +343,6 @@ export default function ServiceRequestDetails() {
                           return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
                         };
                         
-                        // Calculate relative time
                         const getRelativeTime = () => {
                           const now = new Date();
                           const created = new Date(request.created_at);
@@ -446,6 +367,81 @@ export default function ServiceRequestDetails() {
                       })
                     : []
                 }
+              />
+            </div>
+
+            {/* Professional Location Card - Show client location - Below details */}
+            {userRole === 'professional' && request.latitude && request.longitude && (
+              <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <EnhancedLocationCard
+                  address={request.address}
+                  city={request.city}
+                  state={request.state}
+                  latitude={Number(request.latitude)}
+                  longitude={Number(request.longitude)}
+                  showDistance={true}
+                  title="Localização do Cliente"
+                  variant="professional"
+                />
+              </div>
+            )}
+
+            {/* Client Tracking Mini Map - Show when professional is sharing location */}
+            {userRole === 'client' && request.latitude && request.longitude && (
+              <ClientTrackingMiniMap
+                requestId={request.id}
+                clientLatitude={Number(request.latitude)}
+                clientLongitude={Number(request.longitude)}
+                clientAddress={`${request.address}, ${request.city} - ${request.state}`}
+              />
+            )}
+
+            {/* Quote Creation Button - Below details for Professionals */}
+            {userRole === 'professional' && request.status === 'pending' && (
+              <Card className="border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in" style={{ animationDelay: '150ms' }}>
+                <CardHeader className="pb-3 sm:pb-6">
+                  <CardTitle className="text-green-800 flex items-center gap-2 text-sm sm:text-base">
+                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 animate-pulse" />
+                    <span className="truncate">Oportunidade de Negócio</span>
+                  </CardTitle>
+                  <p className="text-green-700 text-xs sm:text-sm">
+                    Este cliente está procurando um profissional. Envie seu orçamento agora!
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <QuoteCreationModal
+                    requestId={request.id}
+                    clientId={request.client_id}
+                    requestTitle={request.title}
+                    onQuoteSubmitted={handleStatusUpdate}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Chat Button - Below details for both users */}
+            {(professional || userRole === 'professional') && (
+              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <CardContent className="p-3 sm:p-4">
+                  <Button 
+                    className="w-full gap-2 sm:gap-3 h-10 sm:h-12 text-sm sm:text-base font-medium hover:scale-105 transition-transform"
+                    onClick={() => navigate(`/chat/${request.id}`)}
+                  >
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="truncate">Conversar com {userRole === 'client' ? 'Profissional' : 'Cliente'}</span>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Quote Manager */}
+            <div className="animate-fade-in" style={{ animationDelay: '250ms' }}>
+              <QuoteManager
+                requestId={request.id}
+                clientId={request.client_id}
+                currentStatus={request.status}
+                userRole={userRole}
+                onQuoteAccepted={handleStatusUpdate}
               />
             </div>
 
