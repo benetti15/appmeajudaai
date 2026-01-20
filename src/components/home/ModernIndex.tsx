@@ -151,34 +151,6 @@ export const ModernIndex = () => {
             <ModernQuickActions actions={quickActions} columns={4} />
           </div>
           
-          {/* Stats/Achievements Section - Gamification */}
-          <div className="mt-12 p-6 rounded-2xl bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5 border border-border/50 backdrop-blur-xl">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Continue usando o app!</h3>
-                  <p className="text-sm text-muted-foreground">Você está no <span className="font-bold text-primary">Nível 3</span> • 250/500 XP</p>
-                </div>
-              </div>
-              
-              {/* XP Progress bar */}
-              <div className="w-full md:w-64">
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>Progresso</span>
-                  <span className="font-semibold text-primary">250/500 XP</span>
-                </div>
-                <div className="h-2.5 rounded-full bg-border/50 overflow-hidden">
-                  <div 
-                    className="h-full rounded-full bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 bg-[length:200%_100%] animate-gradient"
-                    style={{ width: '50%' }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 
