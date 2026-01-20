@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserPlus, Wrench, Mail, Phone, Eye, EyeOff, MapPin, FileText, CheckCircle2, XCircle, ArrowRight, Sparkles } from "lucide-react";
-import heroImage from "/lovable-uploads/bcdf9267-23f4-43c5-9f60-203b73298aa4.png";
+import authHeroImage from "@/assets/auth-hero-professional.jpg";
 import { validateCPF, formatCPF } from "@/lib/cpf-validator";
 import { cn } from "@/lib/utils";
 
@@ -291,15 +291,15 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       {/* Left Side - Hero (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-accent">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img 
-          src={heroImage} 
-          alt="Me Ajuda AI" 
-          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay"
+          src={authHeroImage} 
+          alt="Profissional Me Ajuda AI" 
+          className="absolute inset-0 w-full h-full object-cover"
         />
         
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/0 via-primary/50 to-accent/80" />
+        {/* Dark gradient overlay for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
         
         {/* Floating orbs */}
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
