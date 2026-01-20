@@ -139,27 +139,27 @@ const MyRequests = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
-      {/* Header */}
-      <header className="bg-background/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pb-20 md:pb-0">
+      {/* Header - Mobile optimized */}
+      <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-40">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => navigate("/")}
-              className="gap-2"
+              className="gap-1.5 h-9 px-2.5 md:px-3"
             >
               <ArrowLeft className="w-4 h-4" />
-              Voltar
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <h1 className="text-2xl font-bold text-primary">Minhas Solicitações</h1>
+            <h1 className="text-lg md:text-2xl font-bold text-primary truncate">Minhas Solicitações</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8">
         <div className="max-w-4xl mx-auto">
           {requests.length === 0 ? (
             <Card className="text-center py-12">
@@ -175,78 +175,79 @@ const MyRequests = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-3 md:space-y-6">
               {requests.map((request) => {
                 const statusBadge = getStatusBadge(request.status);
                 return (
                   <Card key={request.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-2">
-                          <CardTitle className="text-xl">{request.title}</CardTitle>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={statusBadge.variant}>
+                    <CardHeader className="p-3 md:p-6">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 md:gap-4">
+                        <div className="space-y-2 w-full">
+                          <CardTitle className="text-base md:text-xl line-clamp-2">{request.title}</CardTitle>
+                          <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                            <Badge variant={statusBadge.variant} className="text-xs">
                               {statusBadge.label}
                             </Badge>
                             {request.service_categories && (
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="text-xs">
                                 {request.service_categories.name}
                               </Badge>
                             )}
                           </div>
                         </div>
-                        <div className="text-right text-sm text-muted-foreground">
+                        <div className="text-left sm:text-right text-xs text-muted-foreground">
                           <p>Criado em</p>
-                          <p className="font-medium">
+                          <p className="font-medium text-sm">
                             {format(new Date(request.created_at), "dd/MM/yyyy", { locale: ptBR })}
                           </p>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-muted-foreground line-clamp-2">{request.description}</p>
+                    <CardContent className="space-y-3 md:space-y-4 p-3 md:p-6 pt-0">
+                      <p className="text-muted-foreground line-clamp-2 text-sm">{request.description}</p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-primary" />
-                          <span>{request.city}, {request.state}</span>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm">
+                        <div className="flex items-center gap-1.5 md:gap-2">
+                          <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{request.city}, {request.state}</span>
                         </div>
                         
                         {request.budget_estimate && (
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4 text-green-600" />
-                            <span>
-                              Orçamento: R$ {request.budget_estimate.toLocaleString('pt-BR')}
+                          <div className="flex items-center gap-1.5 md:gap-2">
+                            <DollarSign className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-600 flex-shrink-0" />
+                            <span className="truncate">
+                              R$ {request.budget_estimate.toLocaleString('pt-BR')}
                             </span>
                           </div>
                         )}
                         
                         {request.preferred_date && (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-blue-600" />
-                            <span>
-                              {format(new Date(request.preferred_date), "dd/MM/yyyy", { locale: ptBR })}
+                          <div className="flex items-center gap-1.5 md:gap-2">
+                            <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-600 flex-shrink-0" />
+                            <span className="truncate">
+                              {format(new Date(request.preferred_date), "dd/MM", { locale: ptBR })}
                             </span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-3 md:pt-4 border-t gap-3">
                         <div className="flex items-center gap-2">
-                          <Clock className={`w-4 h-4 ${getUrgencyColor(request.urgency_level)}`} />
-                          <span className="text-sm">
+                          <Clock className={`w-3.5 h-3.5 md:w-4 md:h-4 ${getUrgencyColor(request.urgency_level)}`} />
+                          <span className="text-xs md:text-sm">
                             Urgência: {request.urgency_level === 1 ? "Baixa" : 
                                      request.urgency_level === 2 ? "Média" : "Alta"}
                           </span>
                         </div>
                         
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto">
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => navigate(`/request-details/${request.id}`)}
+                            className="flex-1 sm:flex-none text-xs h-8"
                           >
-                            Ver Detalhes
+                            Detalhes
                           </Button>
                           {getActionButton(request)}
                         </div>

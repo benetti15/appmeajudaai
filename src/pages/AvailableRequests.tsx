@@ -209,27 +209,27 @@ const AvailableRequests = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
-      {/* Header */}
-      <header className="bg-background/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 pb-20 md:pb-0">
+      {/* Header - Mobile optimized */}
+      <header className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-40">
+        <div className="container mx-auto px-3 md:px-4 py-3 md:py-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate("/")}
-              className="gap-2"
+              className="gap-1.5 md:gap-2 h-9 px-2.5 md:px-3"
             >
               <Home className="w-4 h-4" />
-              Início
+              <span className="hidden sm:inline">Início</span>
             </Button>
-            <h1 className="text-2xl font-bold text-primary">Serviços Disponíveis</h1>
+            <h1 className="text-lg md:text-2xl font-bold text-primary truncate">Serviços Disponíveis</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8">
         <div className="max-w-4xl mx-auto">
           <VerificationRequiredAlert 
             feature="pedidos de clientes e enviar propostas"
@@ -325,9 +325,9 @@ const AvailableRequests = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <p className="text-lg text-muted-foreground">
+            <div className="space-y-4 md:space-y-6">
+              <div className="text-center mb-4 md:mb-8">
+                <p className="text-base md:text-lg text-muted-foreground">
                   {requests.length} {requests.length === 1 ? 'pedido disponível' : 'pedidos disponíveis'}
                 </p>
               </div>
@@ -348,15 +348,15 @@ const AvailableRequests = () => {
                   {/* Animated gradient overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                   
-                  <CardHeader className="relative">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="space-y-2 flex-1 min-w-0">
-                        <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors duration-200 truncate">
+                  <CardHeader className="relative p-3 md:p-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 md:gap-4">
+                      <div className="space-y-2 flex-1 min-w-0 w-full">
+                        <CardTitle className="text-base md:text-xl group-hover:text-primary transition-colors duration-200 line-clamp-2">
                           {request.title}
                         </CardTitle>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                           <div className="animate-fade-in">
-                            <Badge variant="secondary" className="gap-1.5">
+                            <Badge variant="secondary" className="gap-1 text-xs">
                               <Briefcase className="w-3 h-3" />
                               Novo
                             </Badge>
@@ -367,7 +367,7 @@ const AvailableRequests = () => {
                           {request.service_categories && (
                             <Badge 
                               variant="outline" 
-                              className="animate-fade-in transition-transform duration-200 hover:scale-110"
+                              className="animate-fade-in text-xs"
                               style={{ animationDelay: '100ms' }}
                             >
                               {request.service_categories.name}
@@ -376,60 +376,61 @@ const AvailableRequests = () => {
                           {request.images_urls && request.images_urls.length > 0 && (
                             <Badge 
                               variant="outline" 
-                              className="gap-1 text-primary border-primary animate-fade-in transition-transform duration-200 hover:scale-110"
+                              className="gap-1 text-primary border-primary animate-fade-in text-xs"
                               style={{ animationDelay: '150ms' }}
                             >
                               <Image className="w-3 h-3" />
-                              {request.images_urls.length} foto{request.images_urls.length > 1 ? 's' : ''}
+                              {request.images_urls.length}
                             </Badge>
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="text-right text-xs text-muted-foreground">
+                      <div className="flex sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
+                        <div className="text-left sm:text-right text-xs text-muted-foreground">
                           <p className="font-medium">Publicado</p>
-                          <p className="text-lg font-bold text-foreground">
+                          <p className="text-sm md:text-lg font-bold text-foreground">
                             {format(new Date(request.created_at), "dd/MM", { locale: ptBR })}
                           </p>
                         </div>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/service-request-details/${request.id}`);
-                          }}
-                          className="gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group/btn"
-                        >
-                          <Send className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
-                          Enviar Orçamento
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setAnalyzingRequest(request.id);
-                          }}
-                          className="gap-2"
-                        >
-                          <Sparkles className="w-4 h-4 text-primary" />
-                          Analisar
-                        </Button>
+                        <div className="flex gap-2 ml-auto sm:ml-0">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/service-request-details/${request.id}`);
+                            }}
+                            className="gap-1 text-xs md:text-sm h-8 md:h-9"
+                          >
+                            <Send className="w-3 h-3" />
+                            <span className="hidden xs:inline">Orçamento</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAnalyzingRequest(request.id);
+                            }}
+                            className="gap-1 h-8 md:h-9"
+                          >
+                            <Sparkles className="w-3 h-3 text-primary" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="space-y-4 relative">
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                  <CardContent className="space-y-3 md:space-y-4 relative p-3 md:p-6 pt-0">
+                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2">
                       {request.description}
                     </p>
                     
                     {/* Key Info - Grid with animations */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-all duration-200 transform hover:scale-105 hover:-translate-y-0.5">
-                        <div className="p-2 rounded-lg bg-background">
-                          <MapPin className="w-4 h-4 text-primary" />
+                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                      <div className="flex items-center gap-1.5 md:gap-2 p-2 md:p-3 rounded-lg bg-muted/50">
+                        <div className="p-1.5 md:p-2 rounded-lg bg-background">
+                          <MapPin className="w-3 h-3 md:w-4 md:h-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-muted-foreground">Localização</p>

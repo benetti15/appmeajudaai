@@ -107,23 +107,23 @@ export default function ProfessionalProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 pb-24 md:pb-0">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 max-w-4xl">
+        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="p-2"
+            className="p-2 h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Perfil Profissional
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Configure suas especialidades e áreas de atendimento
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Configure suas especialidades
             </p>
           </div>
         </div>
@@ -132,35 +132,35 @@ export default function ProfessionalProfile() {
         <ProgressStepper
           steps={[
             { id: 'profile', label: 'Perfil', completed: !!(profileData.full_name && profileData.phone && profilePhoto) },
-            { id: 'verification', label: 'Verificação', completed: false },
-            { id: 'specialties', label: 'Especialidades', completed: false },
+            { id: 'verification', label: 'Verif.', completed: false },
+            { id: 'specialties', label: 'Espec.', completed: false },
             { id: 'areas', label: 'Áreas', completed: !!(profileData.city && profileData.state) }
           ]}
           currentStep={0}
-          className="mb-6"
+          className="mb-4 md:mb-6"
         />
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Perfil</span>
+        <Tabs defaultValue="profile" className="space-y-4 md:space-y-6">
+          <TabsList className="grid w-full grid-cols-4 h-10 md:h-11">
+            <TabsTrigger value="profile" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
+              <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden xs:inline">Perfil</span>
             </TabsTrigger>
-            <TabsTrigger value="verification" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Verificação</span>
+            <TabsTrigger value="verification" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
+              <Award className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden xs:inline">Verif.</span>
             </TabsTrigger>
-            <TabsTrigger value="specialties" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Especialidades</span>
+            <TabsTrigger value="specialties" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
+              <Award className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden xs:inline">Espec.</span>
             </TabsTrigger>
-            <TabsTrigger value="areas" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span className="hidden sm:inline">Áreas</span>
+            <TabsTrigger value="areas" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
+              <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              <span className="hidden xs:inline">Áreas</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
+          <TabsContent value="profile" className="space-y-4 md:space-y-6">
             {/* Foto do Perfil */}
             <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
               <CardHeader>
@@ -278,7 +278,7 @@ export default function ProfessionalProfile() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="verification" className="space-y-6">
+          <TabsContent value="verification" className="space-y-4 md:space-y-6">
             <EnhancedVerificationSystem 
               userId={user?.id}
               showRestrictions={false}
@@ -288,11 +288,11 @@ export default function ProfessionalProfile() {
             />
           </TabsContent>
 
-          <TabsContent value="specialties" className="space-y-6">
+          <TabsContent value="specialties" className="space-y-4 md:space-y-6">
             <ModernSpecialtiesGrid />
           </TabsContent>
 
-          <TabsContent value="areas" className="space-y-6">
+          <TabsContent value="areas" className="space-y-4 md:space-y-6">
             <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -330,14 +330,14 @@ export default function ProfessionalProfile() {
         </Tabs>
 
         {/* Botão Salvar Fixo */}
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50">
           <Button
             onClick={handleSaveProfile}
             disabled={saving}
             size="lg"
-            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-2xl px-8 py-3 text-lg font-medium"
+            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-2xl px-6 md:px-8 py-2.5 md:py-3 text-sm md:text-lg font-medium"
           >
-            {saving ? "Salvando..." : "Salvar Alterações"}
+            {saving ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </div>

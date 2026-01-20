@@ -100,28 +100,28 @@ export default function ServiceCategories() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20 md:pb-0">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 animate-fade-in">
+        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-8 animate-fade-in">
           <Button
             variant="outline"
             size="icon"
             onClick={() => navigate("/")}
-            className="hover:scale-110 transition-transform duration-200"
+            className="hover:scale-110 transition-transform duration-200 h-9 w-9 md:h-10 md:w-10"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h1 className="text-xl md:text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Categorias de Serviço
             </h1>
-            <p className="text-muted-foreground mt-1">Selecione o tipo de serviço que você precisa</p>
+            <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Selecione o tipo de serviço</p>
           </div>
         </div>
 
-        {/* Grid de Categorias */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Grid de Categorias - 2 columns on mobile */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {categories.map((category, index) => {
             const IconComponent = categoryIcons[category.name] || Home;
             const categoryImage = categoryImages[category.name];
@@ -153,11 +153,11 @@ export default function ServiceCategories() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent 
                               translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 z-10" />
                 
-                <CardHeader className="relative z-20 pb-3">
-                  <div className="flex items-center gap-4">
+                <CardHeader className="relative z-20 pb-2 md:pb-3 p-3 md:p-6">
+                  <div className="flex items-center gap-2 md:gap-4">
                     {/* Icon with mini image */}
                     <div className="relative">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg 
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl overflow-hidden shadow-lg 
                                     group-hover:scale-110 group-hover:rotate-3 transition-all duration-300
                                     ring-2 ring-primary/20 group-hover:ring-primary/40">
                         {categoryImage ? (
@@ -168,29 +168,29 @@ export default function ServiceCategories() {
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                            <IconComponent className="h-8 w-8 text-primary" />
+                            <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-primary" />
                           </div>
                         )}
                       </div>
                       {/* Icon badge */}
-                      <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full 
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 md:w-7 md:h-7 rounded-full 
                                     bg-gradient-to-br from-primary to-accent 
                                     flex items-center justify-center shadow-lg
                                     ring-2 ring-background">
-                        <IconComponent className="h-3.5 w-3.5 text-white" />
+                        <IconComponent className="h-2.5 w-2.5 md:h-3.5 md:w-3.5 text-white" />
                       </div>
                     </div>
                     
-                    <CardTitle className="text-xl text-card-foreground group-hover:text-primary 
-                                       transition-colors duration-300">
+                    <CardTitle className="text-sm md:text-xl text-card-foreground group-hover:text-primary 
+                                       transition-colors duration-300 line-clamp-2 leading-tight">
                       {category.name}
                     </CardTitle>
                   </div>
                 </CardHeader>
                 
-                <CardContent className="relative z-20">
-                  <CardDescription className="text-sm leading-relaxed group-hover:text-foreground/90 
-                                            transition-colors duration-300">
+                <CardContent className="relative z-20 p-3 md:p-6 pt-0">
+                  <CardDescription className="text-xs md:text-sm leading-relaxed group-hover:text-foreground/90 
+                                            transition-colors duration-300 line-clamp-2">
                     {category.description}
                   </CardDescription>
                 </CardContent>

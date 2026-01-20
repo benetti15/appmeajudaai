@@ -317,9 +317,10 @@ export default function Chat() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 flex flex-col">
+      {/* Compact Header */}
+      <div className="container mx-auto px-3 md:px-4 py-3 md:py-4 max-w-4xl">
+        <div className="flex items-center gap-3 md:gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -327,57 +328,60 @@ export default function Chat() {
               const isClient = request?.client_id === user?.id;
               navigate(isClient ? "/my-requests" : "/my-services-new");
             }}
-            className="p-2"
+            className="p-2 h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Chat - {request?.title}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
+              {request?.title}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Conversa sobre a solicitação de serviço
+            <p className="text-[10px] md:text-sm text-muted-foreground truncate">
+              Chat com profissional
             </p>
           </div>
         </div>
+      </div>
 
-        <Card className="h-[calc(100vh-200px)] flex flex-col border-0 shadow-glow bg-card/50 backdrop-blur-sm">
-          <CardHeader className="border-b border-border/50">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+      {/* Chat Card - Full height on mobile */}
+      <div className="container mx-auto px-3 md:px-4 pb-4 max-w-4xl flex-1 flex flex-col min-h-0">
+        <Card className="flex-1 flex flex-col border-0 shadow-glow bg-card/50 backdrop-blur-sm overflow-hidden">
+          <CardHeader className="border-b border-border/50 py-2 md:py-4 px-3 md:px-6 shrink-0">
+            <CardTitle className="text-sm md:text-lg flex items-center gap-2">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full animate-pulse"></div>
               Chat Ativo
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col p-0">
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
+          <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+            <ScrollArea className="flex-1 p-3 md:p-4">
+              <div className="space-y-3 md:space-y-4">
                 {messages.map((message) => {
                   const isCurrentUser = message.sender_id === user?.id;
                   return (
                     <div
                       key={message.id}
-                      className={`flex gap-3 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
+                      className={`flex gap-2 md:gap-3 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
                     >
-                      <Avatar className="h-8 w-8 border border-border/50">
+                      <Avatar className="h-7 w-7 md:h-8 md:w-8 border border-border/50 shrink-0">
                         <AvatarImage src={message.sender_profile?.avatar_url} />
                         <AvatarFallback className="text-xs bg-primary/10">
                           {message.sender_profile?.full_name?.[0] || "U"}
                         </AvatarFallback>
                       </Avatar>
                       
-                      <div className={`flex flex-col max-w-[70%] ${isCurrentUser ? "items-end" : "items-start"}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs text-muted-foreground font-medium">
+                      <div className={`flex flex-col max-w-[75%] md:max-w-[70%] ${isCurrentUser ? "items-end" : "items-start"}`}>
+                        <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
+                          <span className="text-[10px] md:text-xs text-muted-foreground font-medium truncate max-w-[100px] md:max-w-none">
                             {message.sender_profile?.full_name || "Usuário"}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] md:text-xs text-muted-foreground">
                             {formatTime(message.created_at)}
                           </span>
                         </div>
                         
                         <div
-                          className={`rounded-2xl px-4 py-2 shadow-sm ${
+                          className={`rounded-2xl px-3 py-2 md:px-4 md:py-2 shadow-sm ${
                             isCurrentUser
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted border border-border/50"
@@ -390,7 +394,7 @@ export default function Chat() {
                               className="max-w-full h-auto rounded-lg mb-2"
                             />
                           )}
-                          <p className="text-sm whitespace-pre-wrap">{message.message}</p>
+                          <p className="text-xs md:text-sm whitespace-pre-wrap">{message.message}</p>
                         </div>
                       </div>
                     </div>
@@ -400,7 +404,7 @@ export default function Chat() {
               </div>
             </ScrollArea>
 
-            <div className="border-t border-border/50 p-4 space-y-3">
+            <div className="border-t border-border/50 p-2 md:p-4 space-y-2 md:space-y-3 shrink-0">
               <MessageSuggester
                 context="greeting"
                 onSelectMessage={(message) => setNewMessage(message)}
@@ -422,7 +426,7 @@ export default function Chat() {
                 </div>
               )}
               
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 md:gap-2">
                 <PhotoUpload
                   onImageUploaded={(url) => setImageUrls([url])}
                   maxImages={1}
@@ -431,7 +435,6 @@ export default function Chat() {
                 
                 <VoiceMessage
                   onVoiceRecorded={(audioBlob, duration) => {
-                    // Por enquanto, simula o envio do áudio
                     toast({
                       title: "Mensagem de voz enviada",
                       description: `Áudio de ${duration}s enviado com sucesso!`,
@@ -444,15 +447,16 @@ export default function Chat() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder="Digite sua mensagem..."
-                  className="flex-1 border-border/50 focus:border-primary"
+                  placeholder="Mensagem..."
+                  className="flex-1 border-border/50 focus:border-primary h-9 md:h-10 text-sm"
                   disabled={sending}
                 />
                 
                 <Button
                   onClick={sendMessage}
                   disabled={(!newMessage.trim() && imageUrls.length === 0) || sending}
-                  className="shrink-0 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                  size="sm"
+                  className="shrink-0 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 h-9 md:h-10 w-9 md:w-10 p-0"
                 >
                   <Send className="h-4 w-4" />
                 </Button>

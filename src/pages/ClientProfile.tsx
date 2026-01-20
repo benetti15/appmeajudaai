@@ -131,23 +131,23 @@ export default function ClientProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 pb-24 md:pb-0">
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 max-w-4xl">
+        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="p-2"
+            className="p-2 h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Meu Perfil
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Configure suas informações pessoais
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Suas informações pessoais
             </p>
           </div>
         </div>
@@ -156,14 +156,14 @@ export default function ClientProfile() {
         <ProgressStepper
           steps={[
             { id: 'photo', label: 'Foto', completed: !!profilePhoto },
-            { id: 'personal', label: 'Dados Pessoais', completed: !!(formData.full_name && formData.phone) },
+            { id: 'personal', label: 'Dados', completed: !!(formData.full_name && formData.phone) },
             { id: 'address', label: 'Endereço', completed: !!(addressData.latitude && addressData.longitude) }
           ]}
           currentStep={profilePhoto ? (formData.full_name && formData.phone ? 2 : 1) : 0}
-          className="mb-6"
+          className="mb-4 md:mb-6"
         />
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Foto do Perfil */}
           <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
             <CardHeader>
