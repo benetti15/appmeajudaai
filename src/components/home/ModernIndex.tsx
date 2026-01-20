@@ -30,13 +30,52 @@ export const ModernIndex = () => {
   const userType = profile?.user_type || 'client';
   
   const quickActions = useMemo(() => {
-    const baseActions: any[] = [
+    if (userType === 'professional') {
+      return [
+        {
+          icon: Plus,
+          title: 'Ver Solicitações',
+          description: 'Encontrar novos trabalhos',
+          onClick: () => navigate('/available-requests'),
+          variant: 'gradient' as const
+        },
+        {
+          icon: FileText,
+          title: 'Meus Serviços',
+          description: 'Serviços aceitos',
+          onClick: () => navigate('/my-services'),
+        },
+        {
+          icon: MessageCircle,
+          title: 'Conversas',
+          description: 'Suas mensagens',
+          onClick: () => navigate('/conversations'),
+          badge: unreadCount > 0 ? unreadCount.toString() : undefined
+        },
+        {
+          icon: User,
+          title: 'Meu Perfil',
+          description: 'Configurações da conta',
+          onClick: () => navigate('/professional-profile')
+        }
+      ];
+    }
+    
+    // Cliente
+    return [
       {
         icon: Plus,
-        title: userType === 'client' ? 'Nova Solicitação' : 'Ver Solicitações',
-        description: userType === 'client' ? 'Criar pedido com Toninho IA' : 'Encontrar novos trabalhos',
-        onClick: () => navigate(userType === 'client' ? '/categories' : '/available-requests'),
+        title: 'Nova Solicitação',
+        description: 'Criar pedido com Toninho IA',
+        onClick: () => navigate('/categories'),
         variant: 'gradient' as const
+      },
+      {
+        icon: FileText,
+        title: 'Meus Pedidos',
+        description: 'Acompanhar status',
+        onClick: () => navigate('/my-requests'),
+        badge: unreadQuotes > 0 ? unreadQuotes.toString() : undefined
       },
       {
         icon: MessageCircle,
@@ -49,21 +88,9 @@ export const ModernIndex = () => {
         icon: User,
         title: 'Meu Perfil',
         description: 'Configurações da conta',
-        onClick: () => navigate(userType === 'client' ? '/client-profile' : '/professional-profile')
+        onClick: () => navigate('/client-profile')
       }
     ];
-
-    if (userType === 'client') {
-      baseActions.splice(2, 0, {
-        icon: FileText,
-        title: 'Meus Pedidos',
-        description: 'Acompanhar status',
-        onClick: () => navigate('/my-requests'),
-        badge: unreadQuotes > 0 ? unreadQuotes.toString() : undefined
-      });
-    }
-
-    return baseActions;
   }, [userType, unreadCount, unreadQuotes, navigate]);
 
   const bottomNavItems = useMemo(() => {

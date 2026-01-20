@@ -70,13 +70,19 @@ interface Quote {
 export default function SimpleRequestDetails() {
   const { id: requestId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   
   const [request, setRequest] = useState<ServiceRequest | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingQuote, setAcceptingQuote] = useState<string | null>(null);
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+  const [quoteData, setQuoteData] = useState({ amount: "", description: "" });
+
+  const userType = profile?.user_type || 'client';
+  const isProfessional = userType === 'professional';
 
   useEffect(() => {
     if (!user) {
@@ -174,6 +180,58 @@ export default function SimpleRequestDetails() {
     }
   };
 
+  const handleSubmitQuote = async () => {
+    if (!quoteData.amount || !quoteData.description) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha o valor e a descrição do orçamento",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSubmittingQuote(true);
+    try {
+      const { error } = await supabase
+        .from("quotes")
+        .insert({
+          request_id: requestId,
+          professional_id: user?.id,
+          amount: parseFloat(quoteData.amount),
+          description: quoteData.description
+        });
+
+      if (error) throw error;
+
+      // Notificar cliente
+      await supabase.from("notifications").insert({
+        user_id: request?.client_id,
+        title: "Novo orçamento recebido! 💰",
+        message: `Você recebeu um orçamento para "${request?.title}"`,
+        type: "new_quote",
+        related_id: requestId
+      });
+
+      toast({
+        title: "Orçamento enviado!",
+        description: "O cliente será notificado"
+      });
+
+      setShowQuoteForm(false);
+      setQuoteData({ amount: "", description: "" });
+      fetchRequestDetails();
+    } catch (error) {
+      console.error("Erro ao enviar orçamento:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar o orçamento",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmittingQuote(false);
+    }
+  };
+
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { label: string; color: string; icon: React.ReactNode; bg: string }> = {
       pending: { 
@@ -221,6 +279,7 @@ export default function SimpleRequestDetails() {
 
   const isClient = request?.client_id === user?.id;
   const acceptedQuote = quotes.find(q => q.is_accepted);
+  const myQuote = isProfessional ? quotes.find(q => q.professional_id === user?.id) : null;
 
   if (loading) {
     return (
@@ -259,7 +318,7 @@ export default function SimpleRequestDetails() {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => navigate('/my-requests')}
+            onClick={() => navigate(isProfessional ? '/available-requests' : '/my-requests')}
             className="shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -454,7 +513,7 @@ export default function SimpleRequestDetails() {
           </div>
         )}
 
-        {/* Empty state for no quotes */}
+        {/* Empty state for no quotes - Clients */}
         {isClient && quotes.length === 0 && request.status === 'pending' && (
           <div className="px-4 mt-8">
             <div className="text-center py-8 px-4 bg-muted/30 rounded-2xl border border-dashed">
@@ -466,6 +525,79 @@ export default function SimpleRequestDetails() {
                 Profissionais da sua região estão sendo notificados sobre sua solicitação
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Professional Actions - Send Quote */}
+        {isProfessional && !acceptedQuote && request.status === 'pending' && (
+          <div className="px-4 mt-6">
+            {myQuote ? (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-green-100">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-green-700">Orçamento enviado</p>
+                    <p className="text-sm text-green-600">
+                      R$ {myQuote.amount.toLocaleString('pt-BR')} - Aguardando resposta do cliente
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : showQuoteForm ? (
+              <div className="bg-card rounded-2xl p-4 border shadow-sm space-y-4">
+                <h3 className="font-semibold text-foreground">Enviar Orçamento</h3>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Valor (R$)</label>
+                  <input
+                    type="number"
+                    placeholder="Ex: 150"
+                    value={quoteData.amount}
+                    onChange={(e) => setQuoteData(prev => ({ ...prev, amount: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Descrição</label>
+                  <textarea
+                    placeholder="Descreva o que está incluso no orçamento..."
+                    value={quoteData.description}
+                    onChange={(e) => setQuoteData(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background min-h-[80px]"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowQuoteForm(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="flex-1 gap-2"
+                    onClick={handleSubmitQuote}
+                    disabled={submittingQuote}
+                  >
+                    {submittingQuote ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    Enviar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                className="w-full h-12 text-base gap-2 rounded-xl"
+                onClick={() => setShowQuoteForm(true)}
+              >
+                <DollarSign className="w-5 h-5" />
+                Enviar Orçamento
+              </Button>
+            )}
           </div>
         )}
 
@@ -490,8 +622,8 @@ export default function SimpleRequestDetails() {
         )}
       </main>
 
-      {/* Bottom Action Bar */}
-      {acceptedQuote && (
+      {/* Bottom Action Bar - Cliente com profissional contratado */}
+      {isClient && acceptedQuote && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t safe-area-pb">
           <Button 
             className="w-full h-12 text-base gap-2 rounded-xl"
@@ -499,6 +631,19 @@ export default function SimpleRequestDetails() {
           >
             <MessageCircle className="w-5 h-5" />
             Conversar com o profissional
+          </Button>
+        </div>
+      )}
+
+      {/* Bottom Action Bar - Profissional com orçamento aceito */}
+      {isProfessional && acceptedQuote && acceptedQuote.professional_id === user?.id && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t safe-area-pb">
+          <Button 
+            className="w-full h-12 text-base gap-2 rounded-xl"
+            onClick={() => navigate(`/chat/${request.id}`)}
+          >
+            <MessageCircle className="w-5 h-5" />
+            Conversar com o cliente
           </Button>
         </div>
       )}
