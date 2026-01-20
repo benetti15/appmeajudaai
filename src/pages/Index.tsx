@@ -1,7 +1,7 @@
-import { OptimizedIndex } from "@/components/OptimizedIndex";
+import { ModernIndex } from "@/components/home/ModernIndex";
 
 const Index = () => {
-  return <OptimizedIndex />;
+  return <ModernIndex />;
 };
 
 export default Index;
