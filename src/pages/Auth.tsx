@@ -352,10 +352,18 @@ const Auth = () => {
 
       {/* Right Side - Auth Form */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        {/* Mobile Header */}
-        <div className="lg:hidden bg-gradient-to-br from-primary via-primary/90 to-accent p-6 pb-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 to-transparent" />
-          <div className="relative z-10 flex flex-col items-center text-white">
+        {/* Mobile Header with Background Image */}
+        <div className="lg:hidden relative overflow-hidden">
+          {/* Background Image */}
+          <img 
+            src={authHeroImage} 
+            alt="Profissional Me Ajuda AI" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Dark gradient overlay for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+          
+          <div className="relative z-10 flex flex-col items-center text-white p-6 pb-8">
             <img 
               src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
               alt="Me Ajuda AI" 
@@ -364,7 +372,7 @@ const Auth = () => {
             <h1 className="text-2xl font-display font-black">
               ME AJUDA <span className="text-cyan-200">AI!</span>
             </h1>
-            <p className="text-white/70 text-sm mt-1">Conecte-se com profissionais</p>
+            <p className="text-white/80 text-sm mt-1">Conecte-se com profissionais</p>
           </div>
         </div>
 
