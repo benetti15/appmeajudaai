@@ -431,16 +431,26 @@ export default function SimpleRequestDetails() {
                 </Button>
               </div>
               
-              {acceptedQuote.profiles?.phone && (
+              <div className="flex gap-2 mt-3">
+                {acceptedQuote.profiles?.phone && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={() => window.open(`tel:${acceptedQuote.profiles?.phone}`, '_self')}
+                  >
+                    <Phone className="w-4 h-4" />
+                    Ligar
+                  </Button>
+                )}
                 <Button
                   variant="outline"
-                  className="w-full mt-3 gap-2"
-                  onClick={() => window.open(`tel:${acceptedQuote.profiles?.phone}`, '_self')}
+                  className="flex-1 gap-2"
+                  onClick={() => navigate(`/chat/${request.id}`)}
                 >
-                  <Phone className="w-4 h-4" />
-                  Ligar para o profissional
+                  <MessageCircle className="w-4 h-4" />
+                  Conversar
                 </Button>
-              )}
+              </div>
             </div>
           </div>
         )}
