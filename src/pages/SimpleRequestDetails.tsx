@@ -645,18 +645,6 @@ export default function SimpleRequestDetails() {
         </div>
       )}
 
-      {/* Bottom Action Bar - Profissional com orçamento aceito */}
-      {isProfessional && acceptedQuote && acceptedQuote.professional_id === user?.id && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t safe-area-pb">
-          <Button 
-            className="w-full h-12 text-base gap-2 rounded-xl"
-            onClick={() => navigate(`/chat/${request.id}`)}
-          >
-            <MessageCircle className="w-5 h-5" />
-            Conversar com o cliente
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
