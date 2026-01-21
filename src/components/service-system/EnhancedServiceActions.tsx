@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,6 +56,7 @@ export function EnhancedServiceActions({
   onOptimisticStatusChange
 }: EnhancedServiceActionsProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [arrivalEstimate, setArrivalEstimate] = useState<number | null>(null);
   const [optimisticStatus, setOptimisticStatus] = useState<ExtendedServiceStatus | null>(null);
@@ -387,18 +389,28 @@ export function EnhancedServiceActions({
             </h4>
             <div className="space-y-2 text-sm">
               <p><strong>Nome:</strong> {clientInfo.full_name}</p>
-              {clientInfo.phone && (
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-2">
+              <div className="flex gap-2">
+                {clientInfo.phone && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => window.open(`tel:${clientInfo.phone}`, '_self')}
+                  >
                     <Phone className="w-4 h-4" />
-                    {clientInfo.phone}
+                    Ligar
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    Chat
-                  </Button>
-                </div>
-              )}
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => navigate(`/chat/${requestId}`)}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Conversar
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -465,21 +477,31 @@ export function EnhancedServiceActions({
             <CheckCircle className="w-4 h-4" />
             Seu Profissional
           </h4>
-          <div className="space-y-3">
-            <p><strong>Nome:</strong> {professionalInfo.full_name}</p>
-            <div className="flex gap-2">
-              {professionalInfo.phone && (
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Phone className="w-4 h-4" />
-                  Ligar
+            <div className="space-y-3">
+              <p><strong>Nome:</strong> {professionalInfo.full_name}</p>
+              <div className="flex gap-2">
+                {professionalInfo.phone && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => window.open(`tel:${professionalInfo.phone}`, '_self')}
+                  >
+                    <Phone className="w-4 h-4" />
+                    Ligar
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => navigate(`/chat/${requestId}`)}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Conversar
                 </Button>
-              )}
-              <Button variant="outline" size="sm" className="gap-2">
-                <MessageCircle className="w-4 h-4" />
-                Chat
-              </Button>
+              </div>
             </div>
-          </div>
         </div>
       )}
 
