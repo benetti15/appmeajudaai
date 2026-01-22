@@ -21,6 +21,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [userType, setUserType] = useState<"client" | "professional" | "">("");
+  const [googleUserType, setGoogleUserType] = useState<"client" | "professional" | "">("");
   const [showPassword, setShowPassword] = useState(false);
   const [cpf, setCpf] = useState("");
   const [cpfValid, setCpfValid] = useState<boolean | null>(null);
@@ -42,6 +43,18 @@ const Auth = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Check if there's a pending user type from Google OAuth
+        const pendingGoogleUserType = sessionStorage.getItem('google_user_type');
+        if (pendingGoogleUserType) {
+          // Update the profile with the selected user type
+          await supabase
+            .from('profiles')
+            .update({ user_type: pendingGoogleUserType })
+            .eq('id', session.user.id);
+          
+          sessionStorage.removeItem('google_user_type');
+        }
+        
         const { data: profile } = await supabase
           .from('profiles')
           .select('phone, cpf, user_type')
@@ -104,13 +117,27 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (selectedType?: "client" | "professional") => {
+    const typeToUse = selectedType || googleUserType;
+    
+    if (!typeToUse) {
+      toast({
+        title: "Selecione o tipo de conta",
+        description: "Escolha se você é Cliente ou Profissional antes de continuar com Google.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Store the selected user type in sessionStorage before OAuth redirect
+    sessionStorage.setItem('google_user_type', typeToUse);
+    
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/auth`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -119,6 +146,7 @@ const Auth = () => {
       });
 
       if (error) {
+        sessionStorage.removeItem('google_user_type');
         toast({
           title: "Erro ao entrar com Google",
           description: error.message,
@@ -127,6 +155,7 @@ const Auth = () => {
         setIsLoading(false);
       }
     } catch (error: any) {
+      sessionStorage.removeItem('google_user_type');
       toast({
         title: "Erro ao entrar com Google",
         description: "Ocorreu um erro inesperado. Tente novamente.",
@@ -411,13 +440,65 @@ const Auth = () => {
 
                 {/* Sign In Tab */}
                 <TabsContent value="signin" className="p-4 sm:p-6 pt-4 space-y-4 animate-fade-in">
+                  {/* User Type Selection for Google */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Eu sou:</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setGoogleUserType("client")}
+                        className={cn(
+                          "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
+                          googleUserType === "client" 
+                            ? "border-primary bg-primary/5" 
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
+                          googleUserType === "client" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                        )}>
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-sm">Cliente</div>
+                          <div className="text-xs text-muted-foreground">Preciso de serviços</div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGoogleUserType("professional")}
+                        className={cn(
+                          "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
+                          googleUserType === "professional" 
+                            ? "border-primary bg-primary/5" 
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-9 h-9 rounded-xl flex items-center justify-center transition-colors",
+                          googleUserType === "professional" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                        )}>
+                          <Wrench className="w-4 h-4" />
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-sm">Profissional</div>
+                          <div className="text-xs text-muted-foreground">Ofereço serviços</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Google Button */}
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleGoogleSignIn}
-                    disabled={isLoading}
-                    className="w-full h-12 rounded-xl border-2 hover:bg-muted/50 transition-all group"
+                    onClick={() => handleGoogleSignIn()}
+                    disabled={isLoading || !googleUserType}
+                    className={cn(
+                      "w-full h-12 rounded-xl border-2 transition-all group",
+                      googleUserType ? "hover:bg-muted/50" : "opacity-60 cursor-not-allowed"
+                    )}
                   >
                     <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -504,13 +585,16 @@ const Auth = () => {
 
                 {/* Sign Up Tab */}
                 <TabsContent value="signup" className="p-4 sm:p-6 pt-4 space-y-4 animate-fade-in">
-                  {/* Google Button */}
+                  {/* Google Button - uses userType from form selection */}
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleGoogleSignIn}
-                    disabled={isLoading}
-                    className="w-full h-12 rounded-xl border-2 hover:bg-muted/50 transition-all"
+                    onClick={() => handleGoogleSignIn(userType as "client" | "professional" || undefined)}
+                    disabled={isLoading || !userType}
+                    className={cn(
+                      "w-full h-12 rounded-xl border-2 transition-all",
+                      userType ? "hover:bg-muted/50" : "opacity-60 cursor-not-allowed"
+                    )}
                   >
                     <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
