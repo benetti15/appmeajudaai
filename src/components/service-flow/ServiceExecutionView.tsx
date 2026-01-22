@@ -278,14 +278,42 @@ export function ServiceExecutionView({
         </Button>
       )}
       
-      {/* Address - MOVED ABOVE TIMELINE */}
-      <Card className="p-4">
-        <h3 className="font-medium text-sm text-muted-foreground mb-2">
-          Endereço
+      {/* Service Info Card - Client details, address and amount */}
+      <Card className="p-4 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <h3 className="font-medium text-sm text-muted-foreground mb-3">
+          Detalhes do Serviço
         </h3>
-        <div className="flex items-start gap-3">
-          <MapPin className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+        
+        {/* Client/Professional Name */}
+        <div className="flex items-center gap-3 mb-4">
+          <Avatar className="w-10 h-10 border-2 border-primary/20">
+            <AvatarImage src={userRole === 'client' ? professionalInfo?.avatar_url : undefined} />
+            <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
+              {contactInfo?.full_name?.charAt(0) || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-foreground truncate">
+              {contactInfo?.full_name || (userRole === 'client' ? 'Profissional' : 'Cliente')}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {userRole === 'client' ? 'Profissional contratado' : 'Cliente'}
+            </p>
+          </div>
+        </div>
+        
+        {/* Address */}
+        <div className="flex items-start gap-3 mb-3 p-3 rounded-xl bg-background/50">
+          <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <p className="text-foreground text-sm">{address}</p>
+        </div>
+        
+        {/* Accepted Quote Amount */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10">
+          <span className="text-sm text-muted-foreground">Valor acordado</span>
+          <span className="text-lg font-bold text-primary">
+            R$ {serviceAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </span>
         </div>
       </Card>
       
