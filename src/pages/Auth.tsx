@@ -32,6 +32,13 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if logout was just performed - don't auto-redirect
+    const logoutInProgress = sessionStorage.getItem('logout_in_progress');
+    if (logoutInProgress) {
+      sessionStorage.removeItem('logout_in_progress');
+      return; // Don't check auth after logout
+    }
+    
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {

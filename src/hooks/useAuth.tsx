@@ -95,8 +95,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setProfile(null);
       
+      // Set a flag in sessionStorage to prevent auto-redirect after logout
+      sessionStorage.setItem('logout_in_progress', 'true');
+      
       // Attempt to sign out - don't throw on "session not found" errors
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
       
       // Session not found is ok - user is already logged out
       if (error && !error.message?.includes('Session not found')) {
@@ -108,15 +111,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Você foi desconectado com sucesso.",
       });
       
-      // Redirect to auth page
-      window.location.href = "/auth";
+      // Force navigation using window.location for clean state
+      window.location.replace("/auth");
     } catch (error) {
       console.error("Error signing out:", error);
       // Even on error, clear local state and redirect
       setUser(null);
       setSession(null);
       setProfile(null);
-      window.location.href = "/auth";
+      sessionStorage.setItem('logout_in_progress', 'true');
+      window.location.replace("/auth");
     }
   };
 
