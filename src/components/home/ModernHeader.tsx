@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { NotificationBadge } from "@/components/NotificationBadge";
-import { LazyImage } from "@/components/PerformanceOptimizations";
 import { 
   Menu, 
   User, 
@@ -21,8 +20,6 @@ import {
   BarChart3, 
   Wrench,
   ChevronDown,
-  Award,
-  Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,12 +32,9 @@ interface ModernHeaderProps {
 
 export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut }: ModernHeaderProps) => {
   const navigate = useNavigate();
-  const [showLogo, setShowLogo] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   
   useEffect(() => {
-    setShowLogo(true);
-    
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -53,50 +47,32 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
   
   return (
     <header className={cn(
-      "sticky top-0 z-40 transition-all duration-300",
+      "sticky top-0 z-40 transition-all duration-300 bg-background border-b",
       scrolled 
-        ? "bg-background/80 backdrop-blur-2xl border-b border-border/50 shadow-sm" 
-        : "bg-transparent"
+        ? "border-border shadow-sm" 
+        : "border-transparent"
     )}>
-      <div className="container mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center">
-        {/* Logo - compact on mobile */}
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        {/* Logo */}
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 md:gap-3 group cursor-pointer"
+          className="flex items-center gap-3 group cursor-pointer"
         >
-          <div className="relative">
-            <LazyImage 
-              src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
-              alt="Me Ajuda ai" 
-              className="w-9 h-9 md:w-11 md:h-11 group-hover:scale-110 transition-transform duration-300" 
-            />
-            <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
+          <img 
+            src="/toninho-logo.png" 
+            alt="Me Ajuda Aí" 
+            className="w-10 h-10 md:w-11 md:h-11 rounded-xl group-hover:scale-105 transition-transform duration-200" 
+          />
           
-          <h1 className="flex items-center gap-1 md:gap-1.5 text-lg md:text-2xl font-display font-black tracking-tight">
-            <span className={cn(
-              "bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient transition-all duration-500 hidden sm:inline",
-              showLogo ? "opacity-100" : "opacity-0"
-            )}>
-              ME AJUDA
-            </span>
-            <span className={cn(
-              "relative inline-flex items-center transition-all duration-500",
-              showLogo ? "opacity-100 scale-100" : "opacity-0 scale-50"
-            )}>
-              <span className="bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent font-black text-xl md:text-3xl">
-                AI!
-              </span>
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 md:w-2 md:h-2 bg-cyan-400 rounded-full" />
-            </span>
+          <h1 className="text-lg md:text-xl font-semibold text-foreground tracking-tight">
+            Me Ajuda Aí
           </h1>
         </button>
         
         {/* Right side */}
         <div className="flex items-center gap-3">
           
-          {/* Greeting */}
+          {/* Greeting - desktop only */}
           <span className="text-sm font-medium text-muted-foreground hidden md:block">
             Olá, <span className="text-foreground font-semibold">{profile?.full_name?.split(' ')[0] || 'Usuário'}</span>
           </span>
@@ -110,17 +86,17 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="gap-2 rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all"
+                className="gap-2 rounded-xl h-10 border-border hover:border-primary/50 hover:bg-secondary transition-all"
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                  <User className="w-3.5 h-3.5 text-white" />
+                <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <span className="hidden sm:inline font-medium">Menu</span>
+                <span className="hidden sm:inline font-medium text-foreground">Menu</span>
                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
-              className="w-56 rounded-xl bg-background/95 backdrop-blur-2xl border-border/50 shadow-xl p-2" 
+              className="w-56 rounded-2xl bg-background border-border shadow-lg p-2" 
               align="end"
             >
               {/* User info header */}
@@ -131,11 +107,11 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
                 </p>
               </div>
               
-              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuSeparator className="bg-border" />
               
               <DropdownMenuItem 
                 onClick={() => navigate(userType === 'client' ? '/client-profile' : '/professional-profile')}
-                className="cursor-pointer rounded-lg py-2.5 px-3 focus:bg-primary/10"
+                className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-secondary"
               >
                 <User className="w-4 h-4 mr-3 text-primary" />
                 Meu Perfil
@@ -143,21 +119,21 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
               
               {userType === 'professional' ? (
                 <>
-                  <DropdownMenuItem onClick={() => navigate('/my-services-new')} className="cursor-pointer rounded-lg py-2.5 px-3 focus:bg-primary/10">
-                    <Wrench className="w-4 h-4 mr-3 text-accent" />
+                  <DropdownMenuItem onClick={() => navigate('/my-services-new')} className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-secondary">
+                    <Wrench className="w-4 h-4 mr-3 text-muted-foreground" />
                     Meus Serviços
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/professional-dashboard')} className="cursor-pointer rounded-lg py-2.5 px-3 focus:bg-primary/10">
-                    <BarChart3 className="w-4 h-4 mr-3 text-blue-500" />
+                  <DropdownMenuItem onClick={() => navigate('/professional-dashboard')} className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-secondary">
+                    <BarChart3 className="w-4 h-4 mr-3 text-muted-foreground" />
                     Dashboard
                   </DropdownMenuItem>
                 </>
               ) : (
-                <DropdownMenuItem onClick={() => navigate('/my-requests')} className="cursor-pointer rounded-lg py-2.5 px-3 focus:bg-primary/10 relative">
-                  <Settings className="w-4 h-4 mr-3 text-accent" />
+                <DropdownMenuItem onClick={() => navigate('/my-requests')} className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-secondary relative">
+                  <Settings className="w-4 h-4 mr-3 text-muted-foreground" />
                   Minhas Solicitações
                   {unreadQuotes > 0 && (
-                    <Badge className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0 h-5 min-w-5 rounded-full">
+                    <Badge className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0 h-5 min-w-5 rounded-full">
                       {unreadQuotes}
                     </Badge>
                   )}
@@ -169,24 +145,24 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
                   const targetPath = userType === 'client' ? '/categories' : '/available-requests';
                   setTimeout(() => navigate(targetPath), 100);
                 }}
-                className="cursor-pointer rounded-lg py-2.5 px-3 focus:bg-primary/10"
+                className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-secondary"
               >
-                <Plus className="w-4 h-4 mr-3 text-green-500" />
+                <Plus className="w-4 h-4 mr-3 text-primary" />
                 {userType === 'client' ? 'Nova Solicitação' : 'Oportunidades'}
               </DropdownMenuItem>
               
-              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuSeparator className="bg-border" />
               
-              <DropdownMenuItem onClick={() => navigate('/about-toninho')} className="cursor-pointer rounded-lg py-2.5 px-3 focus:bg-primary/10">
+              <DropdownMenuItem onClick={() => navigate('/about-toninho')} className="cursor-pointer rounded-xl py-2.5 px-3 focus:bg-secondary">
                 <Sparkles className="w-4 h-4 mr-3 text-primary" />
                 Sobre o Toninho
               </DropdownMenuItem>
               
-              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuSeparator className="bg-border" />
               
               <DropdownMenuItem 
                 onClick={signOut} 
-                className="cursor-pointer rounded-lg py-2.5 px-3 text-red-600 focus:bg-red-50 focus:text-red-600"
+                className="cursor-pointer rounded-xl py-2.5 px-3 text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
                 <LogOut className="w-4 h-4 mr-3" />
                 Sair
