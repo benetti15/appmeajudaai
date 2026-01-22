@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { ServiceExecutionView, ExtendedServiceStatus } from "@/components/service-flow";
 
 interface ServiceRequest {
   id: string;
@@ -37,6 +38,7 @@ interface ServiceRequest {
   urgency_level: number;
   preferred_date: string | null;
   status: string;
+  extended_status?: ExtendedServiceStatus;
   created_at: string;
   client_id: string;
   images_urls?: string[];
@@ -149,23 +151,35 @@ export default function SimpleRequestDetails() {
 
       if (error) throw error;
 
+      // Update service request with extended_status = 'accepted'
       await supabase
         .from("service_requests")
-        .update({ status: "accepted" })
+        .update({ 
+          status: "accepted",
+          extended_status: "accepted"
+        })
         .eq("id", requestId);
 
       // Notify professional
       await supabase.from("notifications").insert({
         user_id: professionalId,
         title: "Orçamento aceito! 🎉",
-        message: `Seu orçamento para "${request?.title}" foi aceito!`,
+        message: `Seu orçamento para "${request?.title}" foi aceito! Inicie o atendimento quando estiver pronto.`,
         type: "quote_accepted",
         related_id: requestId
       });
 
+      // Log to status history
+      await supabase.from("service_status_history").insert({
+        request_id: requestId,
+        status: "accepted",
+        changed_by: user?.id,
+        notes: "Cliente aceitou orçamento"
+      });
+
       toast({
         title: "Orçamento aceito!",
-        description: "O profissional foi notificado"
+        description: "O profissional foi notificado para iniciar o atendimento"
       });
 
       fetchRequestDetails();
@@ -280,6 +294,25 @@ export default function SimpleRequestDetails() {
   const isClient = request?.client_id === user?.id;
   const acceptedQuote = quotes.find(q => q.is_accepted);
   const myQuote = isProfessional ? quotes.find(q => q.professional_id === user?.id) : null;
+  
+  // Determine if we're in execution mode (after quote accepted)
+  const isExecutionMode = acceptedQuote && (
+    request?.extended_status === 'accepted' ||
+    request?.extended_status === 'on_way' ||
+    request?.extended_status === 'arrived' ||
+    request?.extended_status === 'in_progress' ||
+    request?.extended_status === 'awaiting_client_confirmation' ||
+    request?.extended_status === 'payment_confirmed' ||
+    request?.extended_status === 'completed' ||
+    request?.extended_status === 'client_absent' ||
+    request?.extended_status === 'reschedule_requested' ||
+    request?.extended_status === 'rescheduled' ||
+    request?.extended_status === 'disputed' ||
+    request?.extended_status === 'payment_failed'
+  );
+  
+  // Check if professional is the contracted one
+  const isContractedProfessional = isProfessional && acceptedQuote?.professional_id === user?.id;
 
   if (loading) {
     return (
@@ -333,27 +366,55 @@ export default function SimpleRequestDetails() {
       </header>
 
       <main className="pb-24">
-        {/* Status Banner - hide when quote is accepted */}
-        {!quotes.some(q => q.is_accepted) && (
-          <div className={`mx-4 mt-4 p-4 rounded-2xl border ${statusConfig.bg}`}>
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-full bg-background ${statusConfig.color}`}>
-                {statusConfig.icon}
-              </div>
-              <div className="flex-1">
-                <p className={`font-medium ${statusConfig.color}`}>{statusConfig.label}</p>
-                {request.status === 'pending' && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {quotes.length === 0 
-                      ? "Profissionais serão notificados" 
-                      : `${quotes.length} orçamento${quotes.length > 1 ? 's' : ''} recebido${quotes.length > 1 ? 's' : ''}`
-                    }
-                  </p>
-                )}
-              </div>
-            </div>
+        {/* EXECUTION MODE - After quote accepted */}
+        {isExecutionMode && (isClient || isContractedProfessional) && (
+          <div className="px-4 mt-4">
+            <ServiceExecutionView
+              requestId={request.id}
+              currentStatus={(request.extended_status || 'accepted') as ExtendedServiceStatus}
+              userRole={isClient ? 'client' : 'professional'}
+              serviceAmount={acceptedQuote?.amount || 0}
+              professionalInfo={acceptedQuote?.profiles ? {
+                id: acceptedQuote.professional_id,
+                full_name: acceptedQuote.profiles.full_name || 'Profissional',
+                phone: acceptedQuote.profiles.phone,
+                avatar_url: acceptedQuote.profiles.avatar_url
+              } : undefined}
+              clientInfo={request.profiles ? {
+                id: request.client_id,
+                full_name: request.profiles.full_name || 'Cliente',
+                phone: request.profiles.phone
+              } : undefined}
+              address={`${request.address}, ${request.city} - ${request.state}`}
+              onStatusChange={fetchRequestDetails}
+            />
           </div>
         )}
+
+        {/* NEGOTIATION MODE - Before quote accepted */}
+        {!isExecutionMode && (
+          <>
+            {/* Status Banner - hide when quote is accepted */}
+            {!quotes.some(q => q.is_accepted) && (
+              <div className={`mx-4 mt-4 p-4 rounded-2xl border ${statusConfig.bg}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full bg-background ${statusConfig.color}`}>
+                    {statusConfig.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`font-medium ${statusConfig.color}`}>{statusConfig.label}</p>
+                    {request.status === 'pending' && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {quotes.length === 0 
+                          ? "Profissionais serão notificados" 
+                          : `${quotes.length} orçamento${quotes.length > 1 ? 's' : ''} recebido${quotes.length > 1 ? 's' : ''}`
+                        }
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
         {/* Quick Info Pills */}
         <div className="flex gap-2 px-4 mt-4 overflow-x-auto pb-1 scrollbar-hide">
@@ -630,10 +691,12 @@ export default function SimpleRequestDetails() {
             </Badge>
           </div>
         )}
+          </>
+        )}
       </main>
 
-      {/* Bottom Action Bar - Cliente com profissional contratado */}
-      {isClient && acceptedQuote && (
+      {/* Bottom Action Bar - Only show in negotiation mode */}
+      {!isExecutionMode && isClient && acceptedQuote && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t safe-area-pb">
           <Button 
             className="w-full h-12 text-base gap-2 rounded-xl"
