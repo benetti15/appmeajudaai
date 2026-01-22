@@ -22,8 +22,7 @@ export function useNotificationService(options: NotificationServiceOptions = {})
       title: string,
       message: string,
       type: string,
-      relatedId?: string,
-      actionUrl?: string
+      relatedId?: string
     ) => {
       try {
         await supabase
@@ -34,7 +33,6 @@ export function useNotificationService(options: NotificationServiceOptions = {})
             message,
             type,
             related_id: relatedId,
-            action_url: actionUrl,
             is_read: false
           });
       } catch (error) {
@@ -68,8 +66,7 @@ export function useNotificationService(options: NotificationServiceOptions = {})
               'Novo Orçamento Recebido! 💰',
               `Você recebeu um novo orçamento de R$ ${quote.amount.toLocaleString('pt-BR')} para "${request.title}".`,
               'quote_received',
-              quote.id,
-              `/simple-request-details/${quote.request_id}`
+              quote.id
             );
             
             options.onQuoteReceived?.(quote);
@@ -104,8 +101,7 @@ export function useNotificationService(options: NotificationServiceOptions = {})
                 'Orçamento Aceito! 🎉',
                 `Seu orçamento de R$ ${quote.amount.toLocaleString('pt-BR')} foi aceito para "${request.title}".`,
                 'quote_accepted',
-                quote.id,
-                `/service-request-details/${quote.request_id}`
+                quote.id
               );
             }
           }
@@ -153,8 +149,7 @@ export function useNotificationService(options: NotificationServiceOptions = {})
               title,
               message,
               'request_updated',
-              request.id,
-              `/simple-request-details/${request.id}`
+              request.id
             );
             
             options.onStatusChanged?.(request);
@@ -189,8 +184,7 @@ export function useNotificationService(options: NotificationServiceOptions = {})
               'Novo Pedido Disponível! 🔔',
               `Nova solicitação: "${request.title}" na sua região.`,
               'new_request',
-              request.id,
-              `/available-requests`
+              request.id
             );
             
             options.onNewRequest?.(request);

@@ -122,7 +122,9 @@ export function NotificationBadge() {
               .single();
             
             if (quote?.request_id) {
-              redirectPath = `/service-request/${quote.request_id}`;
+              redirectPath = `/simple-request-details/${quote.request_id}`;
+            } else {
+              redirectPath = '/my-requests';
             }
           } catch (error) {
             console.error('Error fetching quote:', error);
@@ -131,15 +133,32 @@ export function NotificationBadge() {
           break;
           
         case 'quote_accepted':
+          // Para profissionais que tiveram orçamento aceito
+          redirectPath = `/simple-request-details/${notification.related_id}`;
+          break;
+
+        case 'service_status':
+        case 'professional_on_way':
+        case 'professional_arrived':
+        case 'service_started':
+        case 'awaiting_confirmation':
+        case 'payment_required':
+        case 'payment_confirmed':
+        case 'service_completed':
+        case 'status_change':
         case 'accepted':
         case 'in_progress':
         case 'completed':
         case 'on_way':
         case 'arrived':
         case 'status_update':
-        case 'status_change':
           // Para atualizações de status, o related_id é o request_id
-          redirectPath = `/service-request/${notification.related_id}`;
+          redirectPath = `/simple-request-details/${notification.related_id}`;
+          break;
+          
+        case 'tracking_started':
+          // Para tracking iniciado
+          redirectPath = `/track-requests/${notification.related_id}`;
           break;
           
         case 'chat_message':
@@ -150,8 +169,16 @@ export function NotificationBadge() {
           break;
           
         case 'new_request':
+        case 'request_updated':
           // Para novas solicitações (profissionais)
-          redirectPath = `/service-request/${notification.related_id}`;
+          redirectPath = `/simple-request-details/${notification.related_id}`;
+          break;
+          
+        case 'service_cancelled':
+        case 'dispute':
+        case 'reschedule_requested':
+        case 'rescheduled':
+          redirectPath = `/simple-request-details/${notification.related_id}`;
           break;
           
         default:
@@ -159,9 +186,9 @@ export function NotificationBadge() {
           if (notification.type.includes('quote')) {
             redirectPath = '/my-requests';
           } else if (notification.type.includes('service') || notification.type.includes('request')) {
-            redirectPath = `/service-request/${notification.related_id}`;
+            redirectPath = `/simple-request-details/${notification.related_id}`;
           } else {
-            redirectPath = '/client-dashboard';
+            redirectPath = '/my-requests';
           }
       }
     }
@@ -175,12 +202,21 @@ export function NotificationBadge() {
 
   const getNotificationIcon = (type: string) => {
     // Return appropriate emoji based on notification type
-    if (type.includes("quote")) return "💰";
+    if (type.includes("quote_received") || type.includes("new_quote")) return "💰";
+    if (type.includes("quote_accepted")) return "🎉";
     if (type.includes("accepted")) return "✅";
-    if (type.includes("completed")) return "🎉";
-    if (type.includes("on_way")) return "🚗";
-    if (type.includes("arrived")) return "📍";
-    if (type.includes("payment")) return "💳";
+    if (type.includes("completed") || type.includes("service_completed")) return "🎉";
+    if (type.includes("on_way") || type.includes("professional_on_way")) return "🚗";
+    if (type.includes("arrived") || type.includes("professional_arrived")) return "📍";
+    if (type.includes("payment_confirmed")) return "💳";
+    if (type.includes("payment") || type.includes("awaiting_confirmation")) return "💳";
+    if (type.includes("in_progress") || type.includes("service_started")) return "🔧";
+    if (type.includes("cancelled")) return "❌";
+    if (type.includes("dispute")) return "⚠️";
+    if (type.includes("reschedule")) return "📅";
+    if (type.includes("tracking")) return "📍";
+    if (type.includes("new_request")) return "🔔";
+    if (type.includes("message") || type.includes("chat")) return "💬";
     return "🔔";
   };
 

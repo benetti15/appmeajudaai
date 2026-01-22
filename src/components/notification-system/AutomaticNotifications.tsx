@@ -58,12 +58,25 @@ const NOTIFICATION_TEMPLATES: Record<string, NotificationData> = {
     icon: "✋",
     actionUrl: "/my-requests"
   },
+  awaiting_client_confirmation: {
+    title: "✅ Serviço Finalizado!",
+    message: "O profissional finalizou o trabalho. Por favor, confirme e efetue o pagamento.",
+    type: "payment_required",
+    icon: "✅",
+    actionUrl: "/my-requests"
+  },
   awaiting_payment: {
     title: "💳 Pagamento Pendente",
     message: "Finalize o pagamento para concluir o atendimento.",
     type: "payment_required",
     icon: "💳",
     actionUrl: "/my-requests"
+  },
+  payment_confirmed: {
+    title: "💳 Pagamento Confirmado!",
+    message: "O cliente confirmou o pagamento. Serviço finalizado com sucesso!",
+    type: "service_completed",
+    icon: "💳"
   },
   completed: {
     title: "🎉 Serviço Concluído!",
@@ -160,11 +173,33 @@ async function handleStatusChangeNotification(
   const template = NOTIFICATION_TEMPLATES[newStatus];
   if (!template) return;
 
-  // Determinar quem deve receber a notificação
-  const recipientId = userRole === 'client' ? serviceRequest.client_id : serviceRequest.professional_id;
-  
   try {
-    // Enviar notificação in-app (sem metadata - coluna não existe)
+    // Determinar o destinatário da notificação baseado no role atual
+    // Se o usuário é cliente, notificamos o profissional (via quote aceito)
+    // Se o usuário é profissional, notificamos o cliente
+    let recipientId: string | undefined;
+    
+    if (userRole === 'professional') {
+      // Profissional mudando status -> notificar cliente
+      recipientId = serviceRequest.client_id;
+    } else {
+      // Cliente mudando status -> buscar profissional com quote aceito
+      const { data: acceptedQuote } = await supabase
+        .from('quotes')
+        .select('professional_id')
+        .eq('request_id', serviceRequest.id)
+        .eq('is_accepted', true)
+        .single();
+      
+      recipientId = acceptedQuote?.professional_id;
+    }
+
+    if (!recipientId) {
+      console.log('⚠️ No recipient found for notification');
+      return;
+    }
+
+    // Enviar notificação in-app
     const { error } = await supabase
       .from('notifications')
       .insert({
@@ -180,9 +215,9 @@ async function handleStatusChangeNotification(
       return;
     }
 
-    console.log('✅ Notification sent successfully');
+    console.log('✅ Notification sent successfully to:', recipientId);
 
-    // TODO: Implementar envio de push notification
+    // Enviar push notification
     await sendPushNotification({
       userId: recipientId,
       title: template.title,
@@ -192,14 +227,6 @@ async function handleStatusChangeNotification(
         url: template.actionUrl || '/dashboard',
         requestId: serviceRequest.id
       }
-    });
-
-    // TODO: Implementar envio de email
-    await sendEmailNotification({
-      userId: recipientId,
-      subject: template.title,
-      content: template.message,
-      serviceRequest
     });
 
   } catch (error) {
