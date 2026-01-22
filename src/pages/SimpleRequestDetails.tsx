@@ -295,21 +295,21 @@ export default function SimpleRequestDetails() {
   const acceptedQuote = quotes.find(q => q.is_accepted);
   const myQuote = isProfessional ? quotes.find(q => q.professional_id === user?.id) : null;
   
+  // Determine effective extended_status - if quote is accepted but no extended_status, default to 'accepted'
+  const effectiveExtendedStatus: ExtendedServiceStatus | undefined = 
+    request?.extended_status || 
+    (acceptedQuote ? 'accepted' : undefined);
+  
   // Determine if we're in execution mode (after quote accepted)
-  const isExecutionMode = acceptedQuote && (
-    request?.extended_status === 'accepted' ||
-    request?.extended_status === 'on_way' ||
-    request?.extended_status === 'arrived' ||
-    request?.extended_status === 'in_progress' ||
-    request?.extended_status === 'awaiting_client_confirmation' ||
-    request?.extended_status === 'payment_confirmed' ||
-    request?.extended_status === 'completed' ||
-    request?.extended_status === 'client_absent' ||
-    request?.extended_status === 'reschedule_requested' ||
-    request?.extended_status === 'rescheduled' ||
-    request?.extended_status === 'disputed' ||
-    request?.extended_status === 'payment_failed'
-  );
+  // If there's an accepted quote, we should be in execution mode even if extended_status isn't set
+  const executionStatuses: ExtendedServiceStatus[] = [
+    'accepted', 'on_way', 'arrived', 'in_progress', 
+    'awaiting_client_confirmation', 'payment_confirmed', 'completed',
+    'client_absent', 'reschedule_requested', 'rescheduled', 'disputed', 'payment_failed'
+  ];
+  
+  const isExecutionMode = acceptedQuote && effectiveExtendedStatus && 
+    executionStatuses.includes(effectiveExtendedStatus);
   
   // Check if professional is the contracted one
   const isContractedProfessional = isProfessional && acceptedQuote?.professional_id === user?.id;
@@ -371,7 +371,7 @@ export default function SimpleRequestDetails() {
           <div className="px-4 mt-4">
             <ServiceExecutionView
               requestId={request.id}
-              currentStatus={(request.extended_status || 'accepted') as ExtendedServiceStatus}
+              currentStatus={effectiveExtendedStatus!}
               userRole={isClient ? 'client' : 'professional'}
               serviceAmount={acceptedQuote?.amount || 0}
               professionalInfo={acceptedQuote?.profiles ? {
