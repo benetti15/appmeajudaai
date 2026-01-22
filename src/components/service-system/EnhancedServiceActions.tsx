@@ -197,7 +197,7 @@ export function EnhancedServiceActions({
     const otherUserId = userRole === 'client' ? professionalInfo?.id : clientInfo?.id;
     if (!otherUserId) return;
 
-    const notificationMessages: Record<ExtendedServiceStatus, { title: string; message: string; type: string }> = {
+    const notificationMessages: Partial<Record<ExtendedServiceStatus, { title: string; message: string; type: string }>> = {
       on_way: {
         title: "🚗 Profissional a caminho!",
         message: `${user?.user_metadata?.full_name || 'O profissional'} está indo para o local do serviço.`,
@@ -214,21 +214,31 @@ export function EnhancedServiceActions({
         type: "service_started"
       },
       awaiting_client_confirmation: {
-        title: "✅ Serviço finalizado!",
-        message: `O profissional finalizou o trabalho. Por favor, confirme se está tudo ok.`,
+        title: "✅ Serviço finalizado pelo profissional!",
+        message: `O profissional finalizou o trabalho. Por favor, confirme se está tudo ok e efetue o pagamento.`,
         type: "awaiting_confirmation"
       },
       payment_confirmed: {
         title: "💳 Pagamento confirmado!",
-        message: `O cliente confirmou o pagamento. Serviço finalizado com sucesso!`,
+        message: `O cliente confirmou o pagamento. Serviço finalizado com sucesso! Parabéns!`,
         type: "payment_confirmed"
       },
       completed: {
         title: "🎉 Serviço concluído!",
-        message: `Serviço finalizado com sucesso! Não se esqueça de avaliar.`,
+        message: `Serviço finalizado com sucesso! Não se esqueça de avaliar o profissional.`,
         type: "service_completed"
+      },
+      cancelled: {
+        title: "❌ Serviço cancelado",
+        message: "O serviço foi cancelado.",
+        type: "service_cancelled"
+      },
+      disputed: {
+        title: "⚠️ Disputa aberta",
+        message: "Uma disputa foi aberta para este serviço.",
+        type: "dispute"
       }
-    } as any;
+    };
 
     const notification = notificationMessages[newStatus];
     if (!notification) return;
