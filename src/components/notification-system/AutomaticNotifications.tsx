@@ -164,7 +164,7 @@ async function handleStatusChangeNotification(
   const recipientId = userRole === 'client' ? serviceRequest.client_id : serviceRequest.professional_id;
   
   try {
-    // Enviar notificação in-app
+    // Enviar notificação in-app (sem metadata - coluna não existe)
     const { error } = await supabase
       .from('notifications')
       .insert({
@@ -172,12 +172,7 @@ async function handleStatusChangeNotification(
         title: template.title,
         message: template.message,
         type: template.type,
-        related_id: serviceRequest.id,
-        metadata: {
-          action_url: template.actionUrl,
-          icon: template.icon,
-          service_category: serviceRequest.category
-        }
+        related_id: serviceRequest.id
       });
 
     if (error) {
@@ -230,7 +225,7 @@ async function handleQuoteNotification(quote: any) {
 
     const message = `Novo orçamento para "${request.title}". Valor: R$ ${quote.amount?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'N/A'}`;
 
-    // Enviar notificação no banco de dados
+    // Enviar notificação no banco de dados (sem metadata - coluna não existe)
     const { error } = await supabase
       .from('notifications')
       .insert({
@@ -238,12 +233,7 @@ async function handleQuoteNotification(quote: any) {
         title: template.title,
         message,
         type: template.type,
-        related_id: quote.request_id,
-        metadata: {
-          action_url: template.actionUrl,
-          quote_id: quote.id,
-          quote_price: quote.amount
-        }
+        related_id: quote.request_id
       });
 
     if (error) {

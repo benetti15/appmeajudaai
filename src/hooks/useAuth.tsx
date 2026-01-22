@@ -90,27 +90,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Clear local state first
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      // Attempt to sign out - don't throw on "session not found" errors
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        toast({
-          title: "Erro ao sair",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Logout realizado",
-          description: "Você foi desconectado com sucesso.",
-        });
-        window.location.href = "/auth";
+      
+      // Session not found is ok - user is already logged out
+      if (error && !error.message?.includes('Session not found')) {
+        console.error("Sign out error:", error);
       }
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      
+      // Redirect to auth page
+      window.location.href = "/auth";
     } catch (error) {
       console.error("Error signing out:", error);
-      toast({
-        title: "Erro ao sair",
-        description: "Ocorreu um erro inesperado.",
-        variant: "destructive",
-      });
+      // Even on error, clear local state and redirect
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      window.location.href = "/auth";
     }
   };
 
