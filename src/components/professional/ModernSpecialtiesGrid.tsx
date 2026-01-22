@@ -243,10 +243,10 @@ export function ModernSpecialtiesGrid() {
     <>
       <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm overflow-hidden">
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="space-y-1 min-w-0 flex-1">
               <CardTitle className="flex items-center gap-2 text-xl">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
                 Minhas Especialidades
               </CardTitle>
               <CardDescription>
@@ -256,7 +256,7 @@ export function ModernSpecialtiesGrid() {
             <Button
               onClick={handleAddClick}
               disabled={availableCategories.length === 0}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md flex-shrink-0 w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
               Adicionar
