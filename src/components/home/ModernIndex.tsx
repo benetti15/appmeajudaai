@@ -5,12 +5,12 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useQuoteNotifications } from "@/hooks/useQuoteNotifications";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { DebugInfo } from "@/components/DebugInfo";
-import { LazyImage } from "@/components/PerformanceOptimizations";
 import { ModernHeader } from "@/components/home/ModernHeader";
 import { ModernHeroSection } from "@/components/home/ModernHeroSection";
 import { ModernQuickActions } from "@/components/home/ModernQuickActions";
 import { ModernBottomNav } from "@/components/home/ModernBottomNav";
 import { SmartToninhoBanner } from "@/components/home/SmartToninhoBanner";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { 
   Plus, 
   MessageCircle, 
@@ -191,20 +191,8 @@ export const ModernIndex = () => {
         </div>
         
         <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="flex justify-center items-center gap-3 mb-4">
-            <LazyImage 
-              src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
-              alt="Me Ajuda ai" 
-              className="w-8 h-8" 
-            />
-            <div className="flex items-center gap-1.5 text-xl font-display font-black">
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-                ME AJUDA
-              </span>
-              <span className="bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                AI!
-              </span>
-            </div>
+          <div className="flex justify-center items-center mb-4">
+            <AnimatedLogo size="md" showIcon={true} variant="default" />
           </div>
           <p className="text-sm text-muted-foreground">
             © 2024 Me Ajuda AI. Conectando você aos melhores profissionais.
