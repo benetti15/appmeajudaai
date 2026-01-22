@@ -325,40 +325,32 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       {/* Left Side - Hero (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary">
         <img 
           src={authHeroImage} 
-          alt="Profissional Me Ajuda AI" 
-          className="absolute inset-0 w-full h-full object-cover"
+          alt="Profissional Me Ajuda Aí" 
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
         />
         
-        {/* Dark gradient overlay for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-        
-        {/* Floating orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Green gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-accent/90" />
         
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full">
           {/* Logo */}
-          <div className="mb-8 relative">
-            <div className="absolute -inset-4 bg-white/10 rounded-full blur-xl animate-pulse" />
+          <div className="mb-8">
             <img 
-              src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
-              alt="Me Ajuda AI" 
-              className="w-24 h-24 relative z-10 drop-shadow-2xl"
+              src="/toninho-logo.png" 
+              alt="Me Ajuda Aí" 
+              className="w-28 h-28 rounded-3xl shadow-2xl"
             />
           </div>
           
           {/* Title */}
-          <h1 className="text-5xl font-display font-black mb-4 text-center">
-            <span className="block">ME AJUDA</span>
-            <span className="bg-gradient-to-r from-cyan-300 via-blue-200 to-purple-300 bg-clip-text text-transparent">
-              AI!
-            </span>
+          <h1 className="text-4xl font-semibold mb-4 text-center">
+            Me Ajuda Aí
           </h1>
           
-          <p className="text-xl text-center text-white/80 max-w-md mb-12">
+          <p className="text-xl text-center text-white/90 max-w-md mb-12">
             Conectando você aos melhores profissionais da sua região
           </p>
           
@@ -371,7 +363,7 @@ const Auth = () => {
             ].map((feature, i) => (
               <div 
                 key={i}
-                className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 animate-fade-in"
+                className="flex items-center gap-4 p-4 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/20 animate-fade-in"
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
                 <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
@@ -386,25 +378,24 @@ const Auth = () => {
 
       {/* Right Side - Auth Form */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        {/* Mobile Header with Background Image */}
-        <div className="lg:hidden relative overflow-hidden">
-          {/* Background Image */}
+        {/* Mobile Header */}
+        <div className="lg:hidden relative overflow-hidden bg-primary">
+          {/* Background Image with green overlay */}
           <img 
             src={authHeroImage} 
-            alt="Profissional Me Ajuda AI" 
-            className="absolute inset-0 w-full h-full object-cover"
+            alt="Profissional Me Ajuda Aí" 
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
           />
-          {/* Dark gradient overlay for text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/85 to-primary/95" />
           
           <div className="relative z-10 flex flex-col items-center text-white p-6 pb-8">
             <img 
-              src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png" 
-              alt="Me Ajuda AI" 
-              className="w-16 h-16 mb-3 drop-shadow-lg"
+              src="/toninho-logo.png" 
+              alt="Me Ajuda Aí" 
+              className="w-16 h-16 rounded-2xl shadow-lg mb-3"
             />
-            <h1 className="text-2xl font-display font-black">
-              ME AJUDA <span className="text-cyan-200">AI!</span>
+            <h1 className="text-2xl font-semibold">
+              Me Ajuda Aí
             </h1>
             <p className="text-white/80 text-sm mt-1">Conecte-se com profissionais</p>
           </div>
