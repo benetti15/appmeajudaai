@@ -10,7 +10,7 @@ import { ModernHeader } from "@/components/home/ModernHeader";
 import { ModernHeroSection } from "@/components/home/ModernHeroSection";
 import { ModernQuickActions } from "@/components/home/ModernQuickActions";
 import { ModernBottomNav } from "@/components/home/ModernBottomNav";
-import { ModernToninhoBanner } from "@/components/home/ModernToninhoBanner";
+import { SmartToninhoBanner } from "@/components/home/SmartToninhoBanner";
 import { 
   Plus, 
   MessageCircle, 
@@ -155,17 +155,8 @@ export const ModernIndex = () => {
       
       <main className="container mx-auto px-3 md:px-4 py-6 md:py-12 pb-28 md:pb-12">
         <div className="max-w-5xl mx-auto space-y-6 md:space-y-10">
-          {/* Toninho Banner - more compact on mobile */}
-          <ModernToninhoBanner
-            message={userType === 'professional' 
-              ? "Explore as solicitações disponíveis e envie seus orçamentos para conquistar novos clientes!" 
-              : "Clique em 'Nova Solicitação' e eu vou te ajudar a criar seu pedido!"
-            }
-            action={userType === 'professional' ? "Ver Oportunidades" : "Começar"}
-            actionPath={userType === 'professional' ? "/available-requests" : "/categories"}
-            variant="tip"
-            dismissible
-          />
+          {/* Smart Toninho Banner - contextual tips */}
+          <SmartToninhoBanner dismissible />
 
           {/* Quick Actions Section */}
           <div className="space-y-4 md:space-y-6">
