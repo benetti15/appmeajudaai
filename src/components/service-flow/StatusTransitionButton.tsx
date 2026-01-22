@@ -66,6 +66,7 @@ const STATUS_BUTTON_CONFIG: Record<ExtendedServiceStatus, {
     nextStatus: 'payment_confirmed'
   },
   payment_confirmed: {
+    professionalButton: { label: "Finalizar Serviço", icon: CheckCircle2 },
     nextStatus: 'completed'
   },
   completed: {
