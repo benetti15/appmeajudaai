@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, LogOut, Shield } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,10 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface AppHeaderProps {
-  title?: string;
+  showLogo?: boolean;
 }
 
-export function AppHeader({ title = "ME AJUDA AI!" }: AppHeaderProps = {}) {
+export function AppHeader({ showLogo = true }: AppHeaderProps = {}) {
   const { user, profile } = useAuth();
   const { isAdmin } = useUserRole();
   const navigate = useNavigate();
@@ -50,12 +51,21 @@ export function AppHeader({ title = "ME AJUDA AI!" }: AppHeaderProps = {}) {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 
-            className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors"
-            onClick={() => navigate("/")}
-          >
-            {title}
-          </h1>
+          {showLogo ? (
+            <div 
+              className="cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <AnimatedLogo size="sm" showIcon={true} variant="default" />
+            </div>
+          ) : (
+            <h1 
+              className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors font-display"
+              onClick={() => navigate("/")}
+            >
+              ME AJUDA AI!
+            </h1>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

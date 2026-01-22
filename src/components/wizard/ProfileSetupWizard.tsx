@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCelebration } from "@/hooks/useCelebration";
 import { Phone, FileText, MapPin, User, CheckCircle2, XCircle, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
 import { validateCPF, formatCPF } from "@/lib/cpf-validator";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 
 const steps: Step[] = [
   { id: "type", label: "Tipo", description: "Escolha seu perfil" },
@@ -454,16 +455,9 @@ export default function ProfileSetupWizard() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
       <Card className="w-full max-w-3xl p-8 shadow-2xl">
         <div className="space-y-8">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <img
-              src="/lovable-uploads/c8434d06-8f8c-46d0-bbd2-778de3b8f219.png"
-              alt="Me Ajuda AI"
-              className="w-16 h-16 mx-auto animate-bounce-in"
-            />
-            <h1 className="text-3xl font-display font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent bg-[length:200%_auto]">
-              ME AJUDA AI!
-            </h1>
+          {/* Header com Logo Animada */}
+          <div className="text-center space-y-2">
+            <AnimatedLogo size="lg" showIcon={true} variant="default" className="justify-center" />
           </div>
 
           {/* Step Indicator */}

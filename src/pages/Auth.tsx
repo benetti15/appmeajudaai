@@ -12,6 +12,7 @@ import { User, UserPlus, Wrench, Mail, Phone, Eye, EyeOff, MapPin, FileText, Che
 import authHeroImage from "@/assets/auth-hero-professional.jpg";
 import { validateCPF, formatCPF } from "@/lib/cpf-validator";
 import { cn } from "@/lib/utils";
+import { LogoHero, AnimatedLogo } from "@/components/ui/animated-logo";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -337,18 +338,10 @@ const Auth = () => {
         
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full">
           {/* Logo */}
+          {/* Logo animada */}
           <div className="mb-8">
-            <img 
-              src="/toninho-logo.png" 
-              alt="Me Ajuda Aí" 
-              className="w-28 h-28 rounded-3xl shadow-2xl"
-            />
+            <LogoHero variant="white" showIcon={true} />
           </div>
-          
-          {/* Title */}
-          <h1 className="text-4xl font-semibold mb-4 text-center">
-            Me Ajuda Aí
-          </h1>
           
           <p className="text-xl text-center text-white/90 max-w-md mb-12">
             Conectando você aos melhores profissionais da sua região
@@ -389,15 +382,8 @@ const Auth = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/85 to-primary/95" />
           
           <div className="relative z-10 flex flex-col items-center text-white p-6 pb-8">
-            <img 
-              src="/toninho-logo.png" 
-              alt="Me Ajuda Aí" 
-              className="w-16 h-16 rounded-2xl shadow-lg mb-3"
-            />
-            <h1 className="text-2xl font-semibold">
-              Me Ajuda Aí
-            </h1>
-            <p className="text-white/80 text-sm mt-1">Conecte-se com profissionais</p>
+            <AnimatedLogo size="lg" variant="white" showIcon={true} />
+            <p className="text-white/80 text-sm mt-2">Conecte-se com profissionais</p>
           </div>
         </div>
 

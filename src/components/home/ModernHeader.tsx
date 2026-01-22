@@ -10,8 +10,8 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { NotificationBadge } from "@/components/NotificationBadge";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 import { 
-  Menu, 
   User, 
   LogOut, 
   Plus, 
@@ -56,17 +56,9 @@ export const ModernHeader = memo(({ profile, unreadCount, unreadQuotes, signOut 
         {/* Logo */}
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-3 group cursor-pointer"
+          className="flex items-center group cursor-pointer"
         >
-          <img 
-            src="/toninho-logo.png" 
-            alt="Me Ajuda Aí" 
-            className="w-10 h-10 md:w-11 md:h-11 rounded-xl group-hover:scale-105 transition-transform duration-200" 
-          />
-          
-          <h1 className="text-lg md:text-xl font-semibold text-foreground tracking-tight">
-            Me Ajuda Aí
-          </h1>
+          <AnimatedLogo size="md" showIcon={true} variant="default" />
         </button>
         
         {/* Right side */}
