@@ -12,6 +12,7 @@ import { ImageUploadArea } from './ImageUploadArea';
 import { UploadedImage } from '@/hooks/useImageUpload';
 import { FeedbackButtons } from './FeedbackButtons';
 import { Button } from '@/components/ui/button';
+import toninhoWidget from '@/assets/toninho-widget.png';
 
 interface AIMessage {
   role: 'user' | 'assistant';
@@ -333,19 +334,21 @@ Como posso te ajudar hoje?`,
       {/* Floating Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full 
-                   bg-gradient-to-r from-primary to-accent shadow-2xl
-                   hover:scale-110 transition-transform duration-300
-                   flex items-center justify-center group animate-pulse-slow"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-2xl 
+                   shadow-2xl hover:scale-110 transition-transform duration-300
+                   flex items-center justify-center group overflow-hidden"
         aria-label="Abrir assistente IA"
       >
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce">
+          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce z-10">
             {unreadCount}
           </span>
         )}
-        <Bot className="w-8 h-8 text-white" />
-        <Sparkles className="w-4 h-4 text-white/80 absolute top-0 right-0 animate-pulse" />
+        <img 
+          src={toninhoWidget} 
+          alt="Toninho IA" 
+          className="w-full h-full object-cover"
+        />
       </button>
       
       {/* Chat Window */}
