@@ -157,9 +157,12 @@ export const ModernIndex = () => {
         <div className="max-w-5xl mx-auto space-y-6 md:space-y-10">
           {/* Toninho Banner - more compact on mobile */}
           <ModernToninhoBanner
-            message="Clique em 'Nova Solicitação' e eu vou te ajudar a criar seu pedido!"
-            action="Começar"
-            actionPath="/categories"
+            message={userType === 'professional' 
+              ? "Explore as solicitações disponíveis e envie seus orçamentos para conquistar novos clientes!" 
+              : "Clique em 'Nova Solicitação' e eu vou te ajudar a criar seu pedido!"
+            }
+            action={userType === 'professional' ? "Ver Oportunidades" : "Começar"}
+            actionPath={userType === 'professional' ? "/available-requests" : "/categories"}
             variant="tip"
             dismissible
           />
