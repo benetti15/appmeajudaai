@@ -1,36 +1,99 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, MapPin, Award, User, Sparkles } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  ArrowLeft, User, MapPin, Award, Settings, Shield, 
+  Briefcase, Bell, Save, Loader2, ChevronRight
+} from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { EnhancedVerificationSystem } from "@/components/EnhancedVerificationSystem";
 import { ModernSpecialtiesGrid } from "@/components/professional/ModernSpecialtiesGrid";
-import { ProgressStepper } from "@/components/ui/progress-stepper";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileAchievements } from "@/components/profile/ProfileAchievements";
+import { ProfileCompletionCard } from "@/components/profile/ProfileCompletionCard";
+import { ProfileSettingsSection } from "@/components/profile/ProfileSettingsSection";
+import { EnhancedAddressInput } from "@/components/address/EnhancedAddressInput";
+import { AddressData } from "@/lib/address-utils";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProfessionalProfile() {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   
-  // Form states para perfil pessoal
+  // Form states
   const [profileData, setProfileData] = useState({
-    full_name: profile?.full_name || "",
-    phone: profile?.phone || "",
-    address: profile?.address || "",
-    city: profile?.city || "",
-    state: profile?.state || "",
+    full_name: "",
+    phone: "",
+  });
+
+  const [addressData, setAddressData] = useState<AddressData>({
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    latitude: null,
+    longitude: null,
+    formatted_address: ""
+  });
+
+  // Fetch professional stats
+  const { data: stats } = useQuery({
+    queryKey: ['professional-stats', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+
+      const [quotesResult, reviewsResult, servicesResult] = await Promise.all([
+        supabase.from('quotes').select('*', { count: 'exact', head: true }).eq('professional_id', user.id),
+        supabase.from('reviews').select('rating').eq('professional_id', user.id),
+        supabase.from('service_requests').select('*', { count: 'exact', head: true })
+          .eq('status', 'completed')
+      ]);
+
+      const reviews = reviewsResult.data || [];
+      const avgRating = reviews.length > 0 
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
+        : 0;
+
+      return {
+        quotesSent: quotesResult.count || 0,
+        reviewsReceived: reviews.length,
+        averageRating: avgRating,
+        servicesCompleted: servicesResult.count || 0
+      };
+    },
+    enabled: !!user
+  });
+
+  // Fetch verification status
+  const { data: verificationStatus } = useQuery({
+    queryKey: ['verification-status', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from('professional_verification_status')
+        .select('*')
+        .eq('professional_id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user
   });
 
   useEffect(() => {
@@ -40,11 +103,6 @@ export default function ProfessionalProfile() {
     }
 
     if (profile?.user_type !== "professional") {
-      toast({
-        title: "Acesso negado",
-        description: "Esta página é apenas para profissionais.",
-        variant: "destructive",
-      });
       navigate("/");
       return;
     }
@@ -53,15 +111,87 @@ export default function ProfessionalProfile() {
       setProfileData({
         full_name: profile.full_name || "",
         phone: profile.phone || "",
-        address: profile.address || "",
+      });
+      setAddressData({
+        street: profile.street || "",
+        number: profile.number || "",
+        complement: profile.complement || "",
+        neighborhood: profile.neighborhood || "",
         city: profile.city || "",
         state: profile.state || "",
+        postal_code: profile.postal_code || "",
+        latitude: profile.latitude || null,
+        longitude: profile.longitude || null,
+        formatted_address: profile.formatted_address || ""
       });
       setProfilePhoto(profile.avatar_url || null);
     }
+  }, [user, profile, navigate]);
 
-    setLoading(false);
-  }, [user, profile]);
+  // Calculate profile completion
+  const completionSteps = useMemo(() => [
+    {
+      id: 'photo',
+      label: 'Adicionar foto',
+      description: 'Clientes confiam mais em profissionais com foto',
+      completed: !!profilePhoto,
+      xpReward: 20,
+      action: () => setActiveTab('profile'),
+      actionLabel: 'Adicionar'
+    },
+    {
+      id: 'name',
+      label: 'Nome completo',
+      description: 'Seu nome aparece nos orçamentos',
+      completed: !!profileData.full_name,
+      xpReward: 10,
+      action: () => setActiveTab('profile'),
+      actionLabel: 'Preencher'
+    },
+    {
+      id: 'phone',
+      label: 'Telefone',
+      description: 'Para contato direto com clientes',
+      completed: !!profileData.phone,
+      xpReward: 10,
+      action: () => setActiveTab('profile'),
+      actionLabel: 'Adicionar'
+    },
+    {
+      id: 'address',
+      label: 'Endereço completo',
+      description: 'Apareça nas buscas por localização',
+      completed: !!(addressData.latitude && addressData.longitude),
+      xpReward: 15,
+      action: () => setActiveTab('profile'),
+      actionLabel: 'Configurar'
+    },
+    {
+      id: 'verification',
+      label: 'Verificação de documentos',
+      description: 'Selo de profissional verificado',
+      completed: verificationStatus?.is_verified || false,
+      xpReward: 50,
+      action: () => setActiveTab('verification'),
+      actionLabel: 'Verificar'
+    }
+  ], [profilePhoto, profileData, addressData, verificationStatus]);
+
+  const completionPercentage = Math.round(
+    (completionSteps.filter(s => s.completed).length / completionSteps.length) * 100
+  );
+
+  // Calculate XP and level
+  const totalXp = useMemo(() => {
+    let xp = completionSteps.filter(s => s.completed).reduce((sum, s) => sum + s.xpReward, 0);
+    xp += (stats?.quotesSent || 0) * 5;
+    xp += (stats?.servicesCompleted || 0) * 25;
+    xp += (stats?.reviewsReceived || 0) * 10;
+    return xp;
+  }, [completionSteps, stats]);
+
+  const level = Math.floor(totalXp / 100) + 1;
+  const xpInCurrentLevel = totalXp % 100;
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -71,18 +201,27 @@ export default function ProfessionalProfile() {
         .update({
           full_name: profileData.full_name,
           phone: profileData.phone,
-          address: profileData.address,
-          city: profileData.city,
-          state: profileData.state,
           avatar_url: profilePhoto,
+          street: addressData.street,
+          number: addressData.number,
+          complement: addressData.complement,
+          neighborhood: addressData.neighborhood,
+          city: addressData.city,
+          state: addressData.state,
+          postal_code: addressData.postal_code,
+          latitude: addressData.latitude,
+          longitude: addressData.longitude,
+          formatted_address: addressData.formatted_address
         })
         .eq("id", user?.id);
 
       if (error) throw error;
 
+      await refreshProfile();
+
       toast({
-        title: "Sucesso",
-        description: "Perfil atualizado com sucesso!",
+        title: "✅ Perfil salvo!",
+        description: "Suas informações foram atualizadas com sucesso.",
       });
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -96,189 +235,226 @@ export default function ProfessionalProfile() {
     }
   };
 
+  const settingsGroups = [
+    {
+      title: "Notificações",
+      items: [
+        {
+          id: 'push-notifications',
+          icon: Bell,
+          label: 'Notificações push',
+          description: 'Receber alertas de novas solicitações',
+          toggle: true,
+          toggled: notificationsEnabled,
+          onToggle: setNotificationsEnabled
+        }
+      ]
+    },
+    {
+      title: "Segurança",
+      items: [
+        {
+          id: 'change-password',
+          icon: Shield,
+          label: 'Alterar senha',
+          onClick: () => navigate('/reset-password')
+        }
+      ]
+    },
+    {
+      title: "Suporte",
+      items: [
+        {
+          id: 'help',
+          icon: Award,
+          label: 'Central de ajuda',
+          onClick: () => navigate('/about-toninho')
+        }
+      ]
+    }
+  ];
 
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  if (!user || !profile) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/5 pb-24 md:pb-0">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 pb-24 md:pb-8">
       <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 max-w-4xl">
-        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-5">
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => navigate("/")}
-            className="p-2 h-9 w-9"
+            className="h-9 w-9 rounded-xl"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Perfil Profissional
+          <div className="flex-1">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">
+              Meu Perfil
             </h1>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Configure suas especialidades
-            </p>
           </div>
+          <Button
+            onClick={handleSaveProfile}
+            disabled={saving}
+            size="sm"
+            className="gap-2"
+          >
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            Salvar
+          </Button>
         </div>
 
-        {/* Progress Indicator */}
-        <ProgressStepper
-          steps={[
-            { id: 'profile', label: 'Perfil', completed: !!(profileData.full_name && profileData.phone && profilePhoto) },
-            { id: 'verification', label: 'Verif.', completed: false },
-            { id: 'specialties', label: 'Espec.', completed: false },
-            { id: 'areas', label: 'Áreas', completed: !!(profileData.city && profileData.state) }
-          ]}
-          currentStep={0}
-          className="mb-4 md:mb-6"
+        {/* Profile Header with Gamification */}
+        <ProfileHeader
+          name={profileData.full_name}
+          avatarUrl={profilePhoto}
+          userType="professional"
+          isVerified={verificationStatus?.is_verified || false}
+          level={level}
+          xp={xpInCurrentLevel}
+          xpToNextLevel={100}
+          completionPercentage={completionPercentage}
+          stats={{
+            servicesCompleted: stats?.servicesCompleted,
+            totalReviews: stats?.reviewsReceived,
+            averageRating: stats?.averageRating
+          }}
+          onAvatarChange={setProfilePhoto}
         />
 
-        <Tabs defaultValue="profile" className="space-y-4 md:space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-10 md:h-11">
-            <TabsTrigger value="profile" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
-              <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span className="hidden xs:inline">Perfil</span>
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+          <TabsList className="grid w-full grid-cols-5 h-12 p-1 bg-muted/50 rounded-2xl">
+            <TabsTrigger value="overview" className="rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs md:text-sm">
+              <User className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Visão Geral</span>
             </TabsTrigger>
-            <TabsTrigger value="verification" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
-              <Award className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span className="hidden xs:inline">Verif.</span>
+            <TabsTrigger value="profile" className="rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs md:text-sm">
+              <Settings className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Dados</span>
             </TabsTrigger>
-            <TabsTrigger value="specialties" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
-              <Award className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span className="hidden xs:inline">Espec.</span>
+            <TabsTrigger value="specialties" className="rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs md:text-sm">
+              <Briefcase className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Especialidades</span>
             </TabsTrigger>
-            <TabsTrigger value="areas" className="flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm px-1 md:px-3">
-              <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              <span className="hidden xs:inline">Áreas</span>
+            <TabsTrigger value="verification" className="rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs md:text-sm relative">
+              <Shield className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Verificação</span>
+              {!verificationStatus?.is_verified && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" />
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs md:text-sm">
+              <Bell className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Config</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="space-y-4 md:space-y-6">
-            {/* Foto do Perfil */}
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
-                  Foto do Perfil
-                </CardTitle>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="mt-6 space-y-6">
+            <ProfileCompletionCard steps={completionSteps} />
+            
+            <ProfileAchievements 
+              userType="professional"
+              stats={{
+                quotesSent: stats?.quotesSent,
+                servicesCompleted: stats?.servicesCompleted,
+                reviewsReceived: stats?.reviewsReceived,
+                isVerified: verificationStatus?.is_verified,
+                profileComplete: completionPercentage === 100
+              }}
+            />
+
+            {/* Quick Actions */}
+            <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Ações Rápidas</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <PhotoUpload
-                  currentPhoto={profile?.avatar_url || profilePhoto}
-                  onPhotoChange={setProfilePhoto}
-                  required={true}
-                />
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-800 mb-2">📸 Por que a foto é obrigatória?</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• Aumenta a confiança dos clientes</li>
-                    <li>• Melhora suas chances de ser contratado</li>
-                    <li>• Cria uma conexão mais pessoal</li>
-                    <li>• Garante transparência e segurança</li>
-                  </ul>
-                </div>
+              <CardContent className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex-col gap-2"
+                  onClick={() => navigate('/available-requests')}
+                >
+                  <Briefcase className="w-5 h-5 text-primary" />
+                  <span className="text-sm">Ver Solicitações</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-auto py-4 flex-col gap-2"
+                  onClick={() => navigate('/my-services')}
+                >
+                  <Award className="w-5 h-5 text-primary" />
+                  <span className="text-sm">Meus Serviços</span>
+                </Button>
               </CardContent>
             </Card>
+          </TabsContent>
 
-            {/* Informações Pessoais */}
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="mt-6 space-y-5">
+            <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <User className="w-5 h-5 text-primary" />
                   Informações Pessoais
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name" className="text-sm font-medium">
-                      Nome Completo *
-                    </Label>
+                    <Label htmlFor="full_name">Nome Completo *</Label>
                     <Input
                       id="full_name"
                       value={profileData.full_name}
                       onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
                       placeholder="Seu nome completo"
-                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium">
-                      Telefone *
-                    </Label>
+                    <Label htmlFor="phone">Telefone *</Label>
                     <Input
                       id="phone"
                       value={profileData.phone}
                       onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                       placeholder="(34) 99999-9999"
-                      className="transition-all focus:ring-2 focus:ring-primary"
                     />
                   </div>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    💡 Mantenha suas informações atualizadas para que os clientes possam entrar em contato facilmente.
-                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Endereço */}
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm hover:shadow-xl transition-shadow">
+            <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <MapPin className="w-5 h-5 text-primary" />
                   Endereço
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="text-sm font-medium">Endereço Completo</Label>
-                  <Input
-                    id="address"
-                    value={profileData.address}
-                    onChange={(e) => setProfileData({...profileData, address: e.target.value})}
-                    placeholder="Rua, número, complemento"
-                    className="transition-all focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city" className="text-sm font-medium">Cidade *</Label>
-                    <Input
-                      id="city"
-                      value={profileData.city}
-                      onChange={(e) => setProfileData({...profileData, city: e.target.value})}
-                      placeholder="Sua cidade"
-                      className="transition-all focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state" className="text-sm font-medium">Estado *</Label>
-                    <Input
-                      id="state"
-                      value={profileData.state}
-                      onChange={(e) => setProfileData({...profileData, state: e.target.value})}
-                      placeholder="UF"
-                      maxLength={2}
-                      className="transition-all focus:ring-2 focus:ring-primary uppercase"
-                    />
-                  </div>
-                </div>
+              <CardContent>
+                <EnhancedAddressInput
+                  value={addressData}
+                  onChange={setAddressData}
+                  required={true}
+                  showMap={false}
+                  allowCurrentLocation={true}
+                />
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="verification" className="space-y-4 md:space-y-6">
+          {/* Specialties Tab */}
+          <TabsContent value="specialties" className="mt-6">
+            <ModernSpecialtiesGrid />
+          </TabsContent>
+
+          {/* Verification Tab */}
+          <TabsContent value="verification" className="mt-6">
             <EnhancedVerificationSystem 
               userId={user?.id}
               showRestrictions={false}
@@ -288,58 +464,14 @@ export default function ProfessionalProfile() {
             />
           </TabsContent>
 
-          <TabsContent value="specialties" className="space-y-4 md:space-y-6">
-            <ModernSpecialtiesGrid />
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="mt-6">
+            <ProfileSettingsSection 
+              groups={settingsGroups}
+              onSignOut={signOut}
+            />
           </TabsContent>
-
-          <TabsContent value="areas" className="space-y-4 md:space-y-6">
-            <Card className="border-0 shadow-glow bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  Área de Atendimento
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg p-6 text-center">
-                  <MapPin className="h-12 w-12 text-primary mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold mb-2">Uberlândia, MG</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Atualmente você atende toda a cidade de Uberlândia
-                  </p>
-                  <Badge variant="secondary" className="text-xs">
-                    Cobertura: Toda a cidade
-                  </Badge>
-                </div>
-
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Sobre sua área de atendimento
-                  </h4>
-                  <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1.5">
-                    <li>• Você atende todas as regiões de Uberlândia</li>
-                    <li>• Os clientes podem encontrar você em buscas da cidade</li>
-                    <li>• Mantenha seu perfil atualizado para mais visibilidade</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
         </Tabs>
-
-        {/* Botão Salvar Fixo */}
-        <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50">
-          <Button
-            onClick={handleSaveProfile}
-            disabled={saving}
-            size="lg"
-            className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-2xl px-6 md:px-8 py-2.5 md:py-3 text-sm md:text-lg font-medium"
-          >
-            {saving ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
       </div>
     </div>
   );
