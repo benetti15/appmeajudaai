@@ -252,6 +252,43 @@ export function ServiceExecutionView({
         </div>
       </div>
       
+      {/* Action Button - MOVED TO TOP */}
+      <div className="pt-2">
+        <StatusTransitionButton
+          currentStatus={status}
+          userRole={userRole}
+          onTransition={handleTransition}
+          serviceAmount={serviceAmount}
+          showSecondaryActions={true}
+          onCancel={() => setShowCancelDialog(true)}
+          onReschedule={() => setShowRescheduleDialog(true)}
+          onDispute={() => setShowDisputeDialog(true)}
+        />
+      </div>
+      
+      {/* Completed - Review CTA */}
+      {status === 'completed' && userRole === 'client' && (
+        <Button 
+          className="w-full gap-2"
+          variant="outline"
+          onClick={() => navigate(`/review/${requestId}`)}
+        >
+          <Star className="w-4 h-4" />
+          Avaliar Profissional
+        </Button>
+      )}
+      
+      {/* Address - MOVED ABOVE TIMELINE */}
+      <Card className="p-4">
+        <h3 className="font-medium text-sm text-muted-foreground mb-2">
+          Endereço
+        </h3>
+        <div className="flex items-start gap-3">
+          <MapPin className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+          <p className="text-foreground text-sm">{address}</p>
+        </div>
+      </Card>
+      
       {/* Timeline */}
       <Card className="p-4">
         <h3 className="font-medium text-sm text-muted-foreground mb-4">
@@ -306,43 +343,6 @@ export function ServiceExecutionView({
             </Button>
           </div>
         </Card>
-      )}
-      
-      {/* Address */}
-      <Card className="p-4">
-        <h3 className="font-medium text-sm text-muted-foreground mb-2">
-          Endereço
-        </h3>
-        <div className="flex items-start gap-3">
-          <MapPin className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-          <p className="text-foreground text-sm">{address}</p>
-        </div>
-      </Card>
-      
-      {/* Action Button */}
-      <div className="pt-2">
-        <StatusTransitionButton
-          currentStatus={status}
-          userRole={userRole}
-          onTransition={handleTransition}
-          serviceAmount={serviceAmount}
-          showSecondaryActions={true}
-          onCancel={() => setShowCancelDialog(true)}
-          onReschedule={() => setShowRescheduleDialog(true)}
-          onDispute={() => setShowDisputeDialog(true)}
-        />
-      </div>
-      
-      {/* Completed - Review CTA */}
-      {status === 'completed' && userRole === 'client' && (
-        <Button 
-          className="w-full gap-2"
-          variant="outline"
-          onClick={() => navigate(`/review/${requestId}`)}
-        >
-          <Star className="w-4 h-4" />
-          Avaliar Profissional
-        </Button>
       )}
       
       {/* Dialogs */}
